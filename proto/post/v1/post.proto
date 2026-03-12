@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package post.v1;
+
+option go_package = "github.com/usedcvnt/microtwitter/gen/go/post/v1";
+
+import "common/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+message Post {
+  string id = 1;
+  string user_id = 2;
+  string content = 3;
+  string media_url = 4;
+  int32 likes_count = 5;
+  int32 comments_count = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message CreatePostRequest {
+  string user_id = 1;
+  string content = 2;
+  string media_url = 3;
+}
+
+message CreatePostResponse {
+  Post post = 1;
+}
+
+message GetPostRequest {
+  string id = 1;
+}
+
+message GetPostResponse {
+  Post post = 1;
+}
+
+message DeletePostRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message DeletePostResponse {}
+
+message GetFeedRequest {
+  string user_id = 1;
+  common.v1.PaginationRequest pagination = 2;
+}
+
+message GetFeedResponse {
+  repeated Post posts = 1;
+  common.v1.PaginationResponse pagination = 2;
+}
+
+message LikePostRequest {
+  string user_id = 1;
+  string post_id = 2;
+}
+
+message LikePostResponse {}
+
+message UnlikePostRequest {
+  string user_id = 1;
+  string post_id = 2;
+}
+
+message UnlikePostResponse {}
+
+message GetPostsByUserRequest {
+  string user_id = 1;
+  common.v1.PaginationRequest pagination = 2;
+}
+
+message GetPostsByUserResponse {
+  repeated Post posts = 1;
+  common.v1.PaginationResponse pagination = 2;
+}
+
+service PostService {
+  rpc CreatePost(CreatePostRequest) returns (CreatePostResponse);
+  rpc GetPost(GetPostRequest) returns (GetPostResponse);
+  rpc DeletePost(DeletePostRequest) returns (DeletePostResponse);
+  rpc GetFeed(GetFeedRequest) returns (GetFeedResponse);
+  rpc LikePost(LikePostRequest) returns (LikePostResponse);
+  rpc UnlikePost(UnlikePostRequest) returns (UnlikePostResponse);
+  rpc GetPostsByUser(GetPostsByUserRequest) returns (GetPostsByUserResponse);
+}

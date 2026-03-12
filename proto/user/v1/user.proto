@@ -1,0 +1,144 @@
+syntax = "proto3";
+
+package user.v1;
+
+option go_package = "github.com/usedcvnt/microtwitter/gen/go/user/v1";
+
+import "common/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+message User {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+  string display_name = 4;
+  string bio = 5;
+  string avatar_url = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message RegisterRequest {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+  string display_name = 4;
+}
+
+message RegisterResponse {
+  User user = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  User user = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message GetUserRequest {
+  string id = 1;
+}
+
+message GetUserResponse {
+  User user = 1;
+}
+
+message UpdateUserRequest {
+  string id = 1;
+  string display_name = 2;
+  string bio = 3;
+  string avatar_url = 4;
+}
+
+message UpdateUserResponse {
+  User user = 1;
+}
+
+message SoftDeleteUserRequest {
+  string id = 1;
+}
+
+message SoftDeleteUserResponse {}
+
+message SearchUsersRequest {
+  string query = 1;
+  common.v1.PaginationRequest pagination = 2;
+}
+
+message SearchUsersResponse {
+  repeated User users = 1;
+  common.v1.PaginationResponse pagination = 2;
+}
+
+message GetUsersByIDsRequest {
+  repeated string ids = 1;
+}
+
+message GetUsersByIDsResponse {
+  repeated User users = 1;
+}
+
+message FollowRequest {
+  string follower_id = 1;
+  string following_id = 2;
+}
+
+message FollowResponse {}
+
+message UnfollowRequest {
+  string follower_id = 1;
+  string following_id = 2;
+}
+
+message UnfollowResponse {}
+
+message GetFollowersRequest {
+  string user_id = 1;
+  common.v1.PaginationRequest pagination = 2;
+}
+
+message GetFollowersResponse {
+  repeated User users = 1;
+  common.v1.PaginationResponse pagination = 2;
+}
+
+message GetFollowingRequest {
+  string user_id = 1;
+  common.v1.PaginationRequest pagination = 2;
+}
+
+message GetFollowingResponse {
+  repeated User users = 1;
+  common.v1.PaginationResponse pagination = 2;
+}
+
+service UserService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
+  rpc SoftDeleteUser(SoftDeleteUserRequest) returns (SoftDeleteUserResponse);
+  rpc SearchUsers(SearchUsersRequest) returns (SearchUsersResponse);
+  rpc GetUsersByIDs(GetUsersByIDsRequest) returns (GetUsersByIDsResponse);
+  rpc Follow(FollowRequest) returns (FollowResponse);
+  rpc Unfollow(UnfollowRequest) returns (UnfollowResponse);
+  rpc GetFollowers(GetFollowersRequest) returns (GetFollowersResponse);
+  rpc GetFollowing(GetFollowingRequest) returns (GetFollowingResponse);
+}

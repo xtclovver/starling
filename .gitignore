@@ -1,0 +1,25 @@
+# Environment
+.env
+
+# Generated code
+gen/
+
+# Go
+bin/
+*.exe
+__debug_bin
+
+# Node.js
+node_modules/
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

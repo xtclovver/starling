@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package comment.v1;
+
+option go_package = "github.com/usedcvnt/microtwitter/gen/go/comment/v1";
+
+import "common/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+message Comment {
+  string id = 1;
+  string post_id = 2;
+  string user_id = 3;
+  string parent_id = 4;
+  string content = 5;
+  int32 likes_count = 6;
+  int32 depth = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+  repeated Comment children = 10;
+}
+
+message CreateCommentRequest {
+  string post_id = 1;
+  string user_id = 2;
+  string parent_id = 3;
+  string content = 4;
+}
+
+message CreateCommentResponse {
+  Comment comment = 1;
+}
+
+message GetCommentTreeRequest {
+  string post_id = 1;
+  common.v1.PaginationRequest pagination = 2;
+}
+
+message GetCommentTreeResponse {
+  repeated Comment comments = 1;
+  common.v1.PaginationResponse pagination = 2;
+}
+
+message DeleteCommentRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message DeleteCommentResponse {}
+
+message LikeCommentRequest {
+  string user_id = 1;
+  string comment_id = 2;
+}
+
+message LikeCommentResponse {}
+
+message UnlikeCommentRequest {
+  string user_id = 1;
+  string comment_id = 2;
+}
+
+message UnlikeCommentResponse {}
+
+service CommentService {
+  rpc CreateComment(CreateCommentRequest) returns (CreateCommentResponse);
+  rpc GetCommentTree(GetCommentTreeRequest) returns (GetCommentTreeResponse);
+  rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse);
+  rpc LikeComment(LikeCommentRequest) returns (LikeCommentResponse);
+  rpc UnlikeComment(UnlikeCommentRequest) returns (UnlikeCommentResponse);
+}

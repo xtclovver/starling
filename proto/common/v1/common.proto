@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package common.v1;
+
+option go_package = "github.com/usedcvnt/microtwitter/gen/go/common/v1";
+
+message PaginationRequest {
+  string cursor = 1;
+  int32 limit = 2;
+}
+
+message PaginationResponse {
+  string next_cursor = 1;
+  bool has_more = 2;
+}
+
+message Error {
+  int32 code = 1;
+  string message = 2;
+  string details = 3;
+}

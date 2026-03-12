@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package media.v1;
+
+option go_package = "github.com/usedcvnt/microtwitter/gen/go/media/v1";
+
+import "google/protobuf/timestamp.proto";
+
+message Media {
+  string id = 1;
+  string user_id = 2;
+  string post_id = 3;
+  string bucket = 4;
+  string object_key = 5;
+  string content_type = 6;
+  string url = 7;
+  google.protobuf.Timestamp created_at = 8;
+}
+
+message UploadMediaRequest {
+  string user_id = 1;
+  string post_id = 2;
+  string content_type = 3;
+  bytes data = 4;
+}
+
+message UploadMediaResponse {
+  Media media = 1;
+}
+
+message GetPresignedUploadURLRequest {
+  string user_id = 1;
+  string content_type = 2;
+}
+
+message GetPresignedUploadURLResponse {
+  string upload_url = 1;
+  string object_key = 2;
+}
+
+message GetMediaURLRequest {
+  string object_key = 1;
+}
+
+message GetMediaURLResponse {
+  string url = 1;
+}
+
+message DeleteMediaRequest {
+  string id = 1;
+  string user_id = 2;
+}
+
+message DeleteMediaResponse {}
+
+service MediaService {
+  rpc UploadMedia(UploadMediaRequest) returns (UploadMediaResponse);
+  rpc GetPresignedUploadURL(GetPresignedUploadURLRequest) returns (GetPresignedUploadURLResponse);
+  rpc GetMediaURL(GetMediaURLRequest) returns (GetMediaURLResponse);
+  rpc DeleteMedia(DeleteMediaRequest) returns (DeleteMediaResponse);
+}

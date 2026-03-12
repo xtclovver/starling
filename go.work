@@ -1,0 +1,9 @@
+go 1.23
+
+use (
+	./api-gateway
+	./services/user-svc
+	./services/post-svc
+	./services/comment-svc
+	./services/media-svc
+)
