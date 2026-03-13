@@ -1,6 +1,7 @@
-go 1.23
+go 1.23.0
 
 use (
+	./gen/go
 	./api-gateway
 	./services/user-svc
 	./services/post-svc

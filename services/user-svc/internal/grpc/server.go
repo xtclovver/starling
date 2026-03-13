@@ -1,0 +1,366 @@
+package grpc
+
+import (
+	"context"
+	"errors"
+	"log/slog"
+	"time"
+
+	commonpb "github.com/usedcvnt/microtwitter/gen/go/common/v1"
+	pb "github.com/usedcvnt/microtwitter/gen/go/user/v1"
+	"github.com/usedcvnt/microtwitter/user-svc/internal/auth"
+	"github.com/usedcvnt/microtwitter/user-svc/internal/repository"
+	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+type Server struct {
+	pb.UnimplementedUserServiceServer
+	userRepo   repository.UserRepository
+	followRepo repository.FollowRepository
+	jwt        *auth.JWTManager
+	log        *slog.Logger
+}
+
+func NewServer(
+	userRepo repository.UserRepository,
+	followRepo repository.FollowRepository,
+	jwt *auth.JWTManager,
+	log *slog.Logger,
+) *Server {
+	return &Server{
+		userRepo:   userRepo,
+		followRepo: followRepo,
+		jwt:        jwt,
+		log:        log,
+	}
+}
+
+func (s *Server) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("Register", "duration", time.Since(start)) }()
+
+	if len(req.GetUsername()) < 3 || len(req.GetUsername()) > 50 {
+		return nil, status.Error(codes.InvalidArgument, "username must be 3-50 characters")
+	}
+	if !isValidEmail(req.GetEmail()) {
+		return nil, status.Error(codes.InvalidArgument, "invalid email format")
+	}
+	if len(req.GetPassword()) < 8 {
+		return nil, status.Error(codes.InvalidArgument, "password must be at least 8 characters")
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.GetPassword()), 12)
+	if err != nil {
+		s.log.Error("bcrypt hash failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	user, err := s.userRepo.Create(ctx, req.GetUsername(), req.GetEmail(), string(hash))
+	if err != nil {
+		if errors.Is(err, repository.ErrDuplicateEmail) {
+			return nil, status.Error(codes.AlreadyExists, "email already exists")
+		}
+		if errors.Is(err, repository.ErrDuplicateUsername) {
+			return nil, status.Error(codes.AlreadyExists, "username already exists")
+		}
+		s.log.Error("create user failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	accessToken, refreshToken, err := s.jwt.GenerateTokenPair(user.ID)
+	if err != nil {
+		s.log.Error("generate token pair failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &pb.RegisterResponse{
+		User:         toProtoUser(user),
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}, nil
+}
+
+func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("Login", "duration", time.Since(start)) }()
+
+	user, err := s.userRepo.GetByEmail(ctx, req.GetEmail())
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, status.Error(codes.Unauthenticated, "invalid email or password")
+		}
+		s.log.Error("get user by email failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.GetPassword())); err != nil {
+		return nil, status.Error(codes.Unauthenticated, "invalid email or password")
+	}
+
+	accessToken, refreshToken, err := s.jwt.GenerateTokenPair(user.ID)
+	if err != nil {
+		s.log.Error("generate token pair failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &pb.LoginResponse{
+		User:         toProtoUser(user),
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}, nil
+}
+
+func (s *Server) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) (*pb.RefreshTokenResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("RefreshToken", "duration", time.Since(start)) }()
+
+	accessToken, refreshToken, err := s.jwt.RotateRefreshToken(ctx, req.GetRefreshToken())
+	if err != nil {
+		if errors.Is(err, auth.ErrInvalidToken) {
+			return nil, status.Error(codes.Unauthenticated, "invalid refresh token")
+		}
+		s.log.Error("rotate refresh token failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &pb.RefreshTokenResponse{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}, nil
+}
+
+func (s *Server) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("GetUser", "duration", time.Since(start)) }()
+
+	user, err := s.userRepo.GetByID(ctx, req.GetId())
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, status.Error(codes.NotFound, "user not found")
+		}
+		s.log.Error("get user failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &pb.GetUserResponse{User: toProtoUser(user)}, nil
+}
+
+func (s *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("UpdateUser", "duration", time.Since(start)) }()
+
+	fields := make(map[string]string)
+	if req.GetDisplayName() != "" {
+		fields["display_name"] = req.GetDisplayName()
+	}
+	if req.GetBio() != "" {
+		fields["bio"] = req.GetBio()
+	}
+	if req.GetAvatarUrl() != "" {
+		fields["avatar_url"] = req.GetAvatarUrl()
+	}
+
+	user, err := s.userRepo.Update(ctx, req.GetId(), fields)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, status.Error(codes.NotFound, "user not found")
+		}
+		s.log.Error("update user failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &pb.UpdateUserResponse{User: toProtoUser(user)}, nil
+}
+
+func (s *Server) SoftDeleteUser(ctx context.Context, req *pb.SoftDeleteUserRequest) (*pb.SoftDeleteUserResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("SoftDeleteUser", "duration", time.Since(start)) }()
+
+	if err := s.userRepo.SoftDelete(ctx, req.GetId()); err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, status.Error(codes.NotFound, "user not found")
+		}
+		s.log.Error("soft delete user failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &pb.SoftDeleteUserResponse{}, nil
+}
+
+func (s *Server) SearchUsers(ctx context.Context, req *pb.SearchUsersRequest) (*pb.SearchUsersResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("SearchUsers", "duration", time.Since(start)) }()
+
+	var cursor string
+	var limit int32 = 20
+	if req.GetPagination() != nil {
+		cursor = req.GetPagination().GetCursor()
+		if req.GetPagination().GetLimit() > 0 {
+			limit = req.GetPagination().GetLimit()
+		}
+	}
+
+	users, nextCursor, err := s.userRepo.Search(ctx, req.GetQuery(), cursor, int(limit))
+	if err != nil {
+		s.log.Error("search users failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	pbUsers := make([]*pb.User, len(users))
+	for i, u := range users {
+		u := u
+		pbUsers[i] = toProtoUser(&u)
+	}
+
+	return &pb.SearchUsersResponse{
+		Users: pbUsers,
+		Pagination: &commonpb.PaginationResponse{
+			NextCursor: nextCursor,
+			HasMore:    nextCursor != "",
+		},
+	}, nil
+}
+
+func (s *Server) GetUsersByIDs(ctx context.Context, req *pb.GetUsersByIDsRequest) (*pb.GetUsersByIDsResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("GetUsersByIDs", "duration", time.Since(start)) }()
+
+	users, err := s.userRepo.GetByIDs(ctx, req.GetIds())
+	if err != nil {
+		s.log.Error("get users by ids failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	pbUsers := make([]*pb.User, len(users))
+	for i, u := range users {
+		u := u
+		pbUsers[i] = toProtoUser(&u)
+	}
+
+	return &pb.GetUsersByIDsResponse{Users: pbUsers}, nil
+}
+
+func (s *Server) Follow(ctx context.Context, req *pb.FollowRequest) (*pb.FollowResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("Follow", "duration", time.Since(start)) }()
+
+	// Check target exists
+	_, err := s.userRepo.GetByID(ctx, req.GetFollowingId())
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, status.Error(codes.NotFound, "target user not found")
+		}
+		s.log.Error("get target user failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	if err := s.followRepo.Follow(ctx, req.GetFollowerId(), req.GetFollowingId()); err != nil {
+		if errors.Is(err, repository.ErrAlreadyFollowing) {
+			return &pb.FollowResponse{}, nil
+		}
+		if errors.Is(err, repository.ErrSelfFollow) {
+			return nil, status.Error(codes.InvalidArgument, "cannot follow yourself")
+		}
+		s.log.Error("follow failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &pb.FollowResponse{}, nil
+}
+
+func (s *Server) Unfollow(ctx context.Context, req *pb.UnfollowRequest) (*pb.UnfollowResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("Unfollow", "duration", time.Since(start)) }()
+
+	if err := s.followRepo.Unfollow(ctx, req.GetFollowerId(), req.GetFollowingId()); err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, status.Error(codes.NotFound, "follow relationship not found")
+		}
+		s.log.Error("unfollow failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &pb.UnfollowResponse{}, nil
+}
+
+func (s *Server) GetFollowers(ctx context.Context, req *pb.GetFollowersRequest) (*pb.GetFollowersResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("GetFollowers", "duration", time.Since(start)) }()
+
+	var cursor string
+	var limit int32 = 20
+	if req.GetPagination() != nil {
+		cursor = req.GetPagination().GetCursor()
+		if req.GetPagination().GetLimit() > 0 {
+			limit = req.GetPagination().GetLimit()
+		}
+	}
+
+	ids, nextCursor, err := s.followRepo.GetFollowers(ctx, req.GetUserId(), cursor, int(limit))
+	if err != nil {
+		s.log.Error("get followers failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	users, err := s.userRepo.GetByIDs(ctx, ids)
+	if err != nil {
+		s.log.Error("get users by ids failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	pbUsers := make([]*pb.User, len(users))
+	for i, u := range users {
+		u := u
+		pbUsers[i] = toProtoUser(&u)
+	}
+
+	return &pb.GetFollowersResponse{
+		Users: pbUsers,
+		Pagination: &commonpb.PaginationResponse{
+			NextCursor: nextCursor,
+			HasMore:    nextCursor != "",
+		},
+	}, nil
+}
+
+func (s *Server) GetFollowing(ctx context.Context, req *pb.GetFollowingRequest) (*pb.GetFollowingResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("GetFollowing", "duration", time.Since(start)) }()
+
+	var cursor string
+	var limit int32 = 20
+	if req.GetPagination() != nil {
+		cursor = req.GetPagination().GetCursor()
+		if req.GetPagination().GetLimit() > 0 {
+			limit = req.GetPagination().GetLimit()
+		}
+	}
+
+	ids, nextCursor, err := s.followRepo.GetFollowing(ctx, req.GetUserId(), cursor, int(limit))
+	if err != nil {
+		s.log.Error("get following failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	users, err := s.userRepo.GetByIDs(ctx, ids)
+	if err != nil {
+		s.log.Error("get users by ids failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	pbUsers := make([]*pb.User, len(users))
+	for i, u := range users {
+		u := u
+		pbUsers[i] = toProtoUser(&u)
+	}
+
+	return &pb.GetFollowingResponse{
+		Users: pbUsers,
+		Pagination: &commonpb.PaginationResponse{
+			NextCursor: nextCursor,
+			HasMore:    nextCursor != "",
+		},
+	}, nil
+}

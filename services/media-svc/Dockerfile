@@ -3,6 +3,7 @@ FROM golang:1.23-alpine AS builder
 WORKDIR /build
 
 COPY go.work go.work
+COPY gen/go/go.mod gen/go/go.sum* gen/go/
 COPY api-gateway/go.mod api-gateway/go.sum* api-gateway/
 COPY services/user-svc/go.mod services/user-svc/go.sum* services/user-svc/
 COPY services/post-svc/go.mod services/post-svc/go.sum* services/post-svc/
