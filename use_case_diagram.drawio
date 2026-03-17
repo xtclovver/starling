@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" version="21.0">
+  <diagram name="Диаграмма вариантов использования" id="microblog-ucd">
+    <mxGraphModel dx="1422" dy="762" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ═══ System boundary ═══ -->
+        <mxCell id="2" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#000000;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="310" y="35" width="780" height="1025" as="geometry" />
+        </mxCell>
+        <mxCell id="3" value="Микроблогинг-платформа" style="text;html=1;align=center;verticalAlign=middle;resizable=0;strokeColor=none;fillColor=none;fontStyle=1;fontSize=15;" vertex="1" parent="1">
+          <mxGeometry x="510" y="5" width="380" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ═══ Section labels ═══ -->
+        <mxCell id="4" value="Аутентификация и профиль" style="text;html=1;align=left;verticalAlign=middle;resizable=0;strokeColor=none;fillColor=none;fontStyle=2;fontSize=11;fontColor=#AAAAAA;" vertex="1" parent="1">
+          <mxGeometry x="320" y="42" width="240" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="5" value="Посты и медиа" style="text;html=1;align=left;verticalAlign=middle;resizable=0;strokeColor=none;fillColor=none;fontStyle=2;fontSize=11;fontColor=#AAAAAA;" vertex="1" parent="1">
+          <mxGeometry x="320" y="345" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="6" value="Комментарии" style="text;html=1;align=left;verticalAlign=middle;resizable=0;strokeColor=none;fillColor=none;fontStyle=2;fontSize=11;fontColor=#AAAAAA;" vertex="1" parent="1">
+          <mxGeometry x="320" y="690" width="180" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="7" value="Социальные функции" style="text;html=1;align=left;verticalAlign=middle;resizable=0;strokeColor=none;fillColor=none;fontStyle=2;fontSize=11;fontColor=#AAAAAA;" vertex="1" parent="1">
+          <mxGeometry x="320" y="950" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="8" value="Системные сценарии" style="text;html=1;align=left;verticalAlign=middle;resizable=0;strokeColor=none;fillColor=none;fontStyle=2;fontSize=11;fontColor=#AAAAAA;" vertex="1" parent="1">
+          <mxGeometry x="875" y="345" width="200" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Separator: Guest zone / Auth zone -->
+        <mxCell id="9" value="" style="endArrow=none;html=1;dashed=1;strokeColor=#CCCCCC;strokeWidth=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="315" y="325" as="sourcePoint" />
+            <mxPoint x="1085" y="325" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ═══ Actors ═══ -->
+        <mxCell id="10" value="Гость" style="shape=mxgraph.uml.actor;whiteSpace=wrap;html=1;align=center;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="72" y="100" width="56" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="11" value="Авторизованный&lt;br&gt;пользователь" style="shape=mxgraph.uml.actor;whiteSpace=wrap;html=1;align=center;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="62" y="645" width="76" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Generalization: Авторизованный ──▷ Гость -->
+        <mxCell id="12" value="" style="endArrow=block;html=1;endFill=0;strokeWidth=1.5;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="11" target="10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ═══ Use cases — Guest zone (top) ═══ -->
+        <mxCell id="13" value="Регистрация" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="365" y="68" width="165" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="14" value="Авторизация" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="365" y="148" width="165" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="15" value="Просмотр профиля" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="625" y="68" width="165" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="16" value="Просмотр поста" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="625" y="148" width="165" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="17" value="Поиск пользователей" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="625" y="228" width="165" height="44" as="geometry" />
+        </mxCell>
+
+        <!-- ═══ Use cases — Auth zone: Посты и медиа ═══ -->
+        <mxCell id="18" value="Обновление профиля" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="365" y="363" width="165" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="19" value="Создание поста" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="365" y="443" width="165" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="20" value="Удаление поста" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="365" y="523" width="165" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="21" value="Лайк поста" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="365" y="603" width="165" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="22" value="Получение ленты" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="625" y="363" width="165" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="23" value="Загрузка медиа" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="625" y="443" width="165" height="44" as="geometry" />
+        </mxCell>
+
+        <!-- ═══ Use cases — Комментарии ═══ -->
+        <mxCell id="24" value="Создание комментария" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="365" y="708" width="165" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="25" value="Удаление комментария" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="365" y="788" width="165" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="26" value="Лайк комментария" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="365" y="868" width="165" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="27" value="Просмотр комментариев" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="625" y="708" width="165" height="44" as="geometry" />
+        </mxCell>
+
+        <!-- ═══ Use cases — Социальные функции ═══ -->
+        <mxCell id="28" value="Подписка" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="365" y="968" width="165" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="29" value="Отписка" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="625" y="968" width="165" height="44" as="geometry" />
+        </mxCell>
+
+        <!-- ═══ Use cases — Системные ═══ -->
+        <mxCell id="30" value="Валидация данных" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="882" y="453" width="175" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="31" value="Live-уведомление&lt;br&gt;(WebSocket)" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="872" y="573" width="195" height="54" as="geometry" />
+        </mxCell>
+
+        <!-- ═══ External use case ═══ -->
+        <mxCell id="32" value="Сообщение&lt;br&gt;об ошибке" style="ellipse;whiteSpace=wrap;html=1;align=center;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1148" y="453" width="150" height="54" as="geometry" />
+        </mxCell>
+
+        <!-- ═══ Associations: Гость → use cases ═══ -->
+        <mxCell id="33" value="" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="10" target="13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="34" value="" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="10" target="14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="35" value="" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="10" target="15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="36" value="" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="10" target="16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="37" value="" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="10" target="17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ═══ Associations: Авторизованный → use cases ═══ -->
+        <mxCell id="38" value="" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="11" target="18">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="39" value="" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="11" target="19">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="40" value="" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="11" target="20">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="41" value="" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="11" target="21">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="42" value="" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="11" target="22">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="43" value="" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="11" target="23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="44" value="" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="11" target="24">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="45" value="" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="11" target="25">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="46" value="" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="11" target="26">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="47" value="" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="11" target="27">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="48" value="" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="11" target="28">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="49" value="" style="endArrow=none;html=1;strokeColor=#555555;" edge="1" parent="1" source="11" target="29">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ═══ «include» / «extend» ═══ -->
+        <!-- Регистрация ──include──> Валидация данных -->
+        <mxCell id="50" value="«include»" style="endArrow=open;dashed=1;html=1;endFill=0;endSize=8;fontSize=11;strokeColor=#333333;align=center;" edge="1" parent="1" source="13" target="30">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Авторизация ──include──> Валидация данных -->
+        <mxCell id="51" value="«include»" style="endArrow=open;dashed=1;html=1;endFill=0;endSize=8;fontSize=11;strokeColor=#333333;align=center;" edge="1" parent="1" source="14" target="30">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Создание поста ──include──> Валидация данных -->
+        <mxCell id="52" value="«include»" style="endArrow=open;dashed=1;html=1;endFill=0;endSize=8;fontSize=11;strokeColor=#333333;align=center;" edge="1" parent="1" source="19" target="30">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Загрузка медиа ──include──> Валидация данных -->
+        <mxCell id="53" value="«include»" style="endArrow=open;dashed=1;html=1;endFill=0;endSize=8;fontSize=11;strokeColor=#333333;align=center;" edge="1" parent="1" source="23" target="30">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Создание комментария ──include──> Валидация данных -->
+        <mxCell id="54" value="«include»" style="endArrow=open;dashed=1;html=1;endFill=0;endSize=8;fontSize=11;strokeColor=#333333;align=center;" edge="1" parent="1" source="24" target="30">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Создание поста ──include──> Live-уведомление -->
+        <mxCell id="55" value="«include»" style="endArrow=open;dashed=1;html=1;endFill=0;endSize=8;fontSize=11;strokeColor=#333333;align=center;" edge="1" parent="1" source="19" target="31">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Сообщение об ошибке ──extend──> Валидация данных -->
+        <mxCell id="56" value="«extend»" style="endArrow=open;dashed=1;html=1;endFill=0;endSize=8;fontSize=11;strokeColor=#333333;align=center;" edge="1" parent="1" source="32" target="30">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
