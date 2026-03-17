@@ -1,0 +1,115 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.card {
+  width: 100%;
+  max-width: 380px;
+}
+.logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 32px;
+  color: var(--accent);
+}
+.title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 32px;
+}
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-size: 15px;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.input::placeholder { color: var(--text-tertiary); }
+.input:focus { border-color: var(--accent); }
+.error {
+  color: var(--danger);
+  font-size: 14px;
+  text-align: center;
+}
+.submitBtn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 50px;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  transition: background 0.15s, opacity 0.15s;
+  border: none;
+  cursor: pointer;
+}
+.submitBtn:hover { background: var(--accent-hover); }
+.submitBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.footer {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 24px;
+}
+.footerLink {
+  color: var(--accent);
+}
+.footerLink:hover { text-decoration: underline; }
+
+/* ── Welcome (Home unauthenticated) ── */
+.welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 24px;
+}
+.welcomeTitle {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.welcomeText {
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 360px;
+  margin-bottom: 24px;
+}
+.welcomeActions {
+  display: flex;
+  gap: 12px;
+}
+.btnPrimary {
+  padding: 10px 24px;
+  border-radius: 50px;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+.btnPrimary:hover { background: var(--accent-hover); }
+.btnOutline {
+  padding: 10px 24px;
+  border-radius: 50px;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-weight: 600;
+  transition: background 0.15s;
+}
+.btnOutline:hover { background: var(--bg-hover); }

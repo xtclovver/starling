@@ -1,0 +1,76 @@
+/* ── Avatar ── */
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.avatarFallback {
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: white;
+  flex-shrink: 0;
+}
+.avatarSm { width: 32px; height: 32px; font-size: 12px; }
+.avatarMd { width: 40px; height: 40px; font-size: 14px; }
+.avatarLg { width: 48px; height: 48px; font-size: 16px; }
+.avatarXl { width: 80px; height: 80px; font-size: 20px; }
+
+/* ── Spinner ── */
+.spinner {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
+.spinnerDot {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+/* ── Skeleton ── */
+.skeleton {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.skeletonRow {
+  display: flex;
+  gap: 12px;
+}
+.skeletonCircle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  flex-shrink: 0;
+}
+.skeletonLines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.skeletonLine {
+  height: 14px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+.skeletonLineShort { width: 60%; }
+.skeletonLineMedium { width: 80%; }
+.skeletonActions {
+  display: flex;
+  gap: 48px;
+  margin-top: 12px;
+}
+.skeletonActionBlock {
+  height: 14px;
+  width: 48px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}

@@ -1,0 +1,196 @@
+/* ── Layout Shell ── */
+.shell {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+.shellInner {
+  display: flex;
+  width: 100%;
+  max-width: 1200px;
+}
+.sidebarCol {
+  width: 68px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+}
+.mainCol {
+  flex: 1;
+  min-width: 0;
+  max-width: 600px;
+  border-right: 1px solid var(--border);
+}
+.rightCol {
+  width: 350px;
+  flex-shrink: 0;
+  display: none;
+}
+@media (min-width: 1024px) {
+  .sidebarCol { width: 240px; }
+  .rightCol { display: block; }
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 8px;
+}
+.sidebarLogo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  color: var(--accent);
+  transition: background 0.15s;
+  margin-bottom: 8px;
+}
+.sidebarLogo:hover { background: var(--bg-hover); }
+.sidebarNav { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; }
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 12px;
+  border-radius: 50px;
+  font-size: 18px;
+  color: var(--text-secondary);
+  transition: background 0.15s, color 0.15s;
+}
+.navItem:hover { background: var(--bg-hover); color: var(--text-primary); }
+.navItemActive { font-weight: 700; color: var(--text-primary); }
+.navLabel { display: none; }
+@media (min-width: 1024px) { .navLabel { display: inline; } }
+.sidebarPostBtn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 10px;
+  border-radius: 50px;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  transition: background 0.15s;
+  display: none;
+}
+@media (min-width: 1024px) { .sidebarPostBtn { display: block; } }
+.sidebarPostBtn:hover { background: var(--accent-hover); }
+
+.sidebarProfile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 50px;
+  transition: background 0.15s;
+  cursor: pointer;
+}
+.sidebarProfile:hover { background: var(--bg-hover); }
+.sidebarProfileInfo { display: none; min-width: 0; flex: 1; }
+@media (min-width: 1024px) { .sidebarProfileInfo { display: block; } }
+.sidebarProfileName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebarProfileHandle {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.logoutBtn {
+  display: none;
+  padding: 6px;
+  border-radius: 50%;
+  color: var(--text-tertiary);
+  transition: background 0.15s, color 0.15s;
+}
+@media (min-width: 1024px) { .logoutBtn { display: block; } }
+.logoutBtn:hover { background: var(--danger-muted); color: var(--danger); }
+
+/* ── Right Panel ── */
+.rightPanel {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.infoBox {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+}
+.infoBoxTitle {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+.infoBoxText {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.statusDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+.statusOnline { background: var(--success); }
+.statusOffline { background: var(--text-tertiary); }
+.statusRow {
+  display: flex;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+/* ── Page Header ── */
+.pageHeader {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(10, 10, 12, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+}
+.pageHeaderTitle {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+}
+.pageHeaderSub {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.backBtn {
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.backBtn:hover { background: var(--bg-hover); }

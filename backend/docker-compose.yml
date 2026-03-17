@@ -197,7 +197,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ../frontend
     depends_on:
       - api-gateway
     ports:
