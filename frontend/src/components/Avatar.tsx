@@ -13,7 +13,7 @@ export default function Avatar({ url, name = '?', size = 'md', className = '' }:
   const initial = name.charAt(0).toUpperCase();
   const sc = sizeClass[size];
 
-  if (url) {
+  if (url && /^https?:\/\//i.test(url)) {
     return <img src={url} alt={name} className={`${s.avatar} ${sc} ${className}`} />;
   }
 

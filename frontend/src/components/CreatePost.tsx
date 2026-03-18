@@ -28,7 +28,10 @@ export default function CreatePost() {
     const file = e.target.files?.[0];
     if (!file) return;
     setMediaFile(file);
-    setMediaPreview(URL.createObjectURL(file));
+    const objectUrl = URL.createObjectURL(file);
+    if (objectUrl.startsWith('blob:')) {
+      setMediaPreview(objectUrl);
+    }
   };
 
   const clearMedia = () => {
