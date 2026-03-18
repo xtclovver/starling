@@ -1,0 +1,55 @@
+version: 2
+updates:
+  - package-ecosystem: "gomod"
+    directory: "/backend/api-gateway"
+    schedule:
+      interval: "weekly"
+    groups:
+      go_modules:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "gomod"
+    directory: "/backend/services/user-svc"
+    schedule:
+      interval: "weekly"
+    groups:
+      go_modules:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "gomod"
+    directory: "/backend/services/post-svc"
+    schedule:
+      interval: "weekly"
+    groups:
+      go_modules:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "gomod"
+    directory: "/backend/services/comment-svc"
+    schedule:
+      interval: "weekly"
+    groups:
+      go_modules:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "gomod"
+    directory: "/backend/services/media-svc"
+    schedule:
+      interval: "weekly"
+    groups:
+      go_modules:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+    groups:
+      npm_modules:
+        patterns:
+          - "*"
