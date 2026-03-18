@@ -75,7 +75,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: 22
-          source: "backend/docker-compose.prod.yml,backend/migrations/"
+          source: "docker-compose.prod.yml,backend/migrations/"
           target: ~/microblog
           overwrite: true
 
@@ -89,7 +89,7 @@ jobs:
           script: |
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            cd ~/microblog/backend
+            cd ~/microblog
 
             echo '${{ secrets.ENV_FILE }}' > .env
             echo 'GHCR_REPO=${{ env.REPO }}' >> .env
