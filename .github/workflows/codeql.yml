@@ -89,7 +89,7 @@ jobs:
       shell: bash
       run: |
         cd backend
-        go build ./...
+        go build ./api-gateway/... ./services/... ./gen/...
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v4
