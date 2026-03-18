@@ -1,9 +1,6 @@
 # Environment
 .env
 
-# Generated code
-gen/
-
 # Go
 bin/
 *.exe
