@@ -21,6 +21,24 @@ func toProtoUser(u *model.User) *pb.User {
 	}
 }
 
+func toProtoNotification(n *model.Notification) *pb.Notification {
+	pn := &pb.Notification{
+		Id:        n.ID,
+		UserId:    n.UserID,
+		ActorId:   n.ActorID,
+		Type:      n.Type,
+		Read:      n.Read,
+		CreatedAt: timestamppb.New(n.CreatedAt),
+	}
+	if n.PostID != nil {
+		pn.PostId = *n.PostID
+	}
+	if n.CommentID != nil {
+		pn.CommentId = *n.CommentID
+	}
+	return pn
+}
+
 func isValidEmail(email string) bool {
 	at := strings.IndexByte(email, '@')
 	if at < 1 {

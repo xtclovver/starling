@@ -16,23 +16,32 @@ import (
 
 type Server struct {
 	pb.UnimplementedPostServiceServer
-	postRepo    repository.PostRepository
-	likeRepo    repository.LikeRepository
-	likeCounter *cache.LikeCounter
-	log         *slog.Logger
+	postRepo     repository.PostRepository
+	likeRepo     repository.LikeRepository
+	bookmarkRepo repository.BookmarkRepository
+	hashtagRepo  repository.HashtagRepository
+	repostRepo   repository.RepostRepository
+	likeCounter  *cache.LikeCounter
+	log          *slog.Logger
 }
 
 func NewServer(
 	postRepo repository.PostRepository,
 	likeRepo repository.LikeRepository,
+	bookmarkRepo repository.BookmarkRepository,
+	hashtagRepo repository.HashtagRepository,
+	repostRepo repository.RepostRepository,
 	likeCounter *cache.LikeCounter,
 	log *slog.Logger,
 ) *Server {
 	return &Server{
-		postRepo:    postRepo,
-		likeRepo:    likeRepo,
-		likeCounter: likeCounter,
-		log:         log,
+		postRepo:     postRepo,
+		likeRepo:     likeRepo,
+		bookmarkRepo: bookmarkRepo,
+		hashtagRepo:  hashtagRepo,
+		repostRepo:   repostRepo,
+		likeCounter:  likeCounter,
+		log:          log,
 	}
 }
 
@@ -49,6 +58,12 @@ func (s *Server) CreatePost(ctx context.Context, req *pb.CreatePostRequest) (*pb
 	if err != nil {
 		s.log.Error("create post failed", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	if tags := repository.ExtractHashtags(content); len(tags) > 0 {
+		if err := s.hashtagRepo.UpsertAndLink(ctx, post.ID, tags); err != nil {
+			s.log.Error("link hashtags failed", "error", err)
+		}
 	}
 
 	return &pb.CreatePostResponse{Post: toProtoPost(post)}, nil
@@ -197,4 +212,223 @@ func (s *Server) GetPostsByUser(ctx context.Context, req *pb.GetPostsByUserReque
 			HasMore:    hasMore,
 		},
 	}, nil
+}
+
+func (s *Server) GetGlobalFeed(ctx context.Context, req *pb.GetGlobalFeedRequest) (*pb.GetGlobalFeedResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("GetGlobalFeed", "duration", time.Since(start)) }()
+
+	var cursor string
+	var limit int32 = 20
+	if req.GetPagination() != nil {
+		cursor = req.GetPagination().GetCursor()
+		if req.GetPagination().GetLimit() > 0 {
+			limit = req.GetPagination().GetLimit()
+		}
+	}
+
+	posts, nextCursor, hasMore, err := s.postRepo.GetGlobalFeed(ctx, cursor, int(limit))
+	if err != nil {
+		s.log.Error("get global feed failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	pbPosts := make([]*pb.Post, len(posts))
+	for i, p := range posts {
+		pbPosts[i] = toProtoPost(&p)
+	}
+
+	return &pb.GetGlobalFeedResponse{
+		Posts: pbPosts,
+		Pagination: &commonpb.PaginationResponse{
+			NextCursor: nextCursor,
+			HasMore:    hasMore,
+		},
+	}, nil
+}
+
+func (s *Server) BookmarkPost(ctx context.Context, req *pb.BookmarkPostRequest) (*pb.BookmarkPostResponse, error) {
+	if err := s.bookmarkRepo.Bookmark(ctx, req.GetPostId(), req.GetUserId()); err != nil {
+		if errors.Is(err, repository.ErrAlreadyBookmarked) {
+			return &pb.BookmarkPostResponse{}, nil
+		}
+		s.log.Error("bookmark post failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	return &pb.BookmarkPostResponse{}, nil
+}
+
+func (s *Server) UnbookmarkPost(ctx context.Context, req *pb.UnbookmarkPostRequest) (*pb.UnbookmarkPostResponse, error) {
+	if err := s.bookmarkRepo.Unbookmark(ctx, req.GetPostId(), req.GetUserId()); err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return &pb.UnbookmarkPostResponse{}, nil
+		}
+		s.log.Error("unbookmark post failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	return &pb.UnbookmarkPostResponse{}, nil
+}
+
+func (s *Server) GetBookmarks(ctx context.Context, req *pb.GetBookmarksRequest) (*pb.GetBookmarksResponse, error) {
+	var cursor string
+	var limit int32 = 20
+	if req.GetPagination() != nil {
+		cursor = req.GetPagination().GetCursor()
+		if req.GetPagination().GetLimit() > 0 {
+			limit = req.GetPagination().GetLimit()
+		}
+	}
+
+	posts, nextCursor, hasMore, err := s.bookmarkRepo.GetByUser(ctx, req.GetUserId(), cursor, int(limit))
+	if err != nil {
+		s.log.Error("get bookmarks failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	pbPosts := make([]*pb.Post, len(posts))
+	for i, p := range posts {
+		pbPosts[i] = toProtoPost(&p)
+	}
+
+	return &pb.GetBookmarksResponse{
+		Posts: pbPosts,
+		Pagination: &commonpb.PaginationResponse{
+			NextCursor: nextCursor,
+			HasMore:    hasMore,
+		},
+	}, nil
+}
+
+func (s *Server) UpdatePost(ctx context.Context, req *pb.UpdatePostRequest) (*pb.UpdatePostResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("UpdatePost", "duration", time.Since(start)) }()
+
+	content := req.GetContent()
+	if content == "" || len(content) > 280 {
+		return nil, status.Error(codes.InvalidArgument, "content must be 1-280 characters")
+	}
+
+	post, err := s.postRepo.Update(ctx, req.GetId(), req.GetUserId(), content)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, status.Error(codes.NotFound, "post not found")
+		}
+		if errors.Is(err, repository.ErrForbidden) {
+			return nil, status.Error(codes.PermissionDenied, "not post owner")
+		}
+		s.log.Error("update post failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	// Re-link hashtags
+	_ = s.hashtagRepo.UnlinkAll(ctx, post.ID)
+	if tags := repository.ExtractHashtags(content); len(tags) > 0 {
+		if err := s.hashtagRepo.UpsertAndLink(ctx, post.ID, tags); err != nil {
+			s.log.Error("re-link hashtags failed", "error", err)
+		}
+	}
+
+	return &pb.UpdatePostResponse{Post: toProtoPost(post)}, nil
+}
+
+func (s *Server) GetPostsByHashtag(ctx context.Context, req *pb.GetPostsByHashtagRequest) (*pb.GetPostsByHashtagResponse, error) {
+	var cursor string
+	var limit int32 = 20
+	if req.GetPagination() != nil {
+		cursor = req.GetPagination().GetCursor()
+		if req.GetPagination().GetLimit() > 0 {
+			limit = req.GetPagination().GetLimit()
+		}
+	}
+
+	posts, nextCursor, hasMore, err := s.hashtagRepo.GetPostsByHashtag(ctx, req.GetTag(), cursor, int(limit))
+	if err != nil {
+		s.log.Error("get posts by hashtag failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	pbPosts := make([]*pb.Post, len(posts))
+	for i, p := range posts {
+		pbPosts[i] = toProtoPost(&p)
+	}
+
+	return &pb.GetPostsByHashtagResponse{
+		Posts: pbPosts,
+		Pagination: &commonpb.PaginationResponse{
+			NextCursor: nextCursor,
+			HasMore:    hasMore,
+		},
+	}, nil
+}
+
+func (s *Server) GetTrendingHashtags(ctx context.Context, req *pb.GetTrendingHashtagsRequest) (*pb.GetTrendingHashtagsResponse, error) {
+	limit := int(req.GetLimit())
+	if limit <= 0 {
+		limit = 10
+	}
+
+	trending, err := s.hashtagRepo.GetTrending(ctx, limit)
+	if err != nil {
+		s.log.Error("get trending hashtags failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	pbTrending := make([]*pb.TrendingHashtag, len(trending))
+	for i, t := range trending {
+		pbTrending[i] = &pb.TrendingHashtag{Tag: t.Tag, PostCount: t.PostCount}
+	}
+
+	return &pb.GetTrendingHashtagsResponse{Hashtags: pbTrending}, nil
+}
+
+func (s *Server) RepostPost(ctx context.Context, req *pb.RepostPostRequest) (*pb.RepostPostResponse, error) {
+	if err := s.repostRepo.Repost(ctx, req.GetPostId(), req.GetUserId()); err != nil {
+		if errors.Is(err, repository.ErrAlreadyReposted) {
+			return &pb.RepostPostResponse{}, nil
+		}
+		s.log.Error("repost failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	_ = s.postRepo.IncrementReposts(ctx, req.GetPostId(), 1)
+	return &pb.RepostPostResponse{}, nil
+}
+
+func (s *Server) UnrepostPost(ctx context.Context, req *pb.UnrepostPostRequest) (*pb.UnrepostPostResponse, error) {
+	if err := s.repostRepo.Unrepost(ctx, req.GetPostId(), req.GetUserId()); err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return &pb.UnrepostPostResponse{}, nil
+		}
+		s.log.Error("unrepost failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	_ = s.postRepo.IncrementReposts(ctx, req.GetPostId(), -1)
+	return &pb.UnrepostPostResponse{}, nil
+}
+
+func (s *Server) QuotePost(ctx context.Context, req *pb.QuotePostRequest) (*pb.QuotePostResponse, error) {
+	content := req.GetContent()
+	if content == "" || len(content) > 280 {
+		return nil, status.Error(codes.InvalidArgument, "content must be 1-280 characters")
+	}
+
+	_, err := s.repostRepo.QuotePost(ctx, req.GetPostId(), req.GetUserId(), content)
+	if err != nil {
+		s.log.Error("quote post failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	// Create a new post for the quote
+	post, err := s.postRepo.Create(ctx, req.GetUserId(), content, "")
+	if err != nil {
+		s.log.Error("create quote post failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	_ = s.postRepo.IncrementReposts(ctx, req.GetPostId(), 1)
+
+	if tags := repository.ExtractHashtags(content); len(tags) > 0 {
+		_ = s.hashtagRepo.UpsertAndLink(ctx, post.ID, tags)
+	}
+
+	return &pb.QuotePostResponse{Post: toProtoPost(post)}, nil
 }

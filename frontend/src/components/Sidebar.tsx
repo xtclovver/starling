@@ -1,46 +1,65 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, User, Settings, LogOut, LogIn, UserPlus, Feather } from 'lucide-react';
+import { Home, User, Settings, LogOut, Feather, Bookmark, Bell } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
+import { useUIStore } from '@/store/ui';
+import { useNotificationStore } from '@/store/notifications';
 import Avatar from './Avatar';
 import s from '@/styles/layout.module.css';
 
 const NAV_AUTH = [
   { to: '/', icon: Home, label: 'Главная' },
+  { to: '/notifications', icon: Bell, label: 'Уведомления', badge: true },
+  { to: '/bookmarks', icon: Bookmark, label: 'Закладки' },
   { to: '/profile/:self', icon: User, label: 'Профиль' },
   { to: '/settings', icon: Settings, label: 'Настройки' },
-];
-
-const NAV_GUEST = [
-  { to: '/login', icon: LogIn, label: 'Войти' },
-  { to: '/register', icon: UserPlus, label: 'Регистрация' },
 ];
 
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuthStore();
-  const items = isAuthenticated ? NAV_AUTH : NAV_GUEST;
+  const openAuthModal = useUIStore((st) => st.openAuthModal);
+  const unreadCount = useNotificationStore((st) => st.unreadCount);
 
-  const handleLogout = () => { logout(); navigate('/login'); };
+  const handleLogout = () => { logout(); navigate('/'); };
 
   return (
     <aside className={s.sidebar}>
       <div>
         <Link to="/" className={s.sidebarLogo}><Feather size={28} /></Link>
         <nav className={s.sidebarNav}>
-          {items.map(({ to, icon: Icon, label }) => {
-            const href = to === '/profile/:self' ? `/profile/${user?.id}` : to;
-            const active = location.pathname === href;
-            return (
-              <Link key={to} to={href} className={`${s.navItem} ${active ? s.navItemActive : ''}`}>
-                <Icon size={24} strokeWidth={active ? 2.5 : 1.8} />
-                <span className={s.navLabel}>{label}</span>
+          {isAuthenticated ? (
+            NAV_AUTH.map(({ to, icon: Icon, label, badge }) => {
+              const href = to === '/profile/:self' ? `/profile/${user?.id}` : to;
+              const active = location.pathname === href;
+              return (
+                <Link key={to} to={href} className={`${s.navItem} ${active ? s.navItemActive : ''}`}>
+                  <span className={s.navIconWrap}>
+                    <Icon size={24} strokeWidth={active ? 2.5 : 1.8} />
+                    {badge && unreadCount > 0 && <span className={s.navBadge}>{unreadCount > 9 ? '9+' : unreadCount}</span>}
+                  </span>
+                  <span className={s.navLabel}>{label}</span>
+                </Link>
+              );
+            })
+          ) : (
+            <>
+              <Link to="/" className={`${s.navItem} ${location.pathname === '/' ? s.navItemActive : ''}`}>
+                <Home size={24} strokeWidth={location.pathname === '/' ? 2.5 : 1.8} />
+                <span className={s.navLabel}>Главная</span>
               </Link>
-            );
-          })}
+              <button onClick={() => openAuthModal('login')} className={s.navItem}>
+                <User size={24} strokeWidth={1.8} />
+                <span className={s.navLabel}>Войти</span>
+              </button>
+            </>
+          )}
         </nav>
         {isAuthenticated && (
           <button onClick={() => navigate('/')} className={s.sidebarPostBtn}>Опубликовать</button>
+        )}
+        {!isAuthenticated && (
+          <button onClick={() => openAuthModal('register')} className={s.sidebarPostBtn}>Регистрация</button>
         )}
       </div>
 

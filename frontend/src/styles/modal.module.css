@@ -1,0 +1,81 @@
+/* ── Modal ── */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px 28px;
+}
+.closeBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  transition: background 0.15s;
+}
+.closeBtn:hover { background: var(--bg-hover); }
+.switchBtn {
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+}
+.switchBtn:hover { text-decoration: underline; }
+
+/* ── Edit Post Modal ── */
+.editTextarea {
+  width: 100%;
+  min-height: 100px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 15px;
+  color: var(--text-primary);
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+}
+.editTextarea:focus { border-color: var(--accent); }
+.editFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+.editCharCount {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.editSubmitBtn {
+  padding: 8px 20px;
+  border-radius: 50px;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background 0.15s, opacity 0.15s;
+}
+.editSubmitBtn:hover { background: var(--accent-hover); }
+.editSubmitBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.editTitle {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}

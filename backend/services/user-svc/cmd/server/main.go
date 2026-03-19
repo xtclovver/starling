@@ -57,9 +57,10 @@ func main() {
 	jwtManager := auth.NewJWTManager(cfg.JWTSecret, cfg.JWTAccessTTL, cfg.JWTRefreshTTL, rdb)
 	userRepo := repository.NewUserRepository(pool)
 	followRepo := repository.NewFollowRepository(pool)
+	notifRepo := repository.NewNotificationRepository(pool)
 
 	srv := grpc.NewServer()
-	userServer := grpcserver.NewServer(userRepo, followRepo, jwtManager, log)
+	userServer := grpcserver.NewServer(userRepo, followRepo, notifRepo, jwtManager, log)
 	pb.RegisterUserServiceServer(srv, userServer)
 
 	healthSrv := health.NewServer()

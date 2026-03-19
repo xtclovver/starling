@@ -21,3 +21,14 @@ type Follow struct {
 	FollowingID string
 	CreatedAt   time.Time
 }
+
+type Notification struct {
+	ID        string
+	UserID    string
+	ActorID   string
+	Type      string
+	PostID    *string
+	CommentID *string
+	Read      bool
+	CreatedAt time.Time
+}

@@ -67,6 +67,22 @@
 .navItemActive { font-weight: 700; color: var(--text-primary); }
 .navLabel { display: none; }
 @media (min-width: 1024px) { .navLabel { display: inline; } }
+.navIconWrap { position: relative; display: flex; align-items: center; }
+.navBadge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
 .sidebarPostBtn {
   width: 100%;
   margin-top: 16px;
@@ -153,6 +169,67 @@
   border-radius: 50%;
   margin-right: 8px;
 }
+.trendItem {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-light);
+  transition: color 0.15s;
+}
+.trendItem:last-child { border-bottom: none; }
+.trendItem:hover { color: var(--accent); }
+.trendTag { font-weight: 600; font-size: 14px; color: var(--text-primary); }
+.trendItem:hover .trendTag { color: var(--accent); }
+.trendCount { font-size: 12px; color: var(--text-tertiary); }
+
+.recommendItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+.recommendUser {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+.recommendInfo { min-width: 0; }
+.recommendName {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.recommendHandle {
+  display: block;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.followBtn {
+  padding: 4px 14px;
+  border-radius: 50px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+.followBtn:hover { opacity: 0.85; }
+.followedLabel {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
 .statusOnline { background: var(--success); }
 .statusOffline { background: var(--text-tertiary); }
 .statusRow {

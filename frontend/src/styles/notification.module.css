@@ -1,0 +1,51 @@
+.item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+  cursor: pointer;
+}
+.item:hover { background: var(--bg-hover); }
+.itemUnread { background: var(--bg-secondary); }
+.iconWrap {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.body { flex: 1; min-width: 0; }
+.actorRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.actorName {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.actorName:hover { text-decoration: underline; }
+.text {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+.time {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.markAllBtn {
+  margin-left: auto;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: 13px;
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--accent);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.markAllBtn:hover { background: var(--accent-muted); }

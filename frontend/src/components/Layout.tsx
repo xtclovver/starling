@@ -7,6 +7,7 @@ import { getUser } from '@/api/users';
 import { WSClient } from '@/lib/websocket';
 import Sidebar from './Sidebar';
 import RightPanel from './RightPanel';
+import AuthModal from './AuthModal';
 import s from '@/styles/layout.module.css';
 import type { Post } from '@/types';
 
@@ -50,6 +51,7 @@ export default function Layout() {
         <main className={s.mainCol}><Outlet /></main>
         <div className={s.rightCol}><RightPanel /></div>
       </div>
+      <AuthModal />
     </div>
   );
 }

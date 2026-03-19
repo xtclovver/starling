@@ -7,6 +7,9 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import PostPage from './pages/PostPage';
 import Settings from './pages/Settings';
+import Bookmarks from './pages/Bookmarks';
+import HashtagPage from './pages/HashtagPage';
+import Notifications from './pages/Notifications';
 
 function App() {
   return (
@@ -18,6 +21,9 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/profile/:id" element={<Profile />} />
           <Route path="/post/:id" element={<PostPage />} />
+          <Route path="/hashtag/:tag" element={<HashtagPage />} />
+          <Route path="/bookmarks" element={<ProtectedRoute><Bookmarks /></ProtectedRoute>} />
+          <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         </Route>
       </Routes>

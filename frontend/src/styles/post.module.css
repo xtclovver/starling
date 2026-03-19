@@ -67,6 +67,11 @@
 .actionBtnLike:hover { color: var(--like); background: var(--like-muted); }
 .actionBtnLiked { color: var(--like); }
 .actionBtnDanger:hover { color: var(--danger); background: var(--danger-muted); }
+.actionBtnReposted { color: var(--success); }
+.actionBtnBookmarked { color: var(--accent); }
+.hashtag { color: var(--accent); }
+.hashtag:hover { text-decoration: underline; }
+.editedBadge { font-size: 12px; color: var(--text-tertiary); font-style: italic; }
 .deleteBtn {
   margin-left: auto;
   padding: 4px;

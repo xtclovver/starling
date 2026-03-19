@@ -17,10 +17,15 @@ export interface Post {
   media_url: string;
   likes_count: number;
   comments_count: number;
+  reposts_count: number;
   created_at: string;
   updated_at: string;
+  edited_at?: string;
   author?: User;
   liked?: boolean;
+  bookmarked?: boolean;
+  reposted?: boolean;
+  hashtags?: string[];
 }
 
 export interface Comment {
@@ -52,4 +57,21 @@ export interface AuthTokens {
   user: User;
   access_token: string;
   refresh_token: string;
+}
+
+export interface TrendingHashtag {
+  tag: string;
+  post_count: number;
+}
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  actor_id: string;
+  type: string;
+  post_id?: string;
+  comment_id?: string;
+  read: boolean;
+  created_at: string;
+  actor?: User;
 }

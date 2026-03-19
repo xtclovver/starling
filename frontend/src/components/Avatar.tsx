@@ -3,11 +3,11 @@ import s from '@/styles/components.module.css';
 interface AvatarProps {
   url?: string;
   name?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
 
-const sizeClass = { sm: s.avatarSm, md: s.avatarMd, lg: s.avatarLg, xl: s.avatarXl };
+const sizeClass = { xs: s.avatarXs, sm: s.avatarSm, md: s.avatarMd, lg: s.avatarLg, xl: s.avatarXl };
 
 export default function Avatar({ url, name = '?', size = 'md', className = '' }: AvatarProps) {
   const initial = name.charAt(0).toUpperCase();

@@ -83,15 +83,34 @@ func main() {
 	mux.Handle("POST /api/users/{id}/follow", auth.Required(http.HandlerFunc(userH.Follow)))
 	mux.Handle("DELETE /api/users/{id}/follow", auth.Required(http.HandlerFunc(userH.Unfollow)))
 
+	// Recommended users - auth optional
+	mux.Handle("GET /api/users/recommended", auth.Optional(http.HandlerFunc(userH.GetRecommendedUsers)))
+
+	// Notification routes - auth required
+	mux.Handle("GET /api/notifications", auth.Required(http.HandlerFunc(userH.GetNotifications)))
+	mux.Handle("GET /api/notifications/unread", auth.Required(http.HandlerFunc(userH.GetUnreadCount)))
+	mux.Handle("POST /api/notifications/{id}/read", auth.Required(http.HandlerFunc(userH.MarkRead)))
+	mux.Handle("POST /api/notifications/read-all", auth.Required(http.HandlerFunc(userH.MarkAllRead)))
+
 	// Post routes - public
 	mux.HandleFunc("GET /api/posts/{id}", postH.GetPost)
+	mux.HandleFunc("GET /api/feed/global", postH.GetGlobalFeed)
+	mux.HandleFunc("GET /api/hashtags/{tag}/posts", postH.GetPostsByHashtag)
+	mux.HandleFunc("GET /api/trending/hashtags", postH.GetTrendingHashtags)
 
 	// Post routes - auth required
 	mux.Handle("POST /api/posts", auth.Required(http.HandlerFunc(postH.CreatePost)))
 	mux.Handle("DELETE /api/posts/{id}", auth.Required(http.HandlerFunc(postH.DeletePost)))
+	mux.Handle("PUT /api/posts/{id}", auth.Required(http.HandlerFunc(postH.UpdatePost)))
 	mux.Handle("GET /api/feed", auth.Required(http.HandlerFunc(postH.GetFeed)))
 	mux.Handle("POST /api/posts/{id}/like", auth.Required(http.HandlerFunc(postH.LikePost)))
 	mux.Handle("DELETE /api/posts/{id}/like", auth.Required(http.HandlerFunc(postH.UnlikePost)))
+	mux.Handle("POST /api/posts/{id}/bookmark", auth.Required(http.HandlerFunc(postH.BookmarkPost)))
+	mux.Handle("DELETE /api/posts/{id}/bookmark", auth.Required(http.HandlerFunc(postH.UnbookmarkPost)))
+	mux.Handle("GET /api/bookmarks", auth.Required(http.HandlerFunc(postH.GetBookmarks)))
+	mux.Handle("POST /api/posts/{id}/repost", auth.Required(http.HandlerFunc(postH.RepostPost)))
+	mux.Handle("DELETE /api/posts/{id}/repost", auth.Required(http.HandlerFunc(postH.UnrepostPost)))
+	mux.Handle("POST /api/posts/{id}/quote", auth.Required(http.HandlerFunc(postH.QuotePost)))
 
 	// Comment routes
 	mux.HandleFunc("GET /api/posts/{id}/comments", commentH.GetCommentTree)

@@ -19,6 +19,7 @@ type Server struct {
 	pb.UnimplementedUserServiceServer
 	userRepo   repository.UserRepository
 	followRepo repository.FollowRepository
+	notifRepo  repository.NotificationRepository
 	jwt        *auth.JWTManager
 	log        *slog.Logger
 }
@@ -26,12 +27,14 @@ type Server struct {
 func NewServer(
 	userRepo repository.UserRepository,
 	followRepo repository.FollowRepository,
+	notifRepo repository.NotificationRepository,
 	jwt *auth.JWTManager,
 	log *slog.Logger,
 ) *Server {
 	return &Server{
 		userRepo:   userRepo,
 		followRepo: followRepo,
+		notifRepo:  notifRepo,
 		jwt:        jwt,
 		log:        log,
 	}
@@ -363,4 +366,123 @@ func (s *Server) GetFollowing(ctx context.Context, req *pb.GetFollowingRequest) 
 			HasMore:    nextCursor != "",
 		},
 	}, nil
+}
+
+func (s *Server) GetRecommendedUsers(ctx context.Context, req *pb.GetRecommendedUsersRequest) (*pb.GetRecommendedUsersResponse, error) {
+	users, err := s.userRepo.GetRecommended(ctx, req.GetUserId(), int(req.GetLimit()))
+	if err != nil {
+		s.log.Error("get recommended users failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	pbUsers := make([]*pb.User, len(users))
+	for i, u := range users {
+		pbUsers[i] = toProtoUser(&u)
+	}
+
+	return &pb.GetRecommendedUsersResponse{Users: pbUsers}, nil
+}
+
+func (s *Server) CreateNotification(ctx context.Context, req *pb.CreateNotificationRequest) (*pb.CreateNotificationResponse, error) {
+	// Don't notify about own actions
+	if req.GetActorId() == req.GetUserId() {
+		return &pb.CreateNotificationResponse{}, nil
+	}
+
+	var postID, commentID *string
+	if req.GetPostId() != "" {
+		pid := req.GetPostId()
+		postID = &pid
+	}
+	if req.GetCommentId() != "" {
+		cid := req.GetCommentId()
+		commentID = &cid
+	}
+
+	n, err := s.notifRepo.Create(ctx, req.GetUserId(), req.GetActorId(), req.GetType(), postID, commentID)
+	if err != nil {
+		s.log.Error("create notification failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &pb.CreateNotificationResponse{
+		Notification: toProtoNotification(n),
+	}, nil
+}
+
+func (s *Server) GetNotifications(ctx context.Context, req *pb.GetNotificationsRequest) (*pb.GetNotificationsResponse, error) {
+	var cursor string
+	var limit int32 = 20
+	if req.GetPagination() != nil {
+		cursor = req.GetPagination().GetCursor()
+		if req.GetPagination().GetLimit() > 0 {
+			limit = req.GetPagination().GetLimit()
+		}
+	}
+
+	notifications, nextCursor, hasMore, err := s.notifRepo.GetByUser(ctx, req.GetUserId(), cursor, int(limit))
+	if err != nil {
+		s.log.Error("get notifications failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	// Enrich with actor info
+	actorIDs := make(map[string]struct{})
+	for _, n := range notifications {
+		actorIDs[n.ActorID] = struct{}{}
+	}
+	ids := make([]string, 0, len(actorIDs))
+	for id := range actorIDs {
+		ids = append(ids, id)
+	}
+
+	actorMap := make(map[string]*pb.User)
+	if len(ids) > 0 {
+		actors, err := s.userRepo.GetByIDs(ctx, ids)
+		if err == nil {
+			for _, a := range actors {
+				actorMap[a.ID] = toProtoUser(&a)
+			}
+		}
+	}
+
+	pbNotifications := make([]*pb.Notification, len(notifications))
+	for i, n := range notifications {
+		pn := toProtoNotification(&n)
+		pn.Actor = actorMap[n.ActorID]
+		pbNotifications[i] = pn
+	}
+
+	return &pb.GetNotificationsResponse{
+		Notifications: pbNotifications,
+		Pagination: &commonpb.PaginationResponse{
+			NextCursor: nextCursor,
+			HasMore:    hasMore,
+		},
+	}, nil
+}
+
+func (s *Server) GetUnreadCount(ctx context.Context, req *pb.GetUnreadCountRequest) (*pb.GetUnreadCountResponse, error) {
+	count, err := s.notifRepo.GetUnreadCount(ctx, req.GetUserId())
+	if err != nil {
+		s.log.Error("get unread count failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	return &pb.GetUnreadCountResponse{Count: count}, nil
+}
+
+func (s *Server) MarkRead(ctx context.Context, req *pb.MarkReadRequest) (*pb.MarkReadResponse, error) {
+	if err := s.notifRepo.MarkRead(ctx, req.GetId(), req.GetUserId()); err != nil {
+		s.log.Error("mark read failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	return &pb.MarkReadResponse{}, nil
+}
+
+func (s *Server) MarkAllRead(ctx context.Context, req *pb.MarkAllReadRequest) (*pb.MarkAllReadResponse, error) {
+	if err := s.notifRepo.MarkAllRead(ctx, req.GetUserId()); err != nil {
+		s.log.Error("mark all read failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	return &pb.MarkAllReadResponse{}, nil
 }

@@ -32,3 +32,8 @@ export async function getFollowing(userId: string, cursor = '') {
   const { data } = await client.get<ApiResponse<{ users: User[]; pagination: PaginationResponse }>>(`/users/${userId}/following${params}`);
   return data.data;
 }
+
+export async function getRecommendedUsers() {
+  const { data } = await client.get<ApiResponse<{ users: User[] }>>('/users/recommended');
+  return data.data.users || [];
+}

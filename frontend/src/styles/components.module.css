@@ -13,6 +13,7 @@
   color: white;
   flex-shrink: 0;
 }
+.avatarXs { width: 24px; height: 24px; font-size: 10px; }
 .avatarSm { width: 32px; height: 32px; font-size: 12px; }
 .avatarMd { width: 40px; height: 40px; font-size: 14px; }
 .avatarLg { width: 48px; height: 48px; font-size: 16px; }

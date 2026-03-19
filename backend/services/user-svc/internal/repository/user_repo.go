@@ -26,6 +26,7 @@ type UserRepository interface {
 	SoftDelete(ctx context.Context, id string) error
 	Search(ctx context.Context, query, cursor string, limit int) ([]model.User, string, error)
 	GetByIDs(ctx context.Context, ids []string) ([]model.User, error)
+	GetRecommended(ctx context.Context, userID string, limit int) ([]model.User, error)
 }
 
 type userRepo struct {
@@ -190,6 +191,51 @@ func (r *userRepo) GetByIDs(ctx context.Context, ids []string) ([]model.User, er
 	defer rows.Close()
 
 	users := make([]model.User, 0, len(ids))
+	for rows.Next() {
+		var u model.User
+		if err := rows.Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.DisplayName, &u.Bio, &u.AvatarURL, &u.CreatedAt, &u.UpdatedAt); err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+	return users, nil
+}
+
+func (r *userRepo) GetRecommended(ctx context.Context, userID string, limit int) ([]model.User, error) {
+	if limit <= 0 || limit > 20 {
+		limit = 5
+	}
+
+	var q string
+	var args []any
+
+	if userID == "" {
+		// For guests: random active users
+		q = `SELECT id, username, email, password_hash, display_name, bio, avatar_url, created_at, updated_at
+			 FROM users
+			 WHERE deleted_at IS NULL
+			 ORDER BY RANDOM()
+			 LIMIT $1`
+		args = []any{limit}
+	} else {
+		// For auth users: exclude self and already-following
+		q = `SELECT id, username, email, password_hash, display_name, bio, avatar_url, created_at, updated_at
+			 FROM users
+			 WHERE deleted_at IS NULL
+			   AND id != $1
+			   AND id NOT IN (SELECT following_id FROM follows WHERE follower_id = $1)
+			 ORDER BY RANDOM()
+			 LIMIT $2`
+		args = []any{userID, limit}
+	}
+
+	rows, err := r.pool.Query(ctx, q, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []model.User
 	for rows.Next() {
 		var u model.User
 		if err := rows.Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.DisplayName, &u.Bio, &u.AvatarURL, &u.CreatedAt, &u.UpdatedAt); err != nil {

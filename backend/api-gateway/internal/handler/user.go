@@ -182,3 +182,72 @@ func (h *UserHandler) GetFollowing(w http.ResponseWriter, r *http.Request) {
 		"pagination": resp.GetPagination(),
 	})
 }
+
+func (h *UserHandler) GetRecommendedUsers(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(r)
+
+	resp, err := h.user.GetRecommendedUsers(r.Context(), &userpb.GetRecommendedUsersRequest{
+		UserId: userID,
+		Limit:  5,
+	})
+	if err != nil {
+		handleGRPCError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{"users": resp.GetUsers()})
+}
+
+func (h *UserHandler) GetNotifications(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(r)
+	cursor := r.URL.Query().Get("cursor")
+
+	resp, err := h.user.GetNotifications(r.Context(), &userpb.GetNotificationsRequest{
+		UserId:     userID,
+		Pagination: &commonpb.PaginationRequest{Cursor: cursor, Limit: 20},
+	})
+	if err != nil {
+		handleGRPCError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"notifications": resp.GetNotifications(),
+		"pagination":    resp.GetPagination(),
+	})
+}
+
+func (h *UserHandler) GetUnreadCount(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(r)
+
+	resp, err := h.user.GetUnreadCount(r.Context(), &userpb.GetUnreadCountRequest{UserId: userID})
+	if err != nil {
+		handleGRPCError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{"count": resp.GetCount()})
+}
+
+func (h *UserHandler) MarkRead(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	userID := getUserID(r)
+
+	_, err := h.user.MarkRead(r.Context(), &userpb.MarkReadRequest{Id: id, UserId: userID})
+	if err != nil {
+		handleGRPCError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, nil)
+}
+
+func (h *UserHandler) MarkAllRead(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(r)
+
+	_, err := h.user.MarkAllRead(r.Context(), &userpb.MarkAllReadRequest{UserId: userID})
+	if err != nil {
+		handleGRPCError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, nil)
+}

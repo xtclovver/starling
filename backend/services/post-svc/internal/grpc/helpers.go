@@ -19,14 +19,19 @@ func safeInt32(v int64) int32 {
 }
 
 func toProtoPost(p *model.Post) *pb.Post {
-	return &pb.Post{
+	post := &pb.Post{
 		Id:            p.ID,
 		UserId:        p.UserID,
 		Content:       p.Content,
 		MediaUrl:      p.MediaURL,
 		LikesCount:    safeInt32(p.LikesCount),
 		CommentsCount: safeInt32(p.CommentsCount),
+		RepostsCount:  safeInt32(p.RepostsCount),
 		CreatedAt:     timestamppb.New(p.CreatedAt),
 		UpdatedAt:     timestamppb.New(p.UpdatedAt),
 	}
+	if p.EditedAt != nil {
+		post.EditedAt = timestamppb.New(*p.EditedAt)
+	}
+	return post
 }

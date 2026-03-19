@@ -1,0 +1,2 @@
+ALTER TABLE posts DROP COLUMN IF EXISTS reposts_count;
+DROP TABLE IF EXISTS reposts;
