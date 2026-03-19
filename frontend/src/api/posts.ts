@@ -44,8 +44,8 @@ export async function getBookmarks(cursor = '') {
 }
 
 export async function updatePost(id: string, content: string) {
-  const { data } = await client.put<ApiResponse<Post>>(`/posts/${id}`, { content });
-  return data.data;
+  const { data } = await client.put<ApiResponse<{ post: Post }>>(`/posts/${id}`, { content });
+  return data.data.post;
 }
 
 export async function getPostsByHashtag(tag: string, cursor = '') {

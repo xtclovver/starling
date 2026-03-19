@@ -52,5 +52,11 @@ func (h *MediaHandler) Upload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusCreated, resp.GetMedia())
+	m := resp.GetMedia()
+	writeJSON(w, http.StatusCreated, map[string]any{
+		"media": map[string]any{
+			"id":  m.GetId(),
+			"url": m.GetUrl(),
+		},
+	})
 }

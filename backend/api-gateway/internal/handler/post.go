@@ -41,7 +41,9 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusCreated, resp.GetPost())
+	post := postToMap(resp.GetPost())
+	h.enrichSinglePost(r, post)
+	writeJSON(w, http.StatusCreated, map[string]any{"post": post})
 }
 
 func (h *PostHandler) GetPost(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +53,9 @@ func (h *PostHandler) GetPost(w http.ResponseWriter, r *http.Request) {
 		handleGRPCError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, resp.GetPost())
+	post := postToMap(resp.GetPost())
+	h.enrichSinglePost(r, post)
+	writeJSON(w, http.StatusOK, map[string]any{"post": post})
 }
 
 func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
@@ -83,15 +87,7 @@ func (h *PostHandler) GetFeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	posts := resp.GetPosts()
-	if len(posts) > 0 {
-		h.enrichPosts(r, w, posts, resp.GetPagination())
-		return
-	}
-
-	writeJSON(w, http.StatusOK, map[string]any{
-		"posts":      posts,
-		"pagination": resp.GetPagination(),
-	})
+	h.enrichPosts(r, w, posts, resp.GetPagination())
 }
 
 func (h *PostHandler) LikePost(w http.ResponseWriter, r *http.Request) {
@@ -136,15 +132,7 @@ func (h *PostHandler) GetGlobalFeed(w http.ResponseWriter, r *http.Request) {
 	}
 
 	posts := resp.GetPosts()
-	if len(posts) > 0 {
-		h.enrichPosts(r, w, posts, resp.GetPagination())
-		return
-	}
-
-	writeJSON(w, http.StatusOK, map[string]any{
-		"posts":      posts,
-		"pagination": resp.GetPagination(),
-	})
+	h.enrichPosts(r, w, posts, resp.GetPagination())
 }
 
 func (h *PostHandler) BookmarkPost(w http.ResponseWriter, r *http.Request) {
@@ -185,15 +173,7 @@ func (h *PostHandler) GetBookmarks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	posts := resp.GetPosts()
-	if len(posts) > 0 {
-		h.enrichPosts(r, w, posts, resp.GetPagination())
-		return
-	}
-
-	writeJSON(w, http.StatusOK, map[string]any{
-		"posts":      posts,
-		"pagination": resp.GetPagination(),
-	})
+	h.enrichPosts(r, w, posts, resp.GetPagination())
 }
 
 func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
@@ -217,7 +197,9 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		handleGRPCError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, resp.GetPost())
+	post := postToMap(resp.GetPost())
+	h.enrichSinglePost(r, post)
+	writeJSON(w, http.StatusOK, map[string]any{"post": post})
 }
 
 func (h *PostHandler) GetPostsByHashtag(w http.ResponseWriter, r *http.Request) {
@@ -234,15 +216,7 @@ func (h *PostHandler) GetPostsByHashtag(w http.ResponseWriter, r *http.Request) 
 	}
 
 	posts := resp.GetPosts()
-	if len(posts) > 0 {
-		h.enrichPosts(r, w, posts, resp.GetPagination())
-		return
-	}
-
-	writeJSON(w, http.StatusOK, map[string]any{
-		"posts":      posts,
-		"pagination": resp.GetPagination(),
-	})
+	h.enrichPosts(r, w, posts, resp.GetPagination())
 }
 
 func (h *PostHandler) GetTrendingHashtags(w http.ResponseWriter, r *http.Request) {
@@ -251,7 +225,14 @@ func (h *PostHandler) GetTrendingHashtags(w http.ResponseWriter, r *http.Request
 		handleGRPCError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"hashtags": resp.GetHashtags()})
+	hashtags := make([]map[string]any, len(resp.GetHashtags()))
+	for i, h := range resp.GetHashtags() {
+		hashtags[i] = map[string]any{
+			"tag":        h.GetTag(),
+			"post_count": h.GetPostCount(),
+		}
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"hashtags": hashtags})
 }
 
 func (h *PostHandler) RepostPost(w http.ResponseWriter, r *http.Request) {
@@ -299,36 +280,56 @@ func (h *PostHandler) QuotePost(w http.ResponseWriter, r *http.Request) {
 		handleGRPCError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusCreated, resp.GetPost())
+	post := postToMap(resp.GetPost())
+	h.enrichSinglePost(r, post)
+	writeJSON(w, http.StatusCreated, map[string]any{"post": post})
+}
+
+func (h *PostHandler) enrichSinglePost(r *http.Request, post map[string]any) {
+	userID, _ := post["user_id"].(string)
+	if userID == "" {
+		return
+	}
+	usersResp, err := h.user.GetUsersByIDs(r.Context(), &userpb.GetUsersByIDsRequest{Ids: []string{userID}})
+	if err != nil || usersResp == nil {
+		return
+	}
+	for _, u := range usersResp.GetUsers() {
+		if u.GetId() == userID {
+			post["author"] = userToMap(u)
+			return
+		}
+	}
 }
 
 // enrichPosts batch-enriches posts with author info and writes the response.
 func (h *PostHandler) enrichPosts(r *http.Request, w http.ResponseWriter, posts []*postpb.Post, pagination *commonpb.PaginationResponse) {
-	userIDs := make(map[string]struct{})
-	for _, p := range posts {
-		userIDs[p.GetUserId()] = struct{}{}
-	}
-	ids := make([]string, 0, len(userIDs))
-	for id := range userIDs {
-		ids = append(ids, id)
-	}
-	usersResp, _ := h.user.GetUsersByIDs(r.Context(), &userpb.GetUsersByIDsRequest{Ids: ids})
-
+	enriched := make([]map[string]any, len(posts))
 	userMap := make(map[string]*userpb.User)
-	if usersResp != nil {
-		for _, u := range usersResp.GetUsers() {
-			userMap[u.GetId()] = u
+
+	if len(posts) > 0 {
+		userIDs := make(map[string]struct{})
+		for _, p := range posts {
+			userIDs[p.GetUserId()] = struct{}{}
+		}
+		ids := make([]string, 0, len(userIDs))
+		for id := range userIDs {
+			ids = append(ids, id)
+		}
+		usersResp, _ := h.user.GetUsersByIDs(r.Context(), &userpb.GetUsersByIDsRequest{Ids: ids})
+		if usersResp != nil {
+			for _, u := range usersResp.GetUsers() {
+				userMap[u.GetId()] = u
+			}
 		}
 	}
 
-	type enrichedPost struct {
-		Post   any `json:"post"`
-		Author any `json:"author,omitempty"`
-	}
-
-	enriched := make([]enrichedPost, len(posts))
 	for i, p := range posts {
-		enriched[i] = enrichedPost{Post: p, Author: userMap[p.GetUserId()]}
+		m := postToMap(p)
+		if u, ok := userMap[p.GetUserId()]; ok {
+			m["author"] = userToMap(u)
+		}
+		enriched[i] = m
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{

@@ -41,7 +41,7 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		handleGRPCError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusCreated, resp.GetComment())
+	writeJSON(w, http.StatusCreated, map[string]any{"comment": commentToMap(resp.GetComment())})
 }
 
 func (h *CommentHandler) GetCommentTree(w http.ResponseWriter, r *http.Request) {
@@ -57,8 +57,12 @@ func (h *CommentHandler) GetCommentTree(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	comments := make([]map[string]any, len(resp.GetComments()))
+	for i, c := range resp.GetComments() {
+		comments[i] = commentToMap(c)
+	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"comments":   resp.GetComments(),
+		"comments":   comments,
 		"pagination": resp.GetPagination(),
 	})
 }

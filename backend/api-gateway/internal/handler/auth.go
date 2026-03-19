@@ -39,7 +39,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{
-		"user":          resp.GetUser(),
+		"user":          userToMap(resp.GetUser()),
 		"access_token":  resp.GetAccessToken(),
 		"refresh_token": resp.GetRefreshToken(),
 	})
@@ -67,7 +67,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{
-		"user":          resp.GetUser(),
+		"user":          userToMap(resp.GetUser()),
 		"access_token":  resp.GetAccessToken(),
 		"refresh_token": resp.GetRefreshToken(),
 	})

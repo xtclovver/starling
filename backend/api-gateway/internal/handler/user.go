@@ -25,7 +25,7 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		handleGRPCError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, resp.GetUser())
+	writeJSON(w, http.StatusOK, map[string]any{"user": userToMap(resp.GetUser())})
 }
 
 type updateUserRequest struct {
@@ -58,7 +58,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		handleGRPCError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, resp.GetUser())
+	writeJSON(w, http.StatusOK, map[string]any{"user": userToMap(resp.GetUser())})
 }
 
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
@@ -90,8 +90,24 @@ func (h *UserHandler) GetUserPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	posts := resp.GetPosts()
+	userResp, _ := h.user.GetUser(r.Context(), &userpb.GetUserRequest{Id: id})
+	var author map[string]any
+	if userResp != nil && userResp.GetUser() != nil {
+		author = userToMap(userResp.GetUser())
+	}
+
+	enriched := make([]map[string]any, len(posts))
+	for i, p := range posts {
+		m := postToMap(p)
+		if author != nil {
+			m["author"] = author
+		}
+		enriched[i] = m
+	}
+
 	writeJSON(w, http.StatusOK, map[string]any{
-		"posts":      resp.GetPosts(),
+		"posts":      enriched,
 		"pagination": resp.GetPagination(),
 	})
 }
@@ -109,8 +125,12 @@ func (h *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	users := make([]map[string]any, len(resp.GetUsers()))
+	for i, u := range resp.GetUsers() {
+		users[i] = userToMap(u)
+	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"users":      resp.GetUsers(),
+		"users":      users,
 		"pagination": resp.GetPagination(),
 	})
 }
@@ -159,7 +179,7 @@ func (h *UserHandler) GetFollowers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{
-		"users":      resp.GetUsers(),
+		"users":      usersToList(resp.GetUsers()),
 		"pagination": resp.GetPagination(),
 	})
 }
@@ -178,7 +198,7 @@ func (h *UserHandler) GetFollowing(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{
-		"users":      resp.GetUsers(),
+		"users":      usersToList(resp.GetUsers()),
 		"pagination": resp.GetPagination(),
 	})
 }
@@ -195,7 +215,7 @@ func (h *UserHandler) GetRecommendedUsers(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{"users": resp.GetUsers()})
+	writeJSON(w, http.StatusOK, map[string]any{"users": usersToList(resp.GetUsers())})
 }
 
 func (h *UserHandler) GetNotifications(w http.ResponseWriter, r *http.Request) {
@@ -211,8 +231,12 @@ func (h *UserHandler) GetNotifications(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	notifs := make([]map[string]any, len(resp.GetNotifications()))
+	for i, n := range resp.GetNotifications() {
+		notifs[i] = notificationToMap(n)
+	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"notifications": resp.GetNotifications(),
+		"notifications": notifs,
 		"pagination":    resp.GetPagination(),
 	})
 }

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useAuthStore } from '@/store/auth';
 
 const client = axios.create({ baseURL: '/api' });
 
@@ -14,17 +15,20 @@ client.interceptors.response.use(
     const original = error.config;
     if (error.response?.status === 401 && !original._retry) {
       original._retry = true;
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (!refreshToken) {
+        useAuthStore.getState().logout();
+        return Promise.reject(error);
+      }
       try {
-        const refreshToken = localStorage.getItem('refresh_token');
         const { data } = await axios.post('/api/auth/refresh', { refresh_token: refreshToken });
-        localStorage.setItem('access_token', data.data.access_token);
-        localStorage.setItem('refresh_token', data.data.refresh_token);
-        original.headers.Authorization = `Bearer ${data.data.access_token}`;
+        const newAccess = data.data.access_token;
+        const newRefresh = data.data.refresh_token;
+        useAuthStore.getState().setTokens(newAccess, newRefresh);
+        original.headers.Authorization = `Bearer ${newAccess}`;
         return client(original);
       } catch {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        window.location.href = '/login';
+        useAuthStore.getState().logout();
       }
     }
     return Promise.reject(error);
