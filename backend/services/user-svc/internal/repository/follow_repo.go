@@ -19,6 +19,8 @@ type FollowRepository interface {
 	Unfollow(ctx context.Context, followerID, followingID string) error
 	GetFollowers(ctx context.Context, userID, cursor string, limit int) ([]string, string, error)
 	GetFollowing(ctx context.Context, userID, cursor string, limit int) ([]string, string, error)
+	GetFollowCounts(ctx context.Context, userID string) (followers int32, following int32, err error)
+	GetFollowCountsBatch(ctx context.Context, userIDs []string) (map[string][2]int32, error)
 }
 
 type followRepo struct {
@@ -69,6 +71,66 @@ func (r *followRepo) GetFollowers(ctx context.Context, userID, cursor string, li
 
 func (r *followRepo) GetFollowing(ctx context.Context, userID, cursor string, limit int) ([]string, string, error) {
 	return r.getFollowList(ctx, "following_id", "follower_id", userID, cursor, limit)
+}
+
+func (r *followRepo) GetFollowCounts(ctx context.Context, userID string) (int32, int32, error) {
+	var followers, following int32
+	err := r.pool.QueryRow(ctx,
+		`SELECT
+			(SELECT COUNT(*) FROM follows WHERE following_id = $1),
+			(SELECT COUNT(*) FROM follows WHERE follower_id = $1)`,
+		userID,
+	).Scan(&followers, &following)
+	return followers, following, err
+}
+
+func (r *followRepo) GetFollowCountsBatch(ctx context.Context, userIDs []string) (map[string][2]int32, error) {
+	if len(userIDs) == 0 {
+		return nil, nil
+	}
+	result := make(map[string][2]int32)
+
+	// Get followers counts
+	rows, err := r.pool.Query(ctx,
+		`SELECT following_id, COUNT(*) FROM follows WHERE following_id = ANY($1) GROUP BY following_id`,
+		userIDs,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id string
+		var count int32
+		if err := rows.Scan(&id, &count); err != nil {
+			return nil, err
+		}
+		v := result[id]
+		v[0] = count
+		result[id] = v
+	}
+
+	// Get following counts
+	rows2, err := r.pool.Query(ctx,
+		`SELECT follower_id, COUNT(*) FROM follows WHERE follower_id = ANY($1) GROUP BY follower_id`,
+		userIDs,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows2.Close()
+	for rows2.Next() {
+		var id string
+		var count int32
+		if err := rows2.Scan(&id, &count); err != nil {
+			return nil, err
+		}
+		v := result[id]
+		v[1] = count
+		result[id] = v
+	}
+
+	return result, nil
 }
 
 func (r *followRepo) getFollowList(ctx context.Context, selectCol, whereCol, userID, cursor string, limit int) ([]string, string, error) {

@@ -45,6 +45,56 @@ func NewServer(
 	}
 }
 
+func (s *Server) enrichPosts(ctx context.Context, posts []*pb.Post, viewerID string) {
+	if len(posts) == 0 {
+		return
+	}
+
+	postIDs := make([]string, len(posts))
+	for i, p := range posts {
+		postIDs[i] = p.GetId()
+	}
+
+	// Load hashtags for all posts
+	tagsMap, err := s.hashtagRepo.GetTagsByPostIDs(ctx, postIDs)
+	if err == nil {
+		for _, p := range posts {
+			if tags, ok := tagsMap[p.GetId()]; ok {
+				p.Hashtags = tags
+			}
+		}
+	}
+
+	if viewerID == "" {
+		return
+	}
+
+	// Load user-specific flags
+	likedMap, _ := s.likeRepo.AreLiked(ctx, postIDs, viewerID)
+	bookmarkedMap, _ := s.bookmarkRepo.AreBookmarked(ctx, postIDs, viewerID)
+	repostedMap, _ := s.repostRepo.AreReposted(ctx, postIDs, viewerID)
+
+	for _, p := range posts {
+		id := p.GetId()
+		if likedMap != nil {
+			p.Liked = likedMap[id]
+		}
+		if bookmarkedMap != nil {
+			p.Bookmarked = bookmarkedMap[id]
+		}
+		if repostedMap != nil {
+			p.Reposted = repostedMap[id]
+		}
+	}
+}
+
+func (s *Server) loadHashtags(ctx context.Context, post *pb.Post) {
+	tags, err := s.hashtagRepo.GetTagsByPostID(ctx, post.GetId())
+	if err == nil && len(tags) > 0 {
+		post.Hashtags = tags
+	}
+}
+
 func (s *Server) CreatePost(ctx context.Context, req *pb.CreatePostRequest) (*pb.CreatePostResponse, error) {
 	start := time.Now()
 	defer func() { s.log.Info("CreatePost", "duration", time.Since(start)) }()
@@ -66,7 +116,9 @@ func (s *Server) CreatePost(ctx context.Context, req *pb.CreatePostRequest) (*pb
 		}
 	}
 
-	return &pb.CreatePostResponse{Post: toProtoPost(post)}, nil
+	protoPost := toProtoPost(post)
+	s.loadHashtags(ctx, protoPost)
+	return &pb.CreatePostResponse{Post: protoPost}, nil
 }
 
 func (s *Server) GetPost(ctx context.Context, req *pb.GetPostRequest) (*pb.GetPostResponse, error) {
@@ -87,7 +139,9 @@ func (s *Server) GetPost(ctx context.Context, req *pb.GetPostRequest) (*pb.GetPo
 		post.LikesCount = count
 	}
 
-	return &pb.GetPostResponse{Post: toProtoPost(post)}, nil
+	protoPost := toProtoPost(post)
+	s.enrichPosts(ctx, []*pb.Post{protoPost}, req.GetUserId())
+	return &pb.GetPostResponse{Post: protoPost}, nil
 }
 
 func (s *Server) DeletePost(ctx context.Context, req *pb.DeletePostRequest) (*pb.DeletePostResponse, error) {
@@ -132,6 +186,8 @@ func (s *Server) GetFeed(ctx context.Context, req *pb.GetFeedRequest) (*pb.GetFe
 		p := p
 		pbPosts[i] = toProtoPost(&p)
 	}
+
+	s.enrichPosts(ctx, pbPosts, req.GetUserId())
 
 	return &pb.GetFeedResponse{
 		Posts: pbPosts,
@@ -205,6 +261,8 @@ func (s *Server) GetPostsByUser(ctx context.Context, req *pb.GetPostsByUserReque
 		pbPosts[i] = toProtoPost(&p)
 	}
 
+	s.enrichPosts(ctx, pbPosts, req.GetViewerId())
+
 	return &pb.GetPostsByUserResponse{
 		Posts: pbPosts,
 		Pagination: &commonpb.PaginationResponse{
@@ -237,6 +295,8 @@ func (s *Server) GetGlobalFeed(ctx context.Context, req *pb.GetGlobalFeedRequest
 	for i, p := range posts {
 		pbPosts[i] = toProtoPost(&p)
 	}
+
+	s.enrichPosts(ctx, pbPosts, req.GetUserId())
 
 	return &pb.GetGlobalFeedResponse{
 		Posts: pbPosts,
@@ -290,6 +350,8 @@ func (s *Server) GetBookmarks(ctx context.Context, req *pb.GetBookmarksRequest) 
 		pbPosts[i] = toProtoPost(&p)
 	}
 
+	s.enrichPosts(ctx, pbPosts, req.GetUserId())
+
 	return &pb.GetBookmarksResponse{
 		Posts: pbPosts,
 		Pagination: &commonpb.PaginationResponse{
@@ -328,7 +390,9 @@ func (s *Server) UpdatePost(ctx context.Context, req *pb.UpdatePostRequest) (*pb
 		}
 	}
 
-	return &pb.UpdatePostResponse{Post: toProtoPost(post)}, nil
+	protoPost := toProtoPost(post)
+	s.enrichPosts(ctx, []*pb.Post{protoPost}, req.GetUserId())
+	return &pb.UpdatePostResponse{Post: protoPost}, nil
 }
 
 func (s *Server) GetPostsByHashtag(ctx context.Context, req *pb.GetPostsByHashtagRequest) (*pb.GetPostsByHashtagResponse, error) {
@@ -351,6 +415,8 @@ func (s *Server) GetPostsByHashtag(ctx context.Context, req *pb.GetPostsByHashta
 	for i, p := range posts {
 		pbPosts[i] = toProtoPost(&p)
 	}
+
+	s.enrichPosts(ctx, pbPosts, req.GetUserId())
 
 	return &pb.GetPostsByHashtagResponse{
 		Posts: pbPosts,
@@ -430,5 +496,7 @@ func (s *Server) QuotePost(ctx context.Context, req *pb.QuotePostRequest) (*pb.Q
 		_ = s.hashtagRepo.UpsertAndLink(ctx, post.ID, tags)
 	}
 
-	return &pb.QuotePostResponse{Post: toProtoPost(post)}, nil
+	protoPost := toProtoPost(post)
+	s.enrichPosts(ctx, []*pb.Post{protoPost}, req.GetUserId())
+	return &pb.QuotePostResponse{Post: protoPost}, nil
 }

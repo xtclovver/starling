@@ -14,6 +14,7 @@ type LikeRepository interface {
 	LikePost(ctx context.Context, postID, userID string) error
 	UnlikePost(ctx context.Context, postID, userID string) error
 	IsLiked(ctx context.Context, postID, userID string) (bool, error)
+	AreLiked(ctx context.Context, postIDs []string, userID string) (map[string]bool, error)
 }
 
 type likeRepo struct {
@@ -60,4 +61,28 @@ func (r *likeRepo) IsLiked(ctx context.Context, postID, userID string) (bool, er
 		userID, postID,
 	).Scan(&exists)
 	return exists, err
+}
+
+func (r *likeRepo) AreLiked(ctx context.Context, postIDs []string, userID string) (map[string]bool, error) {
+	if len(postIDs) == 0 || userID == "" {
+		return nil, nil
+	}
+	rows, err := r.pool.Query(ctx,
+		`SELECT post_id FROM likes WHERE user_id = $1 AND post_id = ANY($2)`,
+		userID, postIDs,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make(map[string]bool)
+	for rows.Next() {
+		var postID string
+		if err := rows.Scan(&postID); err != nil {
+			return nil, err
+		}
+		result[postID] = true
+	}
+	return result, nil
 }

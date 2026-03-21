@@ -15,6 +15,7 @@ type BookmarkRepository interface {
 	Bookmark(ctx context.Context, postID, userID string) error
 	Unbookmark(ctx context.Context, postID, userID string) error
 	IsBookmarked(ctx context.Context, postID, userID string) (bool, error)
+	AreBookmarked(ctx context.Context, postIDs []string, userID string) (map[string]bool, error)
 	GetByUser(ctx context.Context, userID, cursor string, limit int) ([]model.Post, string, bool, error)
 }
 
@@ -62,6 +63,30 @@ func (r *bookmarkRepo) IsBookmarked(ctx context.Context, postID, userID string) 
 		userID, postID,
 	).Scan(&exists)
 	return exists, err
+}
+
+func (r *bookmarkRepo) AreBookmarked(ctx context.Context, postIDs []string, userID string) (map[string]bool, error) {
+	if len(postIDs) == 0 || userID == "" {
+		return nil, nil
+	}
+	rows, err := r.pool.Query(ctx,
+		`SELECT post_id FROM bookmarks WHERE user_id = $1 AND post_id = ANY($2)`,
+		userID, postIDs,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make(map[string]bool)
+	for rows.Next() {
+		var postID string
+		if err := rows.Scan(&postID); err != nil {
+			return nil, err
+		}
+		result[postID] = true
+	}
+	return result, nil
 }
 
 func (r *bookmarkRepo) GetByUser(ctx context.Context, userID, cursor string, limit int) ([]model.Post, string, bool, error) {

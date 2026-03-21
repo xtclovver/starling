@@ -48,7 +48,8 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 
 func (h *PostHandler) GetPost(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	resp, err := h.post.GetPost(r.Context(), &postpb.GetPostRequest{Id: id})
+	viewerID := getUserID(r)
+	resp, err := h.post.GetPost(r.Context(), &postpb.GetPostRequest{Id: id, UserId: viewerID})
 	if err != nil {
 		handleGRPCError(w, err)
 		return
@@ -122,9 +123,11 @@ func (h *PostHandler) UnlikePost(w http.ResponseWriter, r *http.Request) {
 
 func (h *PostHandler) GetGlobalFeed(w http.ResponseWriter, r *http.Request) {
 	cursor := r.URL.Query().Get("cursor")
+	viewerID := getUserID(r)
 
 	resp, err := h.post.GetGlobalFeed(r.Context(), &postpb.GetGlobalFeedRequest{
 		Pagination: &commonpb.PaginationRequest{Cursor: cursor, Limit: 20},
+		UserId:     viewerID,
 	})
 	if err != nil {
 		handleGRPCError(w, err)
@@ -205,10 +208,12 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 func (h *PostHandler) GetPostsByHashtag(w http.ResponseWriter, r *http.Request) {
 	tag := r.PathValue("tag")
 	cursor := r.URL.Query().Get("cursor")
+	viewerID := getUserID(r)
 
 	resp, err := h.post.GetPostsByHashtag(r.Context(), &postpb.GetPostsByHashtagRequest{
 		Tag:        tag,
 		Pagination: &commonpb.PaginationRequest{Cursor: cursor, Limit: 20},
+		UserId:     viewerID,
 	})
 	if err != nil {
 		handleGRPCError(w, err)

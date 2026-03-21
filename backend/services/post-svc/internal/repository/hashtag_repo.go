@@ -16,6 +16,8 @@ type HashtagRepository interface {
 	UnlinkAll(ctx context.Context, postID string) error
 	GetPostsByHashtag(ctx context.Context, tag, cursor string, limit int) ([]model.Post, string, bool, error)
 	GetTrending(ctx context.Context, limit int) ([]model.TrendingHashtag, error)
+	GetTagsByPostID(ctx context.Context, postID string) ([]string, error)
+	GetTagsByPostIDs(ctx context.Context, postIDs []string) (map[string][]string, error)
 }
 
 type hashtagRepo struct {
@@ -157,4 +159,55 @@ func (r *hashtagRepo) GetTrending(ctx context.Context, limit int) ([]model.Trend
 		trending = append(trending, t)
 	}
 	return trending, nil
+}
+
+func (r *hashtagRepo) GetTagsByPostID(ctx context.Context, postID string) ([]string, error) {
+	rows, err := r.pool.Query(ctx,
+		`SELECT h.tag FROM hashtags h
+		 INNER JOIN post_hashtags ph ON ph.hashtag_id = h.id
+		 WHERE ph.post_id = $1
+		 ORDER BY h.tag`,
+		postID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tags []string
+	for rows.Next() {
+		var tag string
+		if err := rows.Scan(&tag); err != nil {
+			return nil, err
+		}
+		tags = append(tags, tag)
+	}
+	return tags, nil
+}
+
+func (r *hashtagRepo) GetTagsByPostIDs(ctx context.Context, postIDs []string) (map[string][]string, error) {
+	if len(postIDs) == 0 {
+		return nil, nil
+	}
+	rows, err := r.pool.Query(ctx,
+		`SELECT ph.post_id, h.tag FROM hashtags h
+		 INNER JOIN post_hashtags ph ON ph.hashtag_id = h.id
+		 WHERE ph.post_id = ANY($1)
+		 ORDER BY ph.post_id, h.tag`,
+		postIDs,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	result := make(map[string][]string)
+	for rows.Next() {
+		var postID, tag string
+		if err := rows.Scan(&postID, &tag); err != nil {
+			return nil, err
+		}
+		result[postID] = append(result[postID], tag)
+	}
+	return result, nil
 }

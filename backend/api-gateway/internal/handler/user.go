@@ -80,10 +80,12 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) GetUserPosts(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	cursor := r.URL.Query().Get("cursor")
+	viewerID := getUserID(r)
 
 	resp, err := h.post.GetPostsByUser(r.Context(), &postpb.GetPostsByUserRequest{
 		UserId:     id,
 		Pagination: &commonpb.PaginationRequest{Cursor: cursor, Limit: 20},
+		ViewerId:   viewerID,
 	})
 	if err != nil {
 		handleGRPCError(w, err)

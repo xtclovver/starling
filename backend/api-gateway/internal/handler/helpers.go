@@ -83,6 +83,7 @@ func postToMap(p *postpb.Post) map[string]any {
 		"updated_at":     tsToString(p.GetUpdatedAt()),
 		"bookmarked":     p.GetBookmarked(),
 		"reposted":       p.GetReposted(),
+		"liked":          p.GetLiked(),
 		"hashtags":       p.GetHashtags(),
 	}
 	if p.GetEditedAt() != nil {
@@ -93,14 +94,16 @@ func postToMap(p *postpb.Post) map[string]any {
 
 func userToMap(u *userpb.User) map[string]any {
 	return map[string]any{
-		"id":           u.GetId(),
-		"username":     u.GetUsername(),
-		"email":        u.GetEmail(),
-		"display_name": u.GetDisplayName(),
-		"bio":          u.GetBio(),
-		"avatar_url":   u.GetAvatarUrl(),
-		"created_at":   tsToString(u.GetCreatedAt()),
-		"updated_at":   tsToString(u.GetUpdatedAt()),
+		"id":              u.GetId(),
+		"username":        u.GetUsername(),
+		"email":           u.GetEmail(),
+		"display_name":    u.GetDisplayName(),
+		"bio":             u.GetBio(),
+		"avatar_url":      u.GetAvatarUrl(),
+		"created_at":      tsToString(u.GetCreatedAt()),
+		"updated_at":      tsToString(u.GetUpdatedAt()),
+		"followers_count": u.GetFollowersCount(),
+		"following_count": u.GetFollowingCount(),
 	}
 }
 
@@ -133,6 +136,7 @@ func commentToMap(c *commentpb.Comment) map[string]any {
 		"parent_id":   c.GetParentId(),
 		"content":     c.GetContent(),
 		"likes_count": c.GetLikesCount(),
+		"liked":       c.GetLiked(),
 		"depth":       c.GetDepth(),
 		"created_at":  tsToString(c.GetCreatedAt()),
 		"updated_at":  tsToString(c.GetUpdatedAt()),

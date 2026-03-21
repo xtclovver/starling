@@ -14,6 +14,7 @@ type CommentLikeRepository interface {
 	Like(ctx context.Context, commentID, userID string) error
 	Unlike(ctx context.Context, commentID, userID string) error
 	IncrementLikes(ctx context.Context, commentID string, delta int) error
+	AreLikedComments(ctx context.Context, commentIDs []string, userID string) (map[string]bool, error)
 }
 
 type commentLikeRepo struct {
@@ -59,4 +60,29 @@ func (r *commentLikeRepo) IncrementLikes(ctx context.Context, commentID string, 
 		delta, commentID,
 	)
 	return err
+}
+
+func (r *commentLikeRepo) AreLikedComments(ctx context.Context, commentIDs []string, userID string) (map[string]bool, error) {
+	result := make(map[string]bool, len(commentIDs))
+	if len(commentIDs) == 0 || userID == "" {
+		return result, nil
+	}
+
+	rows, err := r.pool.Query(ctx,
+		`SELECT comment_id FROM likes WHERE user_id = $1 AND comment_id = ANY($2)`,
+		userID, commentIDs,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var cid string
+		if err := rows.Scan(&cid); err != nil {
+			return nil, err
+		}
+		result[cid] = true
+	}
+	return result, nil
 }

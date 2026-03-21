@@ -40,6 +40,37 @@ func NewServer(
 	}
 }
 
+func (s *Server) enrichUserWithCounts(ctx context.Context, user *pb.User) {
+	if user == nil {
+		return
+	}
+	followers, following, err := s.followRepo.GetFollowCounts(ctx, user.GetId())
+	if err == nil {
+		user.FollowersCount = followers
+		user.FollowingCount = following
+	}
+}
+
+func (s *Server) enrichUsersWithCounts(ctx context.Context, users []*pb.User) {
+	if len(users) == 0 {
+		return
+	}
+	ids := make([]string, len(users))
+	for i, u := range users {
+		ids[i] = u.GetId()
+	}
+	countsMap, err := s.followRepo.GetFollowCountsBatch(ctx, ids)
+	if err != nil || countsMap == nil {
+		return
+	}
+	for _, u := range users {
+		if counts, ok := countsMap[u.GetId()]; ok {
+			u.FollowersCount = counts[0]
+			u.FollowingCount = counts[1]
+		}
+	}
+}
+
 func (s *Server) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	start := time.Now()
 	defer func() { s.log.Info("Register", "duration", time.Since(start)) }()
@@ -108,8 +139,10 @@ func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResp
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
+	protoUser := toProtoUser(user)
+	s.enrichUserWithCounts(ctx, protoUser)
 	return &pb.LoginResponse{
-		User:         toProtoUser(user),
+		User:         protoUser,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil
@@ -147,7 +180,9 @@ func (s *Server) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUs
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &pb.GetUserResponse{User: toProtoUser(user)}, nil
+	protoUser := toProtoUser(user)
+	s.enrichUserWithCounts(ctx, protoUser)
+	return &pb.GetUserResponse{User: protoUser}, nil
 }
 
 func (s *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
@@ -174,7 +209,9 @@ func (s *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &pb.UpdateUserResponse{User: toProtoUser(user)}, nil
+	protoUser := toProtoUser(user)
+	s.enrichUserWithCounts(ctx, protoUser)
+	return &pb.UpdateUserResponse{User: protoUser}, nil
 }
 
 func (s *Server) SoftDeleteUser(ctx context.Context, req *pb.SoftDeleteUserRequest) (*pb.SoftDeleteUserResponse, error) {
@@ -217,6 +254,8 @@ func (s *Server) SearchUsers(ctx context.Context, req *pb.SearchUsersRequest) (*
 		pbUsers[i] = toProtoUser(&u)
 	}
 
+	s.enrichUsersWithCounts(ctx, pbUsers)
+
 	return &pb.SearchUsersResponse{
 		Users: pbUsers,
 		Pagination: &commonpb.PaginationResponse{
@@ -241,6 +280,8 @@ func (s *Server) GetUsersByIDs(ctx context.Context, req *pb.GetUsersByIDsRequest
 		u := u
 		pbUsers[i] = toProtoUser(&u)
 	}
+
+	s.enrichUsersWithCounts(ctx, pbUsers)
 
 	return &pb.GetUsersByIDsResponse{Users: pbUsers}, nil
 }
@@ -319,6 +360,8 @@ func (s *Server) GetFollowers(ctx context.Context, req *pb.GetFollowersRequest) 
 		pbUsers[i] = toProtoUser(&u)
 	}
 
+	s.enrichUsersWithCounts(ctx, pbUsers)
+
 	return &pb.GetFollowersResponse{
 		Users: pbUsers,
 		Pagination: &commonpb.PaginationResponse{
@@ -359,6 +402,8 @@ func (s *Server) GetFollowing(ctx context.Context, req *pb.GetFollowingRequest) 
 		pbUsers[i] = toProtoUser(&u)
 	}
 
+	s.enrichUsersWithCounts(ctx, pbUsers)
+
 	return &pb.GetFollowingResponse{
 		Users: pbUsers,
 		Pagination: &commonpb.PaginationResponse{
@@ -379,6 +424,8 @@ func (s *Server) GetRecommendedUsers(ctx context.Context, req *pb.GetRecommended
 	for i, u := range users {
 		pbUsers[i] = toProtoUser(&u)
 	}
+
+	s.enrichUsersWithCounts(ctx, pbUsers)
 
 	return &pb.GetRecommendedUsersResponse{Users: pbUsers}, nil
 }

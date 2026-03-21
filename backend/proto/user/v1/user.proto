@@ -16,6 +16,8 @@ message User {
   string avatar_url = 6;
   google.protobuf.Timestamp created_at = 7;
   google.protobuf.Timestamp updated_at = 8;
+  int32 followers_count = 9;
+  int32 following_count = 10;
 }
 
 message RegisterRequest {

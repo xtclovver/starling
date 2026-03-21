@@ -21,6 +21,7 @@ message Post {
   repeated string hashtags = 11;
   int32 reposts_count = 12;
   bool reposted = 13;
+  bool liked = 14;
 }
 
 message CreatePostRequest {
@@ -35,6 +36,7 @@ message CreatePostResponse {
 
 message GetPostRequest {
   string id = 1;
+  string user_id = 2;
 }
 
 message GetPostResponse {
@@ -75,6 +77,7 @@ message UnlikePostResponse {}
 message GetPostsByUserRequest {
   string user_id = 1;
   common.v1.PaginationRequest pagination = 2;
+  string viewer_id = 3;
 }
 
 message GetPostsByUserResponse {
@@ -85,6 +88,7 @@ message GetPostsByUserResponse {
 // Global feed (public, no auth required)
 message GetGlobalFeedRequest {
   common.v1.PaginationRequest pagination = 1;
+  string user_id = 2;
 }
 
 message GetGlobalFeedResponse {
@@ -137,6 +141,7 @@ message TrendingHashtag {
 message GetPostsByHashtagRequest {
   string tag = 1;
   common.v1.PaginationRequest pagination = 2;
+  string user_id = 3;
 }
 
 message GetPostsByHashtagResponse {

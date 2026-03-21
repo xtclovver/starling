@@ -94,6 +94,18 @@ func (s *Server) GetCommentTree(ctx context.Context, req *pb.GetCommentTreeReque
 		pbComments[i] = toProtoComment(&c)
 	}
 
+	if uid := req.GetUserId(); uid != "" {
+		ids := collectCommentIDs(pbComments)
+		if len(ids) > 0 {
+			likedMap, err := s.commentLikeRepo.AreLikedComments(ctx, ids, uid)
+			if err != nil {
+				s.log.Error("check liked comments failed", "error", err)
+			} else {
+				setLikedFlags(pbComments, likedMap)
+			}
+		}
+	}
+
 	return &pb.GetCommentTreeResponse{
 		Comments: pbComments,
 		Pagination: &commonpb.PaginationResponse{

@@ -50,7 +50,7 @@ func main() {
 	authH := handler.NewAuthHandler(clients.User)
 	userH := handler.NewUserHandler(clients.User, clients.Post)
 	postH := handler.NewPostHandler(clients.Post, clients.User)
-	commentH := handler.NewCommentHandler(clients.Comment)
+	commentH := handler.NewCommentHandler(clients.Comment, clients.User)
 	mediaH := handler.NewMediaHandler(clients.Media)
 
 	// WebSocket
@@ -73,7 +73,7 @@ func main() {
 	// User routes - public
 	mux.HandleFunc("GET /api/users/search", userH.SearchUsers)
 	mux.HandleFunc("GET /api/users/{id}", userH.GetUser)
-	mux.HandleFunc("GET /api/users/{id}/posts", userH.GetUserPosts)
+	mux.Handle("GET /api/users/{id}/posts", auth.Optional(http.HandlerFunc(userH.GetUserPosts)))
 	mux.HandleFunc("GET /api/users/{id}/followers", userH.GetFollowers)
 	mux.HandleFunc("GET /api/users/{id}/following", userH.GetFollowing)
 
@@ -92,10 +92,10 @@ func main() {
 	mux.Handle("POST /api/notifications/{id}/read", auth.Required(http.HandlerFunc(userH.MarkRead)))
 	mux.Handle("POST /api/notifications/read-all", auth.Required(http.HandlerFunc(userH.MarkAllRead)))
 
-	// Post routes - public
-	mux.HandleFunc("GET /api/posts/{id}", postH.GetPost)
-	mux.HandleFunc("GET /api/feed/global", postH.GetGlobalFeed)
-	mux.HandleFunc("GET /api/hashtags/{tag}/posts", postH.GetPostsByHashtag)
+	// Post routes - public (auth optional for liked/bookmarked/reposted flags)
+	mux.Handle("GET /api/posts/{id}", auth.Optional(http.HandlerFunc(postH.GetPost)))
+	mux.Handle("GET /api/feed/global", auth.Optional(http.HandlerFunc(postH.GetGlobalFeed)))
+	mux.Handle("GET /api/hashtags/{tag}/posts", auth.Optional(http.HandlerFunc(postH.GetPostsByHashtag)))
 	mux.HandleFunc("GET /api/trending/hashtags", postH.GetTrendingHashtags)
 
 	// Post routes - auth required
@@ -113,7 +113,7 @@ func main() {
 	mux.Handle("POST /api/posts/{id}/quote", auth.Required(http.HandlerFunc(postH.QuotePost)))
 
 	// Comment routes
-	mux.HandleFunc("GET /api/posts/{id}/comments", commentH.GetCommentTree)
+	mux.Handle("GET /api/posts/{id}/comments", auth.Optional(http.HandlerFunc(commentH.GetCommentTree)))
 	mux.Handle("POST /api/posts/{id}/comments", auth.Required(http.HandlerFunc(commentH.CreateComment)))
 	mux.Handle("DELETE /api/comments/{id}", auth.Required(http.HandlerFunc(commentH.DeleteComment)))
 	mux.Handle("POST /api/comments/{id}/like", auth.Required(http.HandlerFunc(commentH.LikeComment)))

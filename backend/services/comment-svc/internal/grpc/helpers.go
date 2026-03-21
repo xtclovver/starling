@@ -6,6 +6,22 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+func collectCommentIDs(comments []*pb.Comment) []string {
+	var ids []string
+	for _, c := range comments {
+		ids = append(ids, c.GetId())
+		ids = append(ids, collectCommentIDs(c.GetChildren())...)
+	}
+	return ids
+}
+
+func setLikedFlags(comments []*pb.Comment, likedMap map[string]bool) {
+	for _, c := range comments {
+		c.Liked = likedMap[c.GetId()]
+		setLikedFlags(c.GetChildren(), likedMap)
+	}
+}
+
 func toProtoComment(c *model.Comment) *pb.Comment {
 	pc := &pb.Comment{
 		Id:         c.ID,
