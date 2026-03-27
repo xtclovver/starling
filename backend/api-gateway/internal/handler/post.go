@@ -285,6 +285,24 @@ func (h *PostHandler) RepostPost(w http.ResponseWriter, r *http.Request) {
 		handleGRPCError(w, err)
 		return
 	}
+
+	go func() {
+		resp, err := h.post.GetPost(context.Background(), &postpb.GetPostRequest{Id: id})
+		if err != nil || resp.GetPost().GetUserId() == userID {
+			return
+		}
+		ownerID := resp.GetPost().GetUserId()
+		nr, err := h.user.CreateNotification(context.Background(), &userpb.CreateNotificationRequest{
+			UserId:  ownerID,
+			ActorId: userID,
+			Type:    "repost",
+			PostId:  id,
+		})
+		if err == nil && h.notifier != nil {
+			h.notifier.PublishNotification(context.Background(), ownerID, notificationToMap(nr.GetNotification()))
+		}
+	}()
+
 	writeJSON(w, http.StatusOK, nil)
 }
 
@@ -321,6 +339,24 @@ func (h *PostHandler) QuotePost(w http.ResponseWriter, r *http.Request) {
 		handleGRPCError(w, err)
 		return
 	}
+
+	go func() {
+		origResp, err := h.post.GetPost(context.Background(), &postpb.GetPostRequest{Id: id})
+		if err != nil || origResp.GetPost().GetUserId() == userID {
+			return
+		}
+		ownerID := origResp.GetPost().GetUserId()
+		nr, err := h.user.CreateNotification(context.Background(), &userpb.CreateNotificationRequest{
+			UserId:  ownerID,
+			ActorId: userID,
+			Type:    "quote",
+			PostId:  id,
+		})
+		if err == nil && h.notifier != nil {
+			h.notifier.PublishNotification(context.Background(), ownerID, notificationToMap(nr.GetNotification()))
+		}
+	}()
+
 	post := postToMap(resp.GetPost())
 	h.enrichSinglePost(r, post)
 	writeJSON(w, http.StatusCreated, map[string]any{"post": post})
