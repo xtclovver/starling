@@ -55,10 +55,12 @@ message RefreshTokenResponse {
 
 message GetUserRequest {
   string id = 1;
+  string viewer_id = 2;
 }
 
 message GetUserResponse {
   User user = 1;
+  bool is_following = 2;
 }
 
 message UpdateUserRequest {

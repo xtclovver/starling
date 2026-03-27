@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/auth';
 import { timeAgo } from '@/lib/time';
 import Avatar from './Avatar';
 import CommentForm from './CommentForm';
+import ImageLightbox from './ImageLightbox';
 import s from '@/styles/comment.module.css';
 import type { Comment } from '@/types';
 
@@ -23,6 +24,7 @@ export default function CommentItem({ comment, postId, onNewReply, onDelete }: P
   const [replying, setReplying] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   const isOwner = user?.id === comment.user_id;
   const isDeleted = !comment.content || comment.content === '[удалено]';
@@ -47,6 +49,7 @@ export default function CommentItem({ comment, postId, onNewReply, onDelete }: P
   };
 
   return (
+    <>
     <div style={{ paddingLeft: comment.depth > 0 ? 20 : 0 }}>
       <div className={s.commentItem}>
         {comment.depth > 0 && <div className={s.depthLine} />}
@@ -70,7 +73,13 @@ export default function CommentItem({ comment, postId, onNewReply, onDelete }: P
               <p className={s.commentText}>{comment.content}</p>
               {comment.media_url && (
                 <div className={s.commentMedia}>
-                  <img src={comment.media_url} alt="" loading="lazy" />
+                  <img
+                    src={comment.media_url}
+                    alt=""
+                    loading="lazy"
+                    onClick={() => setLightboxSrc(comment.media_url!)}
+                    style={{ cursor: 'zoom-in' }}
+                  />
                 </div>
               )}
             </>
@@ -123,5 +132,7 @@ export default function CommentItem({ comment, postId, onNewReply, onDelete }: P
         </div>
       )}
     </div>
+    {lightboxSrc && <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
+  </>
   );
 }

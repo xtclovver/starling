@@ -45,7 +45,10 @@ export default function Profile() {
   useEffect(() => {
     if (!id) return;
     setLoading(true); setTab('posts'); setPosts([]); setReposts([]); setUserList([]);
-    getUser(id).then((u) => setProfile(u)).catch(() => setProfile(null)).finally(() => setLoading(false));
+    getUser(id).then((u) => {
+      setProfile(u);
+      setIsFollowing(u.is_following ?? false);
+    }).catch(() => setProfile(null)).finally(() => setLoading(false));
   }, [id]);
 
   const loadPosts = useCallback(async (cursor = '') => {

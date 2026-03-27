@@ -182,7 +182,13 @@ func (s *Server) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUs
 
 	protoUser := toProtoUser(user)
 	s.enrichUserWithCounts(ctx, protoUser)
-	return &pb.GetUserResponse{User: protoUser}, nil
+
+	var isFollowing bool
+	if req.GetViewerId() != "" && req.GetViewerId() != req.GetId() {
+		isFollowing, _ = s.followRepo.IsFollowing(ctx, req.GetViewerId(), req.GetId())
+	}
+
+	return &pb.GetUserResponse{User: protoUser, IsFollowing: isFollowing}, nil //nolint
 }
 
 func (s *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {

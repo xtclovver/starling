@@ -20,12 +20,15 @@ func NewUserHandler(user userpb.UserServiceClient, post postpb.PostServiceClient
 
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	resp, err := h.user.GetUser(r.Context(), &userpb.GetUserRequest{Id: id})
+	viewerID := getUserID(r)
+	resp, err := h.user.GetUser(r.Context(), &userpb.GetUserRequest{Id: id, ViewerId: viewerID})
 	if err != nil {
 		handleGRPCError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"user": userToMap(resp.GetUser())})
+	u := userToMap(resp.GetUser())
+	u["is_following"] = resp.GetIsFollowing()
+	writeJSON(w, http.StatusOK, map[string]any{"user": u})
 }
 
 type updateUserRequest struct {

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SearchUsers from './SearchUsers';
-import { useWsStore } from '@/store/ws';
 import { useAuthStore } from '@/store/auth';
 import { useUIStore } from '@/store/ui';
 import { getTrendingHashtags } from '@/api/posts';
@@ -11,7 +10,6 @@ import s from '@/styles/layout.module.css';
 import type { TrendingHashtag, User } from '@/types';
 
 export default function RightPanel() {
-  const connected = useWsStore((st) => st.connected);
   const user = useAuthStore((st) => st.user);
   const openAuthModal = useUIStore((st) => st.openAuthModal);
   const [trends, setTrends] = useState<TrendingHashtag[]>([]);
@@ -70,12 +68,6 @@ export default function RightPanel() {
         </div>
       )}
 
-      <div className={s.infoBox}>
-        <div className={s.statusRow}>
-          <span className={`${s.statusDot} ${connected ? s.statusOnline : s.statusOffline}`} />
-          {connected ? 'Live-обновления активны' : 'Офлайн'}
-        </div>
-      </div>
     </aside>
   );
 }

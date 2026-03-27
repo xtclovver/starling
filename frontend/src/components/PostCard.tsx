@@ -8,6 +8,7 @@ import { useFeedStore } from '@/store/feed';
 import { useUIStore } from '@/store/ui';
 import { timeAgo } from '@/lib/time';
 import Avatar from './Avatar';
+import ImageLightbox from './ImageLightbox';
 import s from '@/styles/post.module.css';
 import type { Post } from '@/types';
 
@@ -38,6 +39,7 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
   const [editLoading, setEditLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const editFileRef = useRef<HTMLInputElement>(null);
   const isOwner = user?.id === post.user_id;
 
@@ -161,6 +163,7 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
   const remaining = 280 - editContent.length;
 
   return (
+    <>
     <article className={s.postCard} onClick={() => !editing && navigate(`/post/${post.id}`)}>
       <div className={s.postRow}>
         <Link to={`/profile/${post.user_id}`} onClick={(e) => e.stopPropagation()}>
@@ -241,7 +244,15 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
             <>
               <p className={s.postContent}>{renderContent(post.content)}</p>
               {post.media_url && (
-                <div className={s.postMedia}><img src={post.media_url} alt="" loading="lazy" /></div>
+                <div className={s.postMedia}>
+                  <img
+                    src={post.media_url}
+                    alt=""
+                    loading="lazy"
+                    onClick={(e) => { e.stopPropagation(); setLightboxSrc(post.media_url); }}
+                    style={{ cursor: 'zoom-in' }}
+                  />
+                </div>
               )}
             </>
           )}
@@ -280,5 +291,7 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
         </div>
       </div>
     </article>
+    {lightboxSrc && <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
+  </>
   );
 }

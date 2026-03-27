@@ -17,6 +17,7 @@ var (
 type FollowRepository interface {
 	Follow(ctx context.Context, followerID, followingID string) error
 	Unfollow(ctx context.Context, followerID, followingID string) error
+	IsFollowing(ctx context.Context, followerID, followingID string) (bool, error)
 	GetFollowers(ctx context.Context, userID, cursor string, limit int) ([]string, string, error)
 	GetFollowing(ctx context.Context, userID, cursor string, limit int) ([]string, string, error)
 	GetFollowCounts(ctx context.Context, userID string) (followers int32, following int32, err error)
@@ -63,6 +64,15 @@ func (r *followRepo) Unfollow(ctx context.Context, followerID, followingID strin
 		return ErrNotFound
 	}
 	return nil
+}
+
+func (r *followRepo) IsFollowing(ctx context.Context, followerID, followingID string) (bool, error) {
+	var exists bool
+	err := r.pool.QueryRow(ctx,
+		`SELECT EXISTS(SELECT 1 FROM follows WHERE follower_id = $1 AND following_id = $2)`,
+		followerID, followingID,
+	).Scan(&exists)
+	return exists, err
 }
 
 func (r *followRepo) GetFollowers(ctx context.Context, userID, cursor string, limit int) ([]string, string, error) {
