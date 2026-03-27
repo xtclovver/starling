@@ -62,7 +62,11 @@ func (m *JWTManager) RotateRefreshToken(ctx context.Context, oldToken, uaHash st
 	// 1. Read meta BEFORE deleting (so we have familyID for reuse detection)
 	meta, err := m.rdb.HGetAll(ctx, "refresh_meta:"+oldHash).Result()
 	if err != nil || len(meta) == 0 {
-		// Token never existed or already cleaned up — could be reuse
+		// Meta is gone — check if this token was already consumed (reuse detection)
+		familyID, ferr := m.rdb.Get(ctx, "refresh_consumed:"+oldHash).Result()
+		if ferr == nil && familyID != "" {
+			m.invalidateFamily(ctx, familyID)
+		}
 		return "", "", ErrInvalidToken
 	}
 
@@ -88,10 +92,11 @@ func (m *JWTManager) RotateRefreshToken(ctx context.Context, oldToken, uaHash st
 		return "", "", ErrInvalidToken
 	}
 
-	// 4. Clean up meta and family set entry for old token
+	// 4. Clean up meta and family set entry for old token; leave a consumed tombstone for reuse detection
 	pipe := m.rdb.Pipeline()
 	pipe.Del(ctx, "refresh_meta:"+oldHash)
 	pipe.SRem(ctx, "family:"+familyID, oldHash)
+	pipe.Set(ctx, "refresh_consumed:"+oldHash, familyID, m.refreshTTL)
 	_, _ = pipe.Exec(ctx)
 
 	// 5. Issue new token continuing the same family
