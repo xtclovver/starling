@@ -65,6 +65,16 @@ func (s *Server) enrichPosts(ctx context.Context, posts []*pb.Post, viewerID str
 		}
 	}
 
+	// Refresh like counts from Redis (source of truth)
+	likeCounts := s.likeCounter.GetMany(ctx, postIDs)
+	if likeCounts != nil {
+		for _, p := range posts {
+			if count, ok := likeCounts[p.GetId()]; ok {
+				p.LikesCount = safeInt32(count)
+			}
+		}
+	}
+
 	if viewerID == "" {
 		return
 	}

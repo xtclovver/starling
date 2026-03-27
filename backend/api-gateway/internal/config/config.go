@@ -11,6 +11,7 @@ type Config struct {
 	RedisURL       string
 	JWTSecret      string
 	CORSOrigin     string
+	CookieSecure   bool
 }
 
 func Load() *Config {
@@ -23,6 +24,7 @@ func Load() *Config {
 		RedisURL:       getEnv("REDIS_URL", "redis://localhost:6379"),
 		JWTSecret:      getEnv("JWT_SECRET", "change-me-in-production"),
 		CORSOrigin:     getEnv("CORS_ORIGIN", "http://localhost:3000"),
+		CookieSecure:   getEnv("COOKIE_SECURE", "false") == "true",
 	}
 }
 

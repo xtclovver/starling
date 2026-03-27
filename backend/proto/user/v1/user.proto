@@ -54,6 +54,20 @@ message RefreshTokenResponse {
   string refresh_token = 2;
 }
 
+message LogoutRequest {
+  string access_token = 1;
+  string refresh_token = 2;
+}
+
+message LogoutResponse {}
+
+message RevokeAllTokensRequest {
+  string user_id = 1;
+  string access_token = 2;
+}
+
+message RevokeAllTokensResponse {}
+
 message GetUserRequest {
   string id = 1;
   string viewer_id = 2;
@@ -204,6 +218,8 @@ service UserService {
   rpc Register(RegisterRequest) returns (RegisterResponse);
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc RevokeAllTokens(RevokeAllTokensRequest) returns (RevokeAllTokensResponse);
   rpc GetUser(GetUserRequest) returns (GetUserResponse);
   rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
   rpc SoftDeleteUser(SoftDeleteUserRequest) returns (SoftDeleteUserResponse);

@@ -50,7 +50,7 @@ func main() {
 	publisher := ws.NewPublisher(rdb)
 
 	// Handlers
-	authH := handler.NewAuthHandler(clients.User)
+	authH := handler.NewAuthHandler(clients.User, cfg.CookieSecure)
 	userH := handler.NewUserHandler(clients.User, clients.Post)
 	postH := handler.NewPostHandler(clients.Post, clients.User, publisher)
 	commentH := handler.NewCommentHandler(clients.Comment, clients.User, clients.Post, publisher)
@@ -62,7 +62,7 @@ func main() {
 	wsHandler := ws.NewHandler(hub, cfg.JWTSecret, log)
 
 	// Middleware
-	auth := middleware.NewAuth(cfg.JWTSecret)
+	auth := middleware.NewAuth(cfg.JWTSecret, rdb)
 	rl := middleware.NewRateLimiter(rdb)
 
 	// Router (stdlib)
@@ -72,6 +72,8 @@ func main() {
 	mux.HandleFunc("POST /api/auth/register", authH.Register)
 	mux.HandleFunc("POST /api/auth/login", authH.Login)
 	mux.HandleFunc("POST /api/auth/refresh", authH.Refresh)
+	mux.Handle("POST /api/auth/logout", auth.Required(http.HandlerFunc(authH.Logout)))
+	mux.Handle("POST /api/auth/revoke-all", auth.Required(http.HandlerFunc(authH.RevokeAll)))
 
 	// User routes - public
 	mux.HandleFunc("GET /api/users/search", userH.SearchUsers)
@@ -135,7 +137,7 @@ func main() {
 	h = middleware.Logger(log)(h)
 	h = middleware.SecurityHeaders(h)
 	h = middleware.CORS(cfg.CORSOrigin)(h)
-	h = rl.Guest()(h) // default rate limit
+	h = rl.Adaptive(60, 300, time.Minute)(h) // 60/min guests, 300/min auth
 	h = middleware.BodyLimit(1 << 20)(h) // 1MB default
 	h = middleware.RequestID(h)
 	h = middleware.Recovery(log)(h)

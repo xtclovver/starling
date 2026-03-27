@@ -12,6 +12,7 @@ import (
 
 type Notifier interface {
 	PublishNotification(ctx context.Context, userID string, data any)
+	PublishNewPost(ctx context.Context, followerIDs []string, data any)
 }
 
 type PostHandler struct {
@@ -52,6 +53,10 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	h.enrichSinglePost(r, post)
 
 	go notifyMentions(context.Background(), req.Content, userID, created.GetId(), "", h.user, h.notifier)
+
+	if h.notifier != nil {
+		go h.broadcastNewPost(context.Background(), userID, post)
+	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{"post": post})
 }
@@ -372,4 +377,28 @@ func (h *PostHandler) enrichPosts(r *http.Request, w http.ResponseWriter, posts 
 		"posts":      enriched,
 		"pagination": pagination,
 	})
+}
+
+func (h *PostHandler) broadcastNewPost(ctx context.Context, authorID string, post map[string]any) {
+	var cursor string
+	for {
+		resp, err := h.user.GetFollowers(ctx, &userpb.GetFollowersRequest{
+			UserId:     authorID,
+			Pagination: &commonpb.PaginationRequest{Cursor: cursor, Limit: 200},
+		})
+		if err != nil || resp == nil {
+			return
+		}
+		ids := make([]string, 0, len(resp.GetUsers()))
+		for _, u := range resp.GetUsers() {
+			ids = append(ids, u.GetId())
+		}
+		if len(ids) > 0 {
+			h.notifier.PublishNewPost(ctx, ids, post)
+		}
+		if resp.GetPagination() == nil || resp.GetPagination().GetNextCursor() == "" {
+			return
+		}
+		cursor = resp.GetPagination().GetNextCursor()
+	}
 }

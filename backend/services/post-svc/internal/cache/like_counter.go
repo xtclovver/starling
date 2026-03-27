@@ -74,6 +74,38 @@ func (c *LikeCounter) Get(ctx context.Context, postID string) (int64, error) {
 	return strconv.ParseInt(val, 10, 64)
 }
 
+func (c *LikeCounter) GetMany(ctx context.Context, postIDs []string) map[string]int64 {
+	if len(postIDs) == 0 {
+		return nil
+	}
+	keys := make([]string, len(postIDs))
+	for i, id := range postIDs {
+		keys[i] = "post:likes:" + id
+	}
+	vals, err := c.rdb.MGet(ctx, keys...).Result()
+	if err != nil {
+		return nil
+	}
+	result := make(map[string]int64, len(postIDs))
+	for i, v := range vals {
+		if v == nil {
+			// Cache miss — load from DB and populate cache
+			count, err := c.likeRepo.CountByPost(ctx, postIDs[i])
+			if err == nil {
+				result[postIDs[i]] = count
+				c.rdb.Set(ctx, keys[i], count, 300*time.Second)
+			}
+			continue
+		}
+		if s, ok := v.(string); ok {
+			if n, err := strconv.ParseInt(s, 10, 64); err == nil {
+				result[postIDs[i]] = n
+			}
+		}
+	}
+	return result
+}
+
 func (c *LikeCounter) StartSyncLoop(ctx context.Context, interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()

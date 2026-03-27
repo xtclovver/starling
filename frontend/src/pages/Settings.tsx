@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Camera, ImagePlus, X } from 'lucide-react';
+import { ArrowLeft, Camera, ImagePlus, X, ShieldAlert } from 'lucide-react';
 import { updateUser } from '@/api/users';
 import { uploadMedia, deleteMedia } from '@/api/media';
+import { revokeAllSessions } from '@/api/auth';
 import { useAuthStore } from '@/store/auth';
 import Avatar from '@/components/Avatar';
 import l from '@/styles/layout.module.css';
@@ -10,7 +11,7 @@ import s from '@/styles/profile.module.css';
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { user, updateUser: updateStore, avatarMediaId, setAvatarMediaId, bannerMediaId, setBannerMediaId } = useAuthStore();
+  const { user, updateUser: updateStore, avatarMediaId, setAvatarMediaId, bannerMediaId, setBannerMediaId, logout } = useAuthStore();
   const avatarFileRef = useRef<HTMLInputElement>(null);
   const bannerFileRef = useRef<HTMLInputElement>(null);
 
@@ -26,6 +27,7 @@ export default function Settings() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [revoking, setRevoking] = useState(false);
 
   if (!user) { navigate('/login'); return null; }
 
@@ -87,6 +89,17 @@ export default function Settings() {
       const msg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
       setError(msg || 'Не удалось сохранить');
     } finally { setLoading(false); }
+  };
+
+  const handleRevokeAll = async () => {
+    setRevoking(true);
+    try {
+      await revokeAllSessions();
+      logout();
+      navigate('/');
+    } catch {
+      setRevoking(false);
+    }
   };
 
   const currentBanner = bannerPreview || user.banner_url;
@@ -153,6 +166,14 @@ export default function Settings() {
           {loading ? 'Сохранение...' : 'Сохранить'}
         </button>
       </form>
+
+      <div className={s.securitySection}>
+        <h2 className={s.securityTitle}><ShieldAlert size={18} /> Безопасность</h2>
+        <p className={s.securityDesc}>Завершить все активные сессии на всех устройствах. Вам потребуется войти заново.</p>
+        <button onClick={handleRevokeAll} disabled={revoking} className={s.revokeBtn}>
+          {revoking ? 'Завершаем...' : 'Завершить все сессии'}
+        </button>
+      </div>
     </div>
   );
 }

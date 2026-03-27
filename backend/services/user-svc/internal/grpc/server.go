@@ -167,6 +167,28 @@ func (s *Server) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) 
 	}, nil
 }
 
+func (s *Server) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.LogoutResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("Logout", "duration", time.Since(start)) }()
+
+	if err := s.jwt.Logout(ctx, req.GetAccessToken(), req.GetRefreshToken()); err != nil {
+		s.log.Error("logout failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	return &pb.LogoutResponse{}, nil
+}
+
+func (s *Server) RevokeAllTokens(ctx context.Context, req *pb.RevokeAllTokensRequest) (*pb.RevokeAllTokensResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("RevokeAllTokens", "duration", time.Since(start)) }()
+
+	if err := s.jwt.RevokeAllTokens(ctx, req.GetUserId(), req.GetAccessToken()); err != nil {
+		s.log.Error("revoke all tokens failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	return &pb.RevokeAllTokensResponse{}, nil
+}
+
 func (s *Server) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
 	start := time.Now()
 	defer func() { s.log.Info("GetUser", "duration", time.Since(start)) }()

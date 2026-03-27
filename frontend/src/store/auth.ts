@@ -4,36 +4,33 @@ import type { User } from '@/types';
 interface AuthState {
   user: User | null;
   accessToken: string | null;
-  refreshToken: string | null;
   isAuthenticated: boolean;
   avatarMediaId: string | null;
   bannerMediaId: string | null;
-  login: (user: User, accessToken: string, refreshToken: string) => void;
+  initializing: boolean;
+  login: (user: User, accessToken: string) => void;
   logout: () => void;
   updateUser: (user: Partial<User>) => void;
   setAvatarMediaId: (id: string | null) => void;
   setBannerMediaId: (id: string | null) => void;
-  setTokens: (accessToken: string, refreshToken: string) => void;
+  setAccessToken: (accessToken: string) => void;
+  setInitializing: (v: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  accessToken: localStorage.getItem('access_token'),
-  refreshToken: localStorage.getItem('refresh_token'),
-  isAuthenticated: !!localStorage.getItem('access_token'),
+  accessToken: null,
+  isAuthenticated: false,
   avatarMediaId: null,
   bannerMediaId: null,
+  initializing: true,
 
-  login: (user, accessToken, refreshToken) => {
-    localStorage.setItem('access_token', accessToken);
-    localStorage.setItem('refresh_token', refreshToken);
-    set({ user, accessToken, refreshToken, isAuthenticated: true });
+  login: (user, accessToken) => {
+    set({ user, accessToken, isAuthenticated: true });
   },
 
   logout: () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false, avatarMediaId: null, bannerMediaId: null });
+    set({ user: null, accessToken: null, isAuthenticated: false, avatarMediaId: null, bannerMediaId: null });
   },
 
   updateUser: (partial) =>
@@ -44,9 +41,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   setAvatarMediaId: (id) => set({ avatarMediaId: id }),
   setBannerMediaId: (id) => set({ bannerMediaId: id }),
 
-  setTokens: (accessToken, refreshToken) => {
-    localStorage.setItem('access_token', accessToken);
-    localStorage.setItem('refresh_token', refreshToken);
-    set({ accessToken, refreshToken });
+  setAccessToken: (accessToken) => {
+    set({ accessToken, isAuthenticated: true });
   },
+
+  setInitializing: (v) => set({ initializing: v }),
 }));

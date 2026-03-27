@@ -31,7 +31,7 @@ export default function AuthModal() {
     setLoading(true);
     try {
       const data = await login(email, password);
-      setAuth(data.user, data.access_token, data.refresh_token);
+      setAuth(data.user, data.access_token);
       resetFeed();
       closeAuthModal();
     } catch (err: unknown) {
@@ -49,7 +49,7 @@ export default function AuthModal() {
     setLoading(true);
     try {
       const data = await register(username, email, password);
-      setAuth(data.user, data.access_token, data.refresh_token);
+      setAuth(data.user, data.access_token);
       resetFeed();
       closeAuthModal();
     } catch (err: unknown) {

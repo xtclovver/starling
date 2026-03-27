@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, User, Settings, LogOut, Feather, Bookmark, Bell } from 'lucide-react';
+import { logout as apiLogout } from '@/api/auth';
 import { useAuthStore } from '@/store/auth';
 import { useUIStore } from '@/store/ui';
 import { useNotificationStore } from '@/store/notifications';
@@ -21,7 +22,7 @@ export default function Sidebar() {
   const openAuthModal = useUIStore((st) => st.openAuthModal);
   const unreadCount = useNotificationStore((st) => st.unreadCount);
 
-  const handleLogout = () => { logout(); navigate('/'); };
+  const handleLogout = () => { apiLogout().catch(() => {}); logout(); navigate('/'); };
 
   return (
     <aside className={s.sidebar}>

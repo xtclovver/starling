@@ -13,7 +13,7 @@ import type { Post } from '@/types';
 
 export default function Home() {
   const isAuthenticated = useAuthStore((st) => st.isAuthenticated);
-  const { posts, cursor, hasMore, loading, setPosts, appendPosts, setLoading } = useFeedStore();
+  const { posts, cursor, hasMore, loading, pendingPosts, setPosts, appendPosts, flushPendingPosts, setLoading } = useFeedStore();
   const [guestPosts, setGuestPosts] = useState<Post[]>([]);
   const [guestCursor, setGuestCursor] = useState('');
   const [guestHasMore, setGuestHasMore] = useState(true);
@@ -72,6 +72,11 @@ export default function Home() {
         <h1 className={s.pageHeaderTitle}>{isAuthenticated ? 'Главная' : 'Лента'}</h1>
       </header>
       {isAuthenticated && <CreatePost />}
+      {isAuthenticated && pendingPosts.length > 0 && (
+        <button className={s.newPostsBanner} onClick={flushPendingPosts}>
+          {pendingPosts.length === 1 ? '1 новый пост' : `${pendingPosts.length} новых постов`}
+        </button>
+      )}
       {currentLoading && currentPosts.length === 0 ? (
         <>{[1,2,3,4].map((i) => <SkeletonPost key={i} />)}</>
       ) : (

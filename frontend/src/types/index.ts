@@ -59,7 +59,6 @@ export interface ApiResponse<T> {
 export interface AuthTokens {
   user: User;
   access_token: string;
-  refresh_token: string;
 }
 
 export interface TrendingHashtag {

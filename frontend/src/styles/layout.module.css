@@ -293,3 +293,18 @@
   justify-content: center;
 }
 .backBtn:hover { background: var(--bg-hover); }
+
+/* ── New Posts Banner ── */
+.newPostsBanner {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  text-align: center;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.newPostsBanner:hover { background: var(--bg-hover); }

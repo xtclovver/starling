@@ -6,16 +6,18 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/redis/go-redis/v9"
 )
 
 const UserIDKey ctxKey = "user_id"
 
 type Auth struct {
 	secret []byte
+	rdb    *redis.Client
 }
 
-func NewAuth(secret string) *Auth {
-	return &Auth{secret: []byte(secret)}
+func NewAuth(secret string, rdb *redis.Client) *Auth {
+	return &Auth{secret: []byte(secret), rdb: rdb}
 }
 
 func (a *Auth) Required(next http.Handler) http.Handler {
@@ -65,6 +67,13 @@ func (a *Auth) extractUserID(r *http.Request) (string, error) {
 	sub, ok := claims["sub"].(string)
 	if !ok {
 		return "", jwt.ErrTokenInvalidClaims
+	}
+
+	// Check jti blacklist
+	if jti, ok := claims["jti"].(string); ok && jti != "" && a.rdb != nil {
+		if exists, _ := a.rdb.Exists(r.Context(), "blacklist:"+jti).Result(); exists > 0 {
+			return "", jwt.ErrTokenInvalidClaims
+		}
 	}
 
 	return sub, nil

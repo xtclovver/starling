@@ -232,6 +232,39 @@
 .saveBtn:hover { background: var(--accent-hover); }
 .saveBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* ── Security Section ── */
+.securitySection {
+  padding: 16px;
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.securityTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+.securityDesc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+.revokeBtn {
+  padding: 8px 20px;
+  border-radius: 50px;
+  background: transparent;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  font-weight: 600;
+  font-size: 14px;
+  transition: background 0.15s, opacity 0.15s;
+}
+.revokeBtn:hover { background: var(--danger-muted); }
+.revokeBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* Empty state */
 .empty {
   color: var(--text-tertiary);

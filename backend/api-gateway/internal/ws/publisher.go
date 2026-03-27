@@ -23,6 +23,16 @@ func (p *Publisher) PublishNotification(ctx context.Context, userID string, data
 	p.rdb.Publish(ctx, "ws:channels:"+userID, payload)
 }
 
+func (p *Publisher) PublishNewPost(ctx context.Context, followerIDs []string, data any) {
+	payload, err := json.Marshal(Event{Type: "new_post", Data: mustMarshal(data)})
+	if err != nil {
+		return
+	}
+	for _, id := range followerIDs {
+		p.rdb.Publish(ctx, "ws:channels:"+id, payload)
+	}
+}
+
 func mustMarshal(v any) json.RawMessage {
 	b, _ := json.Marshal(v)
 	return b

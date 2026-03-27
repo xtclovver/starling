@@ -34,12 +34,15 @@ func TestGenerateTokenPair(t *testing.T) {
 	}
 
 	// Validate the access token contains the correct userID
-	userID, err := m.ValidateAccessToken(access)
+	userID, jti, err := m.ValidateAccessToken(access)
 	if err != nil {
 		t.Fatalf("ValidateAccessToken returned error for generated token: %v", err)
 	}
 	if userID != "user-123" {
 		t.Errorf("expected userID %q, got %q", "user-123", userID)
+	}
+	if jti == "" {
+		t.Error("jti is empty in generated token")
 	}
 }
 
@@ -52,12 +55,15 @@ func TestValidateAccessToken_Valid(t *testing.T) {
 		t.Fatalf("generateAccessToken returned error: %v", err)
 	}
 
-	userID, err := m.ValidateAccessToken(token)
+	userID, jti, err := m.ValidateAccessToken(token)
 	if err != nil {
 		t.Fatalf("ValidateAccessToken returned error: %v", err)
 	}
 	if userID != "user-456" {
 		t.Errorf("expected userID %q, got %q", "user-456", userID)
+	}
+	if jti == "" {
+		t.Error("jti should not be empty")
 	}
 }
 
@@ -78,7 +84,7 @@ func TestValidateAccessToken_Expired(t *testing.T) {
 		t.Fatalf("failed to sign token: %v", err)
 	}
 
-	_, err = m.ValidateAccessToken(tokenStr)
+	_, _, err = m.ValidateAccessToken(tokenStr)
 	if err != ErrExpiredToken {
 		t.Errorf("expected ErrExpiredToken, got %v", err)
 	}
@@ -99,7 +105,7 @@ func TestValidateAccessToken_Malformed(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := m.ValidateAccessToken(tc.token)
+			_, _, err := m.ValidateAccessToken(tc.token)
 			if err != ErrInvalidToken {
 				t.Errorf("expected ErrInvalidToken, got %v", err)
 			}
@@ -117,7 +123,7 @@ func TestValidateAccessToken_WrongSecret(t *testing.T) {
 		t.Fatalf("generateAccessToken returned error: %v", err)
 	}
 
-	_, err = m2.ValidateAccessToken(token)
+	_, _, err = m2.ValidateAccessToken(token)
 	if err != ErrInvalidToken {
 		t.Errorf("expected ErrInvalidToken, got %v", err)
 	}
@@ -147,7 +153,7 @@ func TestRotateRefreshToken(t *testing.T) {
 	}
 
 	// Validate new access token
-	userID, err := m.ValidateAccessToken(newAccess)
+	userID, _, err := m.ValidateAccessToken(newAccess)
 	if err != nil {
 		t.Fatalf("ValidateAccessToken returned error for rotated token: %v", err)
 	}

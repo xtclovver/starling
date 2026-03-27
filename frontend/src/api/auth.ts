@@ -10,3 +10,11 @@ export async function login(email: string, password: string) {
   const { data } = await client.post<ApiResponse<AuthTokens>>('/auth/login', { email, password });
   return data.data;
 }
+
+export async function logout() {
+  await client.post('/auth/logout');
+}
+
+export async function revokeAllSessions() {
+  await client.post('/auth/revoke-all');
+}

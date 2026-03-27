@@ -23,7 +23,7 @@ export default function Login() {
     setLoading(true);
     try {
       const data = await login(email, password);
-      setAuth(data.user, data.access_token, data.refresh_token);
+      setAuth(data.user, data.access_token);
       navigate(from, { replace: true });
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;

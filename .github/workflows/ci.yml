@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Download dependencies
+        run: |
+          for dir in api-gateway services/user-svc services/post-svc services/comment-svc services/media-svc; do
+            (cd "$dir" && go mod download)
+          done
+
+      - name: Vet
+        run: |
+          for dir in api-gateway services/user-svc services/post-svc services/comment-svc services/media-svc; do
+            echo "=== go vet ./$dir/... ==="
+            (cd "$dir" && go vet ./...)
+          done
+
+      - name: Test
+        run: |
+          for dir in api-gateway services/user-svc services/post-svc services/comment-svc services/media-svc; do
+            echo "=== go test ./$dir/... ==="
+            (cd "$dir" && go test ./...)
+          done
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install
+        run: npm ci --legacy-peer-deps
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build api-gateway
+        run: docker build -f backend/api-gateway/Dockerfile backend/
+
+      - name: Build user-svc
+        run: docker build -f backend/services/user-svc/Dockerfile backend/
+
+      - name: Build post-svc
+        run: docker build -f backend/services/post-svc/Dockerfile backend/
+
+      - name: Build comment-svc
+        run: docker build -f backend/services/comment-svc/Dockerfile backend/
+
+      - name: Build media-svc
+        run: docker build -f backend/services/media-svc/Dockerfile backend/
+
+      - name: Build frontend
+        run: docker build frontend/
