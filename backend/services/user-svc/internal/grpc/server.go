@@ -103,7 +103,7 @@ func (s *Server) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.Reg
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	accessToken, refreshToken, err := s.jwt.GenerateTokenPair(user.ID)
+	accessToken, refreshToken, err := s.jwt.GenerateTokenPair(ctx, user.ID, req.GetUaHash())
 	if err != nil {
 		s.log.Error("generate token pair failed", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
@@ -133,7 +133,7 @@ func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResp
 		return nil, status.Error(codes.Unauthenticated, "invalid email or password")
 	}
 
-	accessToken, refreshToken, err := s.jwt.GenerateTokenPair(user.ID)
+	accessToken, refreshToken, err := s.jwt.GenerateTokenPair(ctx, user.ID, req.GetUaHash())
 	if err != nil {
 		s.log.Error("generate token pair failed", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
@@ -152,7 +152,7 @@ func (s *Server) RefreshToken(ctx context.Context, req *pb.RefreshTokenRequest) 
 	start := time.Now()
 	defer func() { s.log.Info("RefreshToken", "duration", time.Since(start)) }()
 
-	accessToken, refreshToken, err := s.jwt.RotateRefreshToken(ctx, req.GetRefreshToken())
+	accessToken, refreshToken, err := s.jwt.RotateRefreshToken(ctx, req.GetRefreshToken(), req.GetUaHash())
 	if err != nil {
 		if errors.Is(err, auth.ErrInvalidToken) {
 			return nil, status.Error(codes.Unauthenticated, "invalid refresh token")

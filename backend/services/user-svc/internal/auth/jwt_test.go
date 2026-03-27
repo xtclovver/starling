@@ -22,7 +22,7 @@ func TestGenerateTokenPair(t *testing.T) {
 	rdb := setupMiniredis(t)
 	m := NewJWTManager("test-secret", 15*time.Minute, 7*24*time.Hour, rdb)
 
-	access, refresh, err := m.GenerateTokenPair("user-123")
+	access, refresh, err := m.GenerateTokenPair(context.Background(), "user-123", "")
 	if err != nil {
 		t.Fatalf("GenerateTokenPair returned error: %v", err)
 	}
@@ -134,14 +134,14 @@ func TestRotateRefreshToken(t *testing.T) {
 	m := NewJWTManager("test-secret", 15*time.Minute, 7*24*time.Hour, rdb)
 
 	// Generate initial token pair
-	_, refresh, err := m.GenerateTokenPair("user-rotate")
+	ctx := context.Background()
+	_, refresh, err := m.GenerateTokenPair(ctx, "user-rotate", "")
 	if err != nil {
 		t.Fatalf("GenerateTokenPair returned error: %v", err)
 	}
 
 	// Rotate using the refresh token
-	ctx := context.Background()
-	newAccess, newRefresh, err := m.RotateRefreshToken(ctx, refresh)
+	newAccess, newRefresh, err := m.RotateRefreshToken(ctx, refresh, "")
 	if err != nil {
 		t.Fatalf("RotateRefreshToken returned error: %v", err)
 	}
@@ -162,7 +162,7 @@ func TestRotateRefreshToken(t *testing.T) {
 	}
 
 	// Old refresh token should be invalidated (already consumed)
-	_, _, err = m.RotateRefreshToken(ctx, refresh)
+	_, _, err = m.RotateRefreshToken(ctx, refresh, "")
 	if err != ErrInvalidToken {
 		t.Errorf("expected ErrInvalidToken for reused refresh token, got %v", err)
 	}
