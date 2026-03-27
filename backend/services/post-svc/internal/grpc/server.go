@@ -370,7 +370,7 @@ func (s *Server) UpdatePost(ctx context.Context, req *pb.UpdatePostRequest) (*pb
 		return nil, status.Error(codes.InvalidArgument, "content must be 1-280 characters")
 	}
 
-	post, err := s.postRepo.Update(ctx, req.GetId(), req.GetUserId(), content)
+	post, err := s.postRepo.Update(ctx, req.GetId(), req.GetUserId(), content, req.GetMediaUrl())
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return nil, status.Error(codes.NotFound, "post not found")
@@ -499,4 +499,40 @@ func (s *Server) QuotePost(ctx context.Context, req *pb.QuotePostRequest) (*pb.Q
 	protoPost := toProtoPost(post)
 	s.enrichPosts(ctx, []*pb.Post{protoPost}, req.GetUserId())
 	return &pb.QuotePostResponse{Post: protoPost}, nil
+}
+
+func (s *Server) GetRepostsByUser(ctx context.Context, req *pb.GetRepostsByUserRequest) (*pb.GetRepostsByUserResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("GetRepostsByUser", "duration", time.Since(start)) }()
+
+	var cursor string
+	var limit int32 = 20
+	if req.GetPagination() != nil {
+		cursor = req.GetPagination().GetCursor()
+		if req.GetPagination().GetLimit() > 0 {
+			limit = req.GetPagination().GetLimit()
+		}
+	}
+
+	posts, nextCursor, hasMore, err := s.repostRepo.GetRepostedPostsByUser(ctx, req.GetUserId(), cursor, int(limit))
+	if err != nil {
+		s.log.Error("get reposts by user failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	pbPosts := make([]*pb.Post, len(posts))
+	for i, p := range posts {
+		p := p
+		pbPosts[i] = toProtoPost(&p)
+	}
+
+	s.enrichPosts(ctx, pbPosts, req.GetViewerId())
+
+	return &pb.GetRepostsByUserResponse{
+		Posts: pbPosts,
+		Pagination: &commonpb.PaginationResponse{
+			NextCursor: nextCursor,
+			HasMore:    hasMore,
+		},
+	}, nil
 }

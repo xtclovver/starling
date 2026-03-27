@@ -114,6 +114,57 @@ func (h *UserHandler) GetUserPosts(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *UserHandler) GetUserReposts(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	cursor := r.URL.Query().Get("cursor")
+	viewerID := getUserID(r)
+
+	resp, err := h.post.GetRepostsByUser(r.Context(), &postpb.GetRepostsByUserRequest{
+		UserId:     id,
+		Pagination: &commonpb.PaginationRequest{Cursor: cursor, Limit: 20},
+		ViewerId:   viewerID,
+	})
+	if err != nil {
+		handleGRPCError(w, err)
+		return
+	}
+
+	posts := resp.GetPosts()
+
+	// Batch-fetch authors
+	userMap := make(map[string]map[string]any)
+	if len(posts) > 0 {
+		seen := make(map[string]struct{})
+		var ids []string
+		for _, p := range posts {
+			if _, ok := seen[p.GetUserId()]; !ok {
+				seen[p.GetUserId()] = struct{}{}
+				ids = append(ids, p.GetUserId())
+			}
+		}
+		usersResp, _ := h.user.GetUsersByIDs(r.Context(), &userpb.GetUsersByIDsRequest{Ids: ids})
+		if usersResp != nil {
+			for _, u := range usersResp.GetUsers() {
+				userMap[u.GetId()] = userToMap(u)
+			}
+		}
+	}
+
+	enriched := make([]map[string]any, len(posts))
+	for i, p := range posts {
+		m := postToMap(p)
+		if author, ok := userMap[p.GetUserId()]; ok {
+			m["author"] = author
+		}
+		enriched[i] = m
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"posts":      enriched,
+		"pagination": resp.GetPagination(),
+	})
+}
+
 func (h *UserHandler) SearchUsers(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("q")
 	cursor := r.URL.Query().Get("cursor")

@@ -1,0 +1,1 @@
+ALTER TABLE comments ADD COLUMN media_url TEXT NOT NULL DEFAULT '';

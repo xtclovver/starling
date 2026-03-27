@@ -1243,6 +1243,7 @@ type UpdatePostRequest struct {
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	Content       string                 `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
+	MediaUrl      string                 `protobuf:"bytes,4,opt,name=media_url,json=mediaUrl,proto3" json:"media_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1294,6 +1295,13 @@ func (x *UpdatePostRequest) GetUserId() string {
 func (x *UpdatePostRequest) GetContent() string {
 	if x != nil {
 		return x.Content
+	}
+	return ""
+}
+
+func (x *UpdatePostRequest) GetMediaUrl() string {
+	if x != nil {
+		return x.MediaUrl
 	}
 	return ""
 }
@@ -1960,6 +1968,118 @@ func (x *QuotePostResponse) GetPost() *Post {
 	return nil
 }
 
+type GetRepostsByUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Pagination    *v1.PaginationRequest  `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	ViewerId      string                 `protobuf:"bytes,3,opt,name=viewer_id,json=viewerId,proto3" json:"viewer_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRepostsByUserRequest) Reset() {
+	*x = GetRepostsByUserRequest{}
+	mi := &file_post_v1_post_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRepostsByUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRepostsByUserRequest) ProtoMessage() {}
+
+func (x *GetRepostsByUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_post_v1_post_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRepostsByUserRequest.ProtoReflect.Descriptor instead.
+func (*GetRepostsByUserRequest) Descriptor() ([]byte, []int) {
+	return file_post_v1_post_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *GetRepostsByUserRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *GetRepostsByUserRequest) GetPagination() *v1.PaginationRequest {
+	if x != nil {
+		return x.Pagination
+	}
+	return nil
+}
+
+func (x *GetRepostsByUserRequest) GetViewerId() string {
+	if x != nil {
+		return x.ViewerId
+	}
+	return ""
+}
+
+type GetRepostsByUserResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Posts         []*Post                `protobuf:"bytes,1,rep,name=posts,proto3" json:"posts,omitempty"`
+	Pagination    *v1.PaginationResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRepostsByUserResponse) Reset() {
+	*x = GetRepostsByUserResponse{}
+	mi := &file_post_v1_post_proto_msgTypes[38]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRepostsByUserResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRepostsByUserResponse) ProtoMessage() {}
+
+func (x *GetRepostsByUserResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_post_v1_post_proto_msgTypes[38]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRepostsByUserResponse.ProtoReflect.Descriptor instead.
+func (*GetRepostsByUserResponse) Descriptor() ([]byte, []int) {
+	return file_post_v1_post_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *GetRepostsByUserResponse) GetPosts() []*Post {
+	if x != nil {
+		return x.Posts
+	}
+	return nil
+}
+
+func (x *GetRepostsByUserResponse) GetPagination() *v1.PaginationResponse {
+	if x != nil {
+		return x.Pagination
+	}
+	return nil
+}
+
 var File_post_v1_post_proto protoreflect.FileDescriptor
 
 const file_post_v1_post_proto_rawDesc = "" +
@@ -2057,11 +2177,12 @@ const file_post_v1_post_proto_rawDesc = "" +
 	"\x05posts\x18\x01 \x03(\v2\r.post.v1.PostR\x05posts\x12=\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1d.common.v1.PaginationResponseR\n" +
-	"pagination\"V\n" +
+	"pagination\"s\n" +
 	"\x11UpdatePostRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x18\n" +
-	"\acontent\x18\x03 \x01(\tR\acontent\"7\n" +
+	"\acontent\x18\x03 \x01(\tR\acontent\x12\x1b\n" +
+	"\tmedia_url\x18\x04 \x01(\tR\bmediaUrl\"7\n" +
 	"\x12UpdatePostResponse\x12!\n" +
 	"\x04post\x18\x01 \x01(\v2\r.post.v1.PostR\x04post\"B\n" +
 	"\x0fTrendingHashtag\x12\x10\n" +
@@ -2104,7 +2225,18 @@ const file_post_v1_post_proto_rawDesc = "" +
 	"\apost_id\x18\x02 \x01(\tR\x06postId\x12\x18\n" +
 	"\acontent\x18\x03 \x01(\tR\acontent\"6\n" +
 	"\x11QuotePostResponse\x12!\n" +
-	"\x04post\x18\x01 \x01(\v2\r.post.v1.PostR\x04post2\x8c\n" +
+	"\x04post\x18\x01 \x01(\v2\r.post.v1.PostR\x04post\"\x8d\x01\n" +
+	"\x17GetRepostsByUserRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12<\n" +
+	"\n" +
+	"pagination\x18\x02 \x01(\v2\x1c.common.v1.PaginationRequestR\n" +
+	"pagination\x12\x1b\n" +
+	"\tviewer_id\x18\x03 \x01(\tR\bviewerId\"~\n" +
+	"\x18GetRepostsByUserResponse\x12#\n" +
+	"\x05posts\x18\x01 \x03(\v2\r.post.v1.PostR\x05posts\x12=\n" +
+	"\n" +
+	"pagination\x18\x02 \x01(\v2\x1d.common.v1.PaginationResponseR\n" +
+	"pagination2\xe5\n" +
 	"\n" +
 	"\vPostService\x12E\n" +
 	"\n" +
@@ -2128,7 +2260,8 @@ const file_post_v1_post_proto_rawDesc = "" +
 	"\n" +
 	"RepostPost\x12\x1a.post.v1.RepostPostRequest\x1a\x1b.post.v1.RepostPostResponse\x12K\n" +
 	"\fUnrepostPost\x12\x1c.post.v1.UnrepostPostRequest\x1a\x1d.post.v1.UnrepostPostResponse\x12B\n" +
-	"\tQuotePost\x12\x19.post.v1.QuotePostRequest\x1a\x1a.post.v1.QuotePostResponseB1Z/github.com/usedcvnt/microtwitter/gen/go/post/v1b\x06proto3"
+	"\tQuotePost\x12\x19.post.v1.QuotePostRequest\x1a\x1a.post.v1.QuotePostResponse\x12W\n" +
+	"\x10GetRepostsByUser\x12 .post.v1.GetRepostsByUserRequest\x1a!.post.v1.GetRepostsByUserResponseB1Z/github.com/usedcvnt/microtwitter/gen/go/post/v1b\x06proto3"
 
 var (
 	file_post_v1_post_proto_rawDescOnce sync.Once
@@ -2142,7 +2275,7 @@ func file_post_v1_post_proto_rawDescGZIP() []byte {
 	return file_post_v1_post_proto_rawDescData
 }
 
-var file_post_v1_post_proto_msgTypes = make([]protoimpl.MessageInfo, 37)
+var file_post_v1_post_proto_msgTypes = make([]protoimpl.MessageInfo, 39)
 var file_post_v1_post_proto_goTypes = []any{
 	(*Post)(nil),                        // 0: post.v1.Post
 	(*CreatePostRequest)(nil),           // 1: post.v1.CreatePostRequest
@@ -2181,74 +2314,81 @@ var file_post_v1_post_proto_goTypes = []any{
 	(*UnrepostPostResponse)(nil),        // 34: post.v1.UnrepostPostResponse
 	(*QuotePostRequest)(nil),            // 35: post.v1.QuotePostRequest
 	(*QuotePostResponse)(nil),           // 36: post.v1.QuotePostResponse
-	(*timestamppb.Timestamp)(nil),       // 37: google.protobuf.Timestamp
-	(*v1.PaginationRequest)(nil),        // 38: common.v1.PaginationRequest
-	(*v1.PaginationResponse)(nil),       // 39: common.v1.PaginationResponse
+	(*GetRepostsByUserRequest)(nil),     // 37: post.v1.GetRepostsByUserRequest
+	(*GetRepostsByUserResponse)(nil),    // 38: post.v1.GetRepostsByUserResponse
+	(*timestamppb.Timestamp)(nil),       // 39: google.protobuf.Timestamp
+	(*v1.PaginationRequest)(nil),        // 40: common.v1.PaginationRequest
+	(*v1.PaginationResponse)(nil),       // 41: common.v1.PaginationResponse
 }
 var file_post_v1_post_proto_depIdxs = []int32{
-	37, // 0: post.v1.Post.created_at:type_name -> google.protobuf.Timestamp
-	37, // 1: post.v1.Post.updated_at:type_name -> google.protobuf.Timestamp
-	37, // 2: post.v1.Post.edited_at:type_name -> google.protobuf.Timestamp
+	39, // 0: post.v1.Post.created_at:type_name -> google.protobuf.Timestamp
+	39, // 1: post.v1.Post.updated_at:type_name -> google.protobuf.Timestamp
+	39, // 2: post.v1.Post.edited_at:type_name -> google.protobuf.Timestamp
 	0,  // 3: post.v1.CreatePostResponse.post:type_name -> post.v1.Post
 	0,  // 4: post.v1.GetPostResponse.post:type_name -> post.v1.Post
-	38, // 5: post.v1.GetFeedRequest.pagination:type_name -> common.v1.PaginationRequest
+	40, // 5: post.v1.GetFeedRequest.pagination:type_name -> common.v1.PaginationRequest
 	0,  // 6: post.v1.GetFeedResponse.posts:type_name -> post.v1.Post
-	39, // 7: post.v1.GetFeedResponse.pagination:type_name -> common.v1.PaginationResponse
-	38, // 8: post.v1.GetPostsByUserRequest.pagination:type_name -> common.v1.PaginationRequest
+	41, // 7: post.v1.GetFeedResponse.pagination:type_name -> common.v1.PaginationResponse
+	40, // 8: post.v1.GetPostsByUserRequest.pagination:type_name -> common.v1.PaginationRequest
 	0,  // 9: post.v1.GetPostsByUserResponse.posts:type_name -> post.v1.Post
-	39, // 10: post.v1.GetPostsByUserResponse.pagination:type_name -> common.v1.PaginationResponse
-	38, // 11: post.v1.GetGlobalFeedRequest.pagination:type_name -> common.v1.PaginationRequest
+	41, // 10: post.v1.GetPostsByUserResponse.pagination:type_name -> common.v1.PaginationResponse
+	40, // 11: post.v1.GetGlobalFeedRequest.pagination:type_name -> common.v1.PaginationRequest
 	0,  // 12: post.v1.GetGlobalFeedResponse.posts:type_name -> post.v1.Post
-	39, // 13: post.v1.GetGlobalFeedResponse.pagination:type_name -> common.v1.PaginationResponse
-	38, // 14: post.v1.GetBookmarksRequest.pagination:type_name -> common.v1.PaginationRequest
+	41, // 13: post.v1.GetGlobalFeedResponse.pagination:type_name -> common.v1.PaginationResponse
+	40, // 14: post.v1.GetBookmarksRequest.pagination:type_name -> common.v1.PaginationRequest
 	0,  // 15: post.v1.GetBookmarksResponse.posts:type_name -> post.v1.Post
-	39, // 16: post.v1.GetBookmarksResponse.pagination:type_name -> common.v1.PaginationResponse
+	41, // 16: post.v1.GetBookmarksResponse.pagination:type_name -> common.v1.PaginationResponse
 	0,  // 17: post.v1.UpdatePostResponse.post:type_name -> post.v1.Post
-	38, // 18: post.v1.GetPostsByHashtagRequest.pagination:type_name -> common.v1.PaginationRequest
+	40, // 18: post.v1.GetPostsByHashtagRequest.pagination:type_name -> common.v1.PaginationRequest
 	0,  // 19: post.v1.GetPostsByHashtagResponse.posts:type_name -> post.v1.Post
-	39, // 20: post.v1.GetPostsByHashtagResponse.pagination:type_name -> common.v1.PaginationResponse
+	41, // 20: post.v1.GetPostsByHashtagResponse.pagination:type_name -> common.v1.PaginationResponse
 	25, // 21: post.v1.GetTrendingHashtagsResponse.hashtags:type_name -> post.v1.TrendingHashtag
-	37, // 22: post.v1.Repost.created_at:type_name -> google.protobuf.Timestamp
+	39, // 22: post.v1.Repost.created_at:type_name -> google.protobuf.Timestamp
 	0,  // 23: post.v1.QuotePostResponse.post:type_name -> post.v1.Post
-	1,  // 24: post.v1.PostService.CreatePost:input_type -> post.v1.CreatePostRequest
-	3,  // 25: post.v1.PostService.GetPost:input_type -> post.v1.GetPostRequest
-	5,  // 26: post.v1.PostService.DeletePost:input_type -> post.v1.DeletePostRequest
-	7,  // 27: post.v1.PostService.GetFeed:input_type -> post.v1.GetFeedRequest
-	15, // 28: post.v1.PostService.GetGlobalFeed:input_type -> post.v1.GetGlobalFeedRequest
-	9,  // 29: post.v1.PostService.LikePost:input_type -> post.v1.LikePostRequest
-	11, // 30: post.v1.PostService.UnlikePost:input_type -> post.v1.UnlikePostRequest
-	13, // 31: post.v1.PostService.GetPostsByUser:input_type -> post.v1.GetPostsByUserRequest
-	17, // 32: post.v1.PostService.BookmarkPost:input_type -> post.v1.BookmarkPostRequest
-	19, // 33: post.v1.PostService.UnbookmarkPost:input_type -> post.v1.UnbookmarkPostRequest
-	21, // 34: post.v1.PostService.GetBookmarks:input_type -> post.v1.GetBookmarksRequest
-	23, // 35: post.v1.PostService.UpdatePost:input_type -> post.v1.UpdatePostRequest
-	26, // 36: post.v1.PostService.GetPostsByHashtag:input_type -> post.v1.GetPostsByHashtagRequest
-	28, // 37: post.v1.PostService.GetTrendingHashtags:input_type -> post.v1.GetTrendingHashtagsRequest
-	31, // 38: post.v1.PostService.RepostPost:input_type -> post.v1.RepostPostRequest
-	33, // 39: post.v1.PostService.UnrepostPost:input_type -> post.v1.UnrepostPostRequest
-	35, // 40: post.v1.PostService.QuotePost:input_type -> post.v1.QuotePostRequest
-	2,  // 41: post.v1.PostService.CreatePost:output_type -> post.v1.CreatePostResponse
-	4,  // 42: post.v1.PostService.GetPost:output_type -> post.v1.GetPostResponse
-	6,  // 43: post.v1.PostService.DeletePost:output_type -> post.v1.DeletePostResponse
-	8,  // 44: post.v1.PostService.GetFeed:output_type -> post.v1.GetFeedResponse
-	16, // 45: post.v1.PostService.GetGlobalFeed:output_type -> post.v1.GetGlobalFeedResponse
-	10, // 46: post.v1.PostService.LikePost:output_type -> post.v1.LikePostResponse
-	12, // 47: post.v1.PostService.UnlikePost:output_type -> post.v1.UnlikePostResponse
-	14, // 48: post.v1.PostService.GetPostsByUser:output_type -> post.v1.GetPostsByUserResponse
-	18, // 49: post.v1.PostService.BookmarkPost:output_type -> post.v1.BookmarkPostResponse
-	20, // 50: post.v1.PostService.UnbookmarkPost:output_type -> post.v1.UnbookmarkPostResponse
-	22, // 51: post.v1.PostService.GetBookmarks:output_type -> post.v1.GetBookmarksResponse
-	24, // 52: post.v1.PostService.UpdatePost:output_type -> post.v1.UpdatePostResponse
-	27, // 53: post.v1.PostService.GetPostsByHashtag:output_type -> post.v1.GetPostsByHashtagResponse
-	29, // 54: post.v1.PostService.GetTrendingHashtags:output_type -> post.v1.GetTrendingHashtagsResponse
-	32, // 55: post.v1.PostService.RepostPost:output_type -> post.v1.RepostPostResponse
-	34, // 56: post.v1.PostService.UnrepostPost:output_type -> post.v1.UnrepostPostResponse
-	36, // 57: post.v1.PostService.QuotePost:output_type -> post.v1.QuotePostResponse
-	41, // [41:58] is the sub-list for method output_type
-	24, // [24:41] is the sub-list for method input_type
-	24, // [24:24] is the sub-list for extension type_name
-	24, // [24:24] is the sub-list for extension extendee
-	0,  // [0:24] is the sub-list for field type_name
+	40, // 24: post.v1.GetRepostsByUserRequest.pagination:type_name -> common.v1.PaginationRequest
+	0,  // 25: post.v1.GetRepostsByUserResponse.posts:type_name -> post.v1.Post
+	41, // 26: post.v1.GetRepostsByUserResponse.pagination:type_name -> common.v1.PaginationResponse
+	1,  // 27: post.v1.PostService.CreatePost:input_type -> post.v1.CreatePostRequest
+	3,  // 28: post.v1.PostService.GetPost:input_type -> post.v1.GetPostRequest
+	5,  // 29: post.v1.PostService.DeletePost:input_type -> post.v1.DeletePostRequest
+	7,  // 30: post.v1.PostService.GetFeed:input_type -> post.v1.GetFeedRequest
+	15, // 31: post.v1.PostService.GetGlobalFeed:input_type -> post.v1.GetGlobalFeedRequest
+	9,  // 32: post.v1.PostService.LikePost:input_type -> post.v1.LikePostRequest
+	11, // 33: post.v1.PostService.UnlikePost:input_type -> post.v1.UnlikePostRequest
+	13, // 34: post.v1.PostService.GetPostsByUser:input_type -> post.v1.GetPostsByUserRequest
+	17, // 35: post.v1.PostService.BookmarkPost:input_type -> post.v1.BookmarkPostRequest
+	19, // 36: post.v1.PostService.UnbookmarkPost:input_type -> post.v1.UnbookmarkPostRequest
+	21, // 37: post.v1.PostService.GetBookmarks:input_type -> post.v1.GetBookmarksRequest
+	23, // 38: post.v1.PostService.UpdatePost:input_type -> post.v1.UpdatePostRequest
+	26, // 39: post.v1.PostService.GetPostsByHashtag:input_type -> post.v1.GetPostsByHashtagRequest
+	28, // 40: post.v1.PostService.GetTrendingHashtags:input_type -> post.v1.GetTrendingHashtagsRequest
+	31, // 41: post.v1.PostService.RepostPost:input_type -> post.v1.RepostPostRequest
+	33, // 42: post.v1.PostService.UnrepostPost:input_type -> post.v1.UnrepostPostRequest
+	35, // 43: post.v1.PostService.QuotePost:input_type -> post.v1.QuotePostRequest
+	37, // 44: post.v1.PostService.GetRepostsByUser:input_type -> post.v1.GetRepostsByUserRequest
+	2,  // 45: post.v1.PostService.CreatePost:output_type -> post.v1.CreatePostResponse
+	4,  // 46: post.v1.PostService.GetPost:output_type -> post.v1.GetPostResponse
+	6,  // 47: post.v1.PostService.DeletePost:output_type -> post.v1.DeletePostResponse
+	8,  // 48: post.v1.PostService.GetFeed:output_type -> post.v1.GetFeedResponse
+	16, // 49: post.v1.PostService.GetGlobalFeed:output_type -> post.v1.GetGlobalFeedResponse
+	10, // 50: post.v1.PostService.LikePost:output_type -> post.v1.LikePostResponse
+	12, // 51: post.v1.PostService.UnlikePost:output_type -> post.v1.UnlikePostResponse
+	14, // 52: post.v1.PostService.GetPostsByUser:output_type -> post.v1.GetPostsByUserResponse
+	18, // 53: post.v1.PostService.BookmarkPost:output_type -> post.v1.BookmarkPostResponse
+	20, // 54: post.v1.PostService.UnbookmarkPost:output_type -> post.v1.UnbookmarkPostResponse
+	22, // 55: post.v1.PostService.GetBookmarks:output_type -> post.v1.GetBookmarksResponse
+	24, // 56: post.v1.PostService.UpdatePost:output_type -> post.v1.UpdatePostResponse
+	27, // 57: post.v1.PostService.GetPostsByHashtag:output_type -> post.v1.GetPostsByHashtagResponse
+	29, // 58: post.v1.PostService.GetTrendingHashtags:output_type -> post.v1.GetTrendingHashtagsResponse
+	32, // 59: post.v1.PostService.RepostPost:output_type -> post.v1.RepostPostResponse
+	34, // 60: post.v1.PostService.UnrepostPost:output_type -> post.v1.UnrepostPostResponse
+	36, // 61: post.v1.PostService.QuotePost:output_type -> post.v1.QuotePostResponse
+	38, // 62: post.v1.PostService.GetRepostsByUser:output_type -> post.v1.GetRepostsByUserResponse
+	45, // [45:63] is the sub-list for method output_type
+	27, // [27:45] is the sub-list for method input_type
+	27, // [27:27] is the sub-list for extension type_name
+	27, // [27:27] is the sub-list for extension extendee
+	0,  // [0:27] is the sub-list for field type_name
 }
 
 func init() { file_post_v1_post_proto_init() }
@@ -2262,7 +2402,7 @@ func file_post_v1_post_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_post_v1_post_proto_rawDesc), len(file_post_v1_post_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   37,
+			NumMessages:   39,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

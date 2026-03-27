@@ -21,6 +21,7 @@ func NewCommentHandler(comment commentpb.CommentServiceClient, user userpb.UserS
 type createCommentRequest struct {
 	ParentID string `json:"parent_id,omitempty"`
 	Content  string `json:"content"`
+	MediaURL string `json:"media_url,omitempty"`
 }
 
 func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
@@ -38,6 +39,7 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		UserId:   userID,
 		ParentId: req.ParentID,
 		Content:  req.Content,
+		MediaUrl: req.MediaURL,
 	})
 	if err != nil {
 		handleGRPCError(w, err)

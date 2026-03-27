@@ -26,7 +26,10 @@ export default function Sidebar() {
   return (
     <aside className={s.sidebar}>
       <div>
-        <Link to="/" className={s.sidebarLogo}><Feather size={28} /></Link>
+        <Link to="/" className={s.sidebarLogoRow}>
+          <Feather size={28} className={s.sidebarLogoIcon} />
+          <span className={s.sidebarLogoName}>Starling</span>
+        </Link>
         <nav className={s.sidebarNav}>
           {isAuthenticated ? (
             NAV_AUTH.map(({ to, icon: Icon, label, badge }) => {
@@ -55,9 +58,6 @@ export default function Sidebar() {
             </>
           )}
         </nav>
-        {isAuthenticated && (
-          <button onClick={() => navigate('/')} className={s.sidebarPostBtn}>Опубликовать</button>
-        )}
         {!isAuthenticated && (
           <button onClick={() => openAuthModal('register')} className={s.sidebarPostBtn}>Регистрация</button>
         )}

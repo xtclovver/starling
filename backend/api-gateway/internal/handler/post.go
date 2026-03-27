@@ -184,7 +184,8 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(r)
 
 	var req struct {
-		Content string `json:"content"`
+		Content  string `json:"content"`
+		MediaURL string `json:"media_url"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
@@ -192,9 +193,10 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp, err := h.post.UpdatePost(r.Context(), &postpb.UpdatePostRequest{
-		Id:      id,
-		UserId:  userID,
-		Content: req.Content,
+		Id:       id,
+		UserId:   userID,
+		Content:  req.Content,
+		MediaUrl: req.MediaURL,
 	})
 	if err != nil {
 		handleGRPCError(w, err)

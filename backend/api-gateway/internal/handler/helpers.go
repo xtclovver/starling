@@ -135,6 +135,7 @@ func commentToMap(c *commentpb.Comment) map[string]any {
 		"user_id":     c.GetUserId(),
 		"parent_id":   c.GetParentId(),
 		"content":     c.GetContent(),
+		"media_url":   c.GetMediaUrl(),
 		"likes_count": c.GetLikesCount(),
 		"liked":       c.GetLiked(),
 		"depth":       c.GetDepth(),

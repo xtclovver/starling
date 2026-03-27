@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { ImagePlus, X } from 'lucide-react';
 import { createComment } from '@/api/comments';
+import { uploadMedia } from '@/api/media';
 import s from '@/styles/comment.module.css';
 import type { Comment } from '@/types';
 
@@ -13,16 +15,39 @@ interface CommentFormProps {
 
 export default function CommentForm({ postId, parentId = '', onSubmit, onCancel, compact }: CommentFormProps) {
   const [content, setContent] = useState('');
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const clearMedia = () => {
+    setMediaFile(null);
+    if (mediaPreview) URL.revokeObjectURL(mediaPreview);
+    setMediaPreview(null);
+    if (fileRef.current) fileRef.current.value = '';
+  };
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setMediaFile(file);
+    setMediaPreview(URL.createObjectURL(file));
+  };
 
   const handleSubmit = async () => {
     if (!content.trim() || loading) return;
     setLoading(true);
     setError('');
     try {
-      const comment = await createComment(postId, content, parentId);
+      let mediaUrl = '';
+      if (mediaFile) {
+        const m = await uploadMedia(mediaFile);
+        mediaUrl = m.url;
+      }
+      const comment = await createComment(postId, content, parentId, mediaUrl);
       setContent('');
+      clearMedia();
       onSubmit?.(comment);
     } catch (e: unknown) {
       const msg = (e as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
@@ -39,12 +64,26 @@ export default function CommentForm({ postId, parentId = '', onSubmit, onCancel,
         rows={compact ? 2 : 3}
         className={s.commentTextarea}
       />
+      {mediaPreview && (
+        <div className={s.commentMediaPreview}>
+          <img src={mediaPreview} alt="" />
+          <button onClick={clearMedia} className={s.commentMediaRemoveBtn}><X size={14} /></button>
+        </div>
+      )}
       {error && <p className={s.errorText}>{error}</p>}
       <div className={s.commentFormActions}>
-        {onCancel && <button onClick={onCancel} className={s.cancelBtn}>Отмена</button>}
-        <button onClick={handleSubmit} disabled={!content.trim() || loading} className={s.commentSubmitBtn}>
-          {loading ? '...' : 'Отправить'}
-        </button>
+        <div className={s.commentFormLeft}>
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" onChange={handleFile} style={{ display: 'none' }} />
+          <button onClick={() => fileRef.current?.click()} className={s.commentMediaBtn} title="Прикрепить фото">
+            <ImagePlus size={16} />
+          </button>
+        </div>
+        <div className={s.commentFormRight}>
+          {onCancel && <button onClick={onCancel} className={s.cancelBtn}>Отмена</button>}
+          <button onClick={handleSubmit} disabled={!content.trim() || loading} className={s.commentSubmitBtn}>
+            {loading ? '...' : 'Отправить'}
+          </button>
+        </div>
       </div>
     </div>
   );

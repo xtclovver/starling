@@ -8,6 +8,7 @@ type Comment struct {
 	UserID     string
 	ParentID   *string
 	Content    string
+	MediaURL   string
 	LikesCount int32
 	Depth      int32
 	CreatedAt  time.Time

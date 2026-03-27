@@ -1,8 +1,8 @@
 import client from './client';
 import type { ApiResponse, Comment, PaginationResponse } from '@/types';
 
-export async function createComment(postId: string, content: string, parentId = '') {
-  const { data } = await client.post<ApiResponse<{ comment: Comment }>>(`/posts/${postId}/comments`, { content, parent_id: parentId });
+export async function createComment(postId: string, content: string, parentId = '', mediaUrl = '') {
+  const { data } = await client.post<ApiResponse<{ comment: Comment }>>(`/posts/${postId}/comments`, { content, parent_id: parentId, media_url: mediaUrl });
   return data.data.comment;
 }
 

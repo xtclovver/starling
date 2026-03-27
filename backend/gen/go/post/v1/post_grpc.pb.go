@@ -36,6 +36,7 @@ const (
 	PostService_RepostPost_FullMethodName          = "/post.v1.PostService/RepostPost"
 	PostService_UnrepostPost_FullMethodName        = "/post.v1.PostService/UnrepostPost"
 	PostService_QuotePost_FullMethodName           = "/post.v1.PostService/QuotePost"
+	PostService_GetRepostsByUser_FullMethodName    = "/post.v1.PostService/GetRepostsByUser"
 )
 
 // PostServiceClient is the client API for PostService service.
@@ -59,6 +60,7 @@ type PostServiceClient interface {
 	RepostPost(ctx context.Context, in *RepostPostRequest, opts ...grpc.CallOption) (*RepostPostResponse, error)
 	UnrepostPost(ctx context.Context, in *UnrepostPostRequest, opts ...grpc.CallOption) (*UnrepostPostResponse, error)
 	QuotePost(ctx context.Context, in *QuotePostRequest, opts ...grpc.CallOption) (*QuotePostResponse, error)
+	GetRepostsByUser(ctx context.Context, in *GetRepostsByUserRequest, opts ...grpc.CallOption) (*GetRepostsByUserResponse, error)
 }
 
 type postServiceClient struct {
@@ -239,6 +241,16 @@ func (c *postServiceClient) QuotePost(ctx context.Context, in *QuotePostRequest,
 	return out, nil
 }
 
+func (c *postServiceClient) GetRepostsByUser(ctx context.Context, in *GetRepostsByUserRequest, opts ...grpc.CallOption) (*GetRepostsByUserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetRepostsByUserResponse)
+	err := c.cc.Invoke(ctx, PostService_GetRepostsByUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PostServiceServer is the server API for PostService service.
 // All implementations must embed UnimplementedPostServiceServer
 // for forward compatibility.
@@ -260,6 +272,7 @@ type PostServiceServer interface {
 	RepostPost(context.Context, *RepostPostRequest) (*RepostPostResponse, error)
 	UnrepostPost(context.Context, *UnrepostPostRequest) (*UnrepostPostResponse, error)
 	QuotePost(context.Context, *QuotePostRequest) (*QuotePostResponse, error)
+	GetRepostsByUser(context.Context, *GetRepostsByUserRequest) (*GetRepostsByUserResponse, error)
 	mustEmbedUnimplementedPostServiceServer()
 }
 
@@ -320,6 +333,9 @@ func (UnimplementedPostServiceServer) UnrepostPost(context.Context, *UnrepostPos
 }
 func (UnimplementedPostServiceServer) QuotePost(context.Context, *QuotePostRequest) (*QuotePostResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method QuotePost not implemented")
+}
+func (UnimplementedPostServiceServer) GetRepostsByUser(context.Context, *GetRepostsByUserRequest) (*GetRepostsByUserResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetRepostsByUser not implemented")
 }
 func (UnimplementedPostServiceServer) mustEmbedUnimplementedPostServiceServer() {}
 func (UnimplementedPostServiceServer) testEmbeddedByValue()                     {}
@@ -648,6 +664,24 @@ func _PostService_QuotePost_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PostService_GetRepostsByUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRepostsByUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PostServiceServer).GetRepostsByUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PostService_GetRepostsByUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PostServiceServer).GetRepostsByUser(ctx, req.(*GetRepostsByUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PostService_ServiceDesc is the grpc.ServiceDesc for PostService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -722,6 +756,10 @@ var PostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "QuotePost",
 			Handler:    _PostService_QuotePost_Handler,
+		},
+		{
+			MethodName: "GetRepostsByUser",
+			Handler:    _PostService_GetRepostsByUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

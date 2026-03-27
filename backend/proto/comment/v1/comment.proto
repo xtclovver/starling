@@ -19,6 +19,7 @@ message Comment {
   google.protobuf.Timestamp updated_at = 9;
   repeated Comment children = 10;
   bool liked = 11;
+  string media_url = 12;
 }
 
 message CreateCommentRequest {
@@ -26,6 +27,7 @@ message CreateCommentRequest {
   string user_id = 2;
   string parent_id = 3;
   string content = 4;
+  string media_url = 5;
 }
 
 message CreateCommentResponse {

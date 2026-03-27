@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Trash2, Bookmark, Repeat2, Pencil } from 'lucide-react';
-import { likePost, unlikePost, deletePost, bookmarkPost, unbookmarkPost, repostPost, unrepostPost } from '@/api/posts';
+import { Heart, MessageCircle, Trash2, Bookmark, Repeat2, Pencil, X, ImagePlus, Check } from 'lucide-react';
+import { likePost, unlikePost, deletePost, bookmarkPost, unbookmarkPost, repostPost, unrepostPost, updatePost } from '@/api/posts';
+import { uploadMedia } from '@/api/media';
 import { useAuthStore } from '@/store/auth';
 import { useFeedStore } from '@/store/feed';
 import { useUIStore } from '@/store/ui';
 import { timeAgo } from '@/lib/time';
 import Avatar from './Avatar';
-import EditPostModal from './EditPostModal';
 import s from '@/styles/post.module.css';
 import type { Post } from '@/types';
 
@@ -22,15 +22,23 @@ function renderContent(content: string) {
   });
 }
 
-export default function PostCard({ post, onDelete }: { post: Post; onDelete?: () => void }) {
+export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post; onDelete?: () => void; onUnbookmark?: () => void }) {
   const navigate = useNavigate();
   const user = useAuthStore((st) => st.user);
-  const updatePost = useFeedStore((st) => st.updatePost);
+  const updateFeedPost = useFeedStore((st) => st.updatePost);
   const openAuthModal = useUIStore((st) => st.openAuthModal);
   const [likeLoading, setLikeLoading] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [repostLoading, setRepostLoading] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
+  const [editMediaUrl, setEditMediaUrl] = useState(post.media_url || '');
+  const [editMediaFile, setEditMediaFile] = useState<File | null>(null);
+  const [editMediaPreview, setEditMediaPreview] = useState<string | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const editFileRef = useRef<HTMLInputElement>(null);
   const isOwner = user?.id === post.user_id;
 
   const requireAuth = (action: () => void) => {
@@ -44,11 +52,11 @@ export default function PostCard({ post, onDelete }: { post: Post; onDelete?: ()
       if (likeLoading) return;
       setLikeLoading(true);
       const wasLiked = post.liked;
-      updatePost(post.id, { liked: !wasLiked, likes_count: post.likes_count + (wasLiked ? -1 : 1) });
+      updateFeedPost(post.id, { liked: !wasLiked, likes_count: post.likes_count + (wasLiked ? -1 : 1) });
       try {
         if (wasLiked) await unlikePost(post.id); else await likePost(post.id);
       } catch {
-        updatePost(post.id, { liked: wasLiked, likes_count: post.likes_count });
+        updateFeedPost(post.id, { liked: wasLiked, likes_count: post.likes_count });
       } finally { setLikeLoading(false); }
     });
   };
@@ -59,11 +67,11 @@ export default function PostCard({ post, onDelete }: { post: Post; onDelete?: ()
       if (bookmarkLoading) return;
       setBookmarkLoading(true);
       const was = post.bookmarked;
-      updatePost(post.id, { bookmarked: !was });
+      updateFeedPost(post.id, { bookmarked: !was });
       try {
-        if (was) await unbookmarkPost(post.id); else await bookmarkPost(post.id);
+        if (was) { await unbookmarkPost(post.id); onUnbookmark?.(); } else await bookmarkPost(post.id);
       } catch {
-        updatePost(post.id, { bookmarked: was });
+        updateFeedPost(post.id, { bookmarked: was });
       } finally { setBookmarkLoading(false); }
     });
   };
@@ -74,47 +82,171 @@ export default function PostCard({ post, onDelete }: { post: Post; onDelete?: ()
       if (repostLoading) return;
       setRepostLoading(true);
       const was = post.reposted;
-      updatePost(post.id, { reposted: !was, reposts_count: post.reposts_count + (was ? -1 : 1) });
+      updateFeedPost(post.id, { reposted: !was, reposts_count: post.reposts_count + (was ? -1 : 1) });
       try {
         if (was) await unrepostPost(post.id); else await repostPost(post.id);
       } catch {
-        updatePost(post.id, { reposted: was, reposts_count: post.reposts_count });
+        updateFeedPost(post.id, { reposted: was, reposts_count: post.reposts_count });
       } finally { setRepostLoading(false); }
     });
   };
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    try { await deletePost(post.id); useFeedStore.getState().removePost(post.id); onDelete?.(); } catch {}
+    if (deleteLoading) return;
+    setDeleteLoading(true);
+    try {
+      await deletePost(post.id);
+      useFeedStore.getState().removePost(post.id);
+      onDelete?.();
+    } catch {} finally {
+      setDeleteLoading(false);
+      setShowDeleteConfirm(false);
+    }
   };
 
+  const startEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditContent(post.content);
+    setEditMediaUrl(post.media_url || '');
+    setEditMediaFile(null);
+    setEditMediaPreview(null);
+    setEditing(true);
+  };
+
+  const cancelEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditing(false);
+    setEditMediaFile(null);
+    if (editMediaPreview) URL.revokeObjectURL(editMediaPreview);
+    setEditMediaPreview(null);
+  };
+
+  const handleEditFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setEditMediaFile(file);
+    setEditMediaPreview(URL.createObjectURL(file));
+    setEditMediaUrl('');
+  };
+
+  const removeEditMedia = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditMediaFile(null);
+    if (editMediaPreview) URL.revokeObjectURL(editMediaPreview);
+    setEditMediaPreview(null);
+    setEditMediaUrl('');
+    if (editFileRef.current) editFileRef.current.value = '';
+  };
+
+  const saveEdit = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!editContent.trim() || editContent.length > 280 || editLoading) return;
+    setEditLoading(true);
+    try {
+      let mediaUrl = editMediaUrl;
+      if (editMediaFile) {
+        const m = await uploadMedia(editMediaFile);
+        mediaUrl = m.url;
+      }
+      const updated = await updatePost(post.id, editContent, mediaUrl);
+      updateFeedPost(post.id, { content: updated.content, media_url: updated.media_url, edited_at: updated.edited_at || new Date().toISOString() });
+      setEditing(false);
+      setEditMediaFile(null);
+      if (editMediaPreview) URL.revokeObjectURL(editMediaPreview);
+      setEditMediaPreview(null);
+    } catch {} finally { setEditLoading(false); }
+  };
+
+  const remaining = 280 - editContent.length;
+
   return (
-    <>
-      <article className={s.postCard} onClick={() => navigate(`/post/${post.id}`)}>
-        <div className={s.postRow}>
-          <Link to={`/profile/${post.user_id}`} onClick={(e) => e.stopPropagation()}>
-            <Avatar url={post.author?.avatar_url} name={post.author?.display_name || post.author?.username || '?'} />
-          </Link>
-          <div className={s.postBody}>
-            <div className={s.postMeta}>
-              <Link to={`/profile/${post.user_id}`} onClick={(e) => e.stopPropagation()} className={s.postAuthor}>
-                {post.author?.display_name || post.author?.username || 'Unknown'}
-              </Link>
-              {post.author?.username && <span className={s.postHandle}>@{post.author.username}</span>}
-              <span className={s.postDot}>&middot;</span>
-              <span className={s.postTime}>{timeAgo(post.created_at)}</span>
-              {post.edited_at && <span className={s.editedBadge}>изменено</span>}
-              {isOwner && (
-                <>
-                  <button onClick={(e) => { e.stopPropagation(); setEditing(true); }} className={s.deleteBtn}><Pencil size={14} /></button>
-                  <button onClick={handleDelete} className={s.deleteBtn}><Trash2 size={14} /></button>
-                </>
-              )}
-            </div>
-            <p className={s.postContent}>{renderContent(post.content)}</p>
-            {post.media_url && (
-              <div className={s.postMedia}><img src={post.media_url} alt="" loading="lazy" /></div>
+    <article className={s.postCard} onClick={() => !editing && navigate(`/post/${post.id}`)}>
+      <div className={s.postRow}>
+        <Link to={`/profile/${post.user_id}`} onClick={(e) => e.stopPropagation()}>
+          <Avatar url={post.author?.avatar_url} name={post.author?.display_name || post.author?.username || '?'} />
+        </Link>
+        <div className={s.postBody}>
+          <div className={s.postMeta}>
+            <Link to={`/profile/${post.user_id}`} onClick={(e) => e.stopPropagation()} className={s.postAuthor}>
+              {post.author?.display_name || post.author?.username || 'Unknown'}
+            </Link>
+            {post.author?.username && <span className={s.postHandle}>@{post.author.username}</span>}
+            <span className={s.postDot}>&middot;</span>
+            <span className={s.postTime}>{timeAgo(post.created_at)}</span>
+            {post.edited_at && <span className={s.editedBadge}>изменено</span>}
+            {isOwner && !editing && (
+              <div className={s.ownerActions}>
+                <button onClick={startEdit} className={s.ownerBtn} title="Редактировать"><Pencil size={14} /></button>
+                <div className={s.deleteWrap}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm((v) => !v); }}
+                    className={s.ownerBtn}
+                    title="Удалить"
+                  ><Trash2 size={14} /></button>
+                  {showDeleteConfirm && (
+                    <div className={s.deletePopup} onClick={(e) => e.stopPropagation()}>
+                      <p className={s.deletePopupText}>Удалить пост?</p>
+                      <div className={s.deletePopupActions}>
+                        <button onClick={() => setShowDeleteConfirm(false)} className={s.deletePopupCancel}>Отмена</button>
+                        <button onClick={handleDelete} disabled={deleteLoading} className={s.deletePopupConfirm}>
+                          {deleteLoading ? '...' : 'Удалить'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
+          </div>
+
+          {editing ? (
+            <div className={s.inlineEdit} onClick={(e) => e.stopPropagation()}>
+              <textarea
+                className={s.inlineEditTextarea}
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                autoFocus
+                rows={3}
+              />
+              {(editMediaPreview || editMediaUrl) && (
+                <div className={s.editMediaPreview}>
+                  <img src={editMediaPreview || editMediaUrl} alt="" />
+                  <button onClick={removeEditMedia} className={s.mediaRemoveBtn}><X size={14} /></button>
+                </div>
+              )}
+              <div className={s.inlineEditFooter}>
+                <div className={s.inlineEditLeft}>
+                  <input ref={editFileRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" onChange={handleEditFile} style={{ display: 'none' }} />
+                  <button onClick={(e) => { e.stopPropagation(); editFileRef.current?.click(); }} className={s.mediaUploadBtn} title="Прикрепить фото">
+                    <ImagePlus size={16} />
+                  </button>
+                  <span className={s.editCharCount} style={{ color: remaining < 0 ? 'var(--danger)' : remaining < 20 ? '#eab308' : 'var(--text-tertiary)' }}>
+                    {remaining}
+                  </span>
+                </div>
+                <div className={s.inlineEditRight}>
+                  <button onClick={cancelEdit} className={s.inlineEditCancelBtn}><X size={16} /></button>
+                  <button
+                    onClick={saveEdit}
+                    disabled={editLoading || !editContent.trim() || editContent.length > 280}
+                    className={s.inlineEditSaveBtn}
+                  >
+                    {editLoading ? '...' : <Check size={16} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className={s.postContent}>{renderContent(post.content)}</p>
+              {post.media_url && (
+                <div className={s.postMedia}><img src={post.media_url} alt="" loading="lazy" /></div>
+              )}
+            </>
+          )}
+
+          {!editing && (
             <div className={s.postActions}>
               <button
                 onClick={(e) => { e.stopPropagation(); navigate(`/post/${post.id}`); }}
@@ -144,10 +276,9 @@ export default function PostCard({ post, onDelete }: { post: Post; onDelete?: ()
                 <Bookmark size={17} fill={post.bookmarked ? 'currentColor' : 'none'} />
               </button>
             </div>
-          </div>
+          )}
         </div>
-      </article>
-      {editing && <EditPostModal post={post} onClose={() => setEditing(false)} />}
-    </>
+      </div>
+    </article>
   );
 }

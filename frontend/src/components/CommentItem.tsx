@@ -66,7 +66,14 @@ export default function CommentItem({ comment, postId, onNewReply, onDelete }: P
           {isDeleted ? (
             <p className={`${s.commentText} ${s.commentDeleted}`}>[удалено]</p>
           ) : (
-            <p className={s.commentText}>{comment.content}</p>
+            <>
+              <p className={s.commentText}>{comment.content}</p>
+              {comment.media_url && (
+                <div className={s.commentMedia}>
+                  <img src={comment.media_url} alt="" loading="lazy" />
+                </div>
+              )}
+            </>
           )}
 
           {!isDeleted && (

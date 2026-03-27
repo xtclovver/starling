@@ -36,6 +36,7 @@ type Comment struct {
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	Children      []*Comment             `protobuf:"bytes,10,rep,name=children,proto3" json:"children,omitempty"`
 	Liked         bool                   `protobuf:"varint,11,opt,name=liked,proto3" json:"liked,omitempty"`
+	MediaUrl      string                 `protobuf:"bytes,12,opt,name=media_url,json=mediaUrl,proto3" json:"media_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -147,12 +148,20 @@ func (x *Comment) GetLiked() bool {
 	return false
 }
 
+func (x *Comment) GetMediaUrl() string {
+	if x != nil {
+		return x.MediaUrl
+	}
+	return ""
+}
+
 type CreateCommentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	PostId        string                 `protobuf:"bytes,1,opt,name=post_id,json=postId,proto3" json:"post_id,omitempty"`
 	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	ParentId      string                 `protobuf:"bytes,3,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
 	Content       string                 `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`
+	MediaUrl      string                 `protobuf:"bytes,5,opt,name=media_url,json=mediaUrl,proto3" json:"media_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -211,6 +220,13 @@ func (x *CreateCommentRequest) GetParentId() string {
 func (x *CreateCommentRequest) GetContent() string {
 	if x != nil {
 		return x.Content
+	}
+	return ""
+}
+
+func (x *CreateCommentRequest) GetMediaUrl() string {
+	if x != nil {
+		return x.MediaUrl
 	}
 	return ""
 }
@@ -640,7 +656,7 @@ var File_comment_v1_comment_proto protoreflect.FileDescriptor
 const file_comment_v1_comment_proto_rawDesc = "" +
 	"\n" +
 	"\x18comment/v1/comment.proto\x12\n" +
-	"comment.v1\x1a\x16common/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf6\x02\n" +
+	"comment.v1\x1a\x16common/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x93\x03\n" +
 	"\aComment\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\apost_id\x18\x02 \x01(\tR\x06postId\x12\x17\n" +
@@ -656,12 +672,14 @@ const file_comment_v1_comment_proto_rawDesc = "" +
 	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12/\n" +
 	"\bchildren\x18\n" +
 	" \x03(\v2\x13.comment.v1.CommentR\bchildren\x12\x14\n" +
-	"\x05liked\x18\v \x01(\bR\x05liked\"\x7f\n" +
+	"\x05liked\x18\v \x01(\bR\x05liked\x12\x1b\n" +
+	"\tmedia_url\x18\f \x01(\tR\bmediaUrl\"\x9c\x01\n" +
 	"\x14CreateCommentRequest\x12\x17\n" +
 	"\apost_id\x18\x01 \x01(\tR\x06postId\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1b\n" +
 	"\tparent_id\x18\x03 \x01(\tR\bparentId\x12\x18\n" +
-	"\acontent\x18\x04 \x01(\tR\acontent\"F\n" +
+	"\acontent\x18\x04 \x01(\tR\acontent\x12\x1b\n" +
+	"\tmedia_url\x18\x05 \x01(\tR\bmediaUrl\"F\n" +
 	"\x15CreateCommentResponse\x12-\n" +
 	"\acomment\x18\x01 \x01(\v2\x13.comment.v1.CommentR\acomment\"\x87\x01\n" +
 	"\x15GetCommentTreeRequest\x12\x17\n" +

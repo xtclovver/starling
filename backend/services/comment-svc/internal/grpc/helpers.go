@@ -28,6 +28,7 @@ func toProtoComment(c *model.Comment) *pb.Comment {
 		PostId:     c.PostID,
 		UserId:     c.UserID,
 		Content:    c.Content,
+		MediaUrl:   c.MediaURL,
 		LikesCount: c.LikesCount,
 		Depth:      c.Depth,
 		CreatedAt:  timestamppb.New(c.CreatedAt),

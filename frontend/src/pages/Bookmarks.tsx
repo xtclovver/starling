@@ -44,7 +44,13 @@ export default function Bookmarks() {
         <>{[1,2,3].map((i) => <SkeletonPost key={i} />)}</>
       ) : (
         <>
-          {posts.map((post) => <PostCard key={post.id} post={post} />)}
+          {posts.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              onUnbookmark={() => setPosts((prev) => prev.filter((p) => p.id !== post.id))}
+            />
+          ))}
           <div ref={sentinelRef} />
           {loading && posts.length > 0 && <Spinner />}
           {!hasMore && posts.length > 0 && <p className={p.empty}>Все закладки загружены</p>}

@@ -74,6 +74,7 @@ func main() {
 	mux.HandleFunc("GET /api/users/search", userH.SearchUsers)
 	mux.HandleFunc("GET /api/users/{id}", userH.GetUser)
 	mux.Handle("GET /api/users/{id}/posts", auth.Optional(http.HandlerFunc(userH.GetUserPosts)))
+	mux.Handle("GET /api/users/{id}/reposts", auth.Optional(http.HandlerFunc(userH.GetUserReposts)))
 	mux.HandleFunc("GET /api/users/{id}/followers", userH.GetFollowers)
 	mux.HandleFunc("GET /api/users/{id}/following", userH.GetFollowing)
 

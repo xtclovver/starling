@@ -43,9 +43,15 @@ export async function getBookmarks(cursor = '') {
   return data.data;
 }
 
-export async function updatePost(id: string, content: string) {
-  const { data } = await client.put<ApiResponse<{ post: Post }>>(`/posts/${id}`, { content });
+export async function updatePost(id: string, content: string, mediaUrl = '') {
+  const { data } = await client.put<ApiResponse<{ post: Post }>>(`/posts/${id}`, { content, media_url: mediaUrl });
   return data.data.post;
+}
+
+export async function getUserReposts(userId: string, cursor = '') {
+  const params = cursor ? `?cursor=${cursor}` : '';
+  const { data } = await client.get<ApiResponse<{ posts: Post[]; pagination: PaginationResponse }>>(`/users/${userId}/reposts${params}`);
+  return data.data;
 }
 
 export async function getPostsByHashtag(tag: string, cursor = '') {

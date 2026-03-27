@@ -47,7 +47,7 @@ func (s *Server) CreateComment(ctx context.Context, req *pb.CreateCommentRequest
 		parentID = &pid
 	}
 
-	comment, err := s.commentRepo.Create(ctx, req.GetPostId(), req.GetUserId(), parentID, content)
+	comment, err := s.commentRepo.Create(ctx, req.GetPostId(), req.GetUserId(), parentID, content, req.GetMediaUrl())
 	if err != nil {
 		if errors.Is(err, repository.ErrPostNotFound) {
 			return nil, status.Error(codes.NotFound, "post not found")

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { ArrowLeft, CalendarDays } from 'lucide-react';
 import { getUser, follow, unfollow, getFollowers, getFollowing } from '@/api/users';
-import { getUserPosts } from '@/api/posts';
+import { getUserPosts, getUserReposts } from '@/api/posts';
 import { useAuthStore } from '@/store/auth';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import Avatar from '@/components/Avatar';
@@ -14,7 +14,7 @@ import l from '@/styles/layout.module.css';
 import s from '@/styles/profile.module.css';
 import type { User, Post } from '@/types';
 
-type Tab = 'posts' | 'followers' | 'following';
+type Tab = 'posts' | 'reposts' | 'followers' | 'following';
 
 export default function Profile() {
   const { id } = useParams<{ id: string }>();
@@ -30,6 +30,11 @@ export default function Profile() {
   const [postsHasMore, setPostsHasMore] = useState(false);
   const [postsLoading, setPostsLoading] = useState(false);
 
+  const [reposts, setReposts] = useState<Post[]>([]);
+  const [repostsCursor, setRepostsCursor] = useState('');
+  const [repostsHasMore, setRepostsHasMore] = useState(false);
+  const [repostsLoading, setRepostsLoading] = useState(false);
+
   const [userList, setUserList] = useState<User[]>([]);
   const [userCursor, setUserCursor] = useState('');
   const [userHasMore, setUserHasMore] = useState(false);
@@ -39,7 +44,7 @@ export default function Profile() {
 
   useEffect(() => {
     if (!id) return;
-    setLoading(true); setTab('posts'); setPosts([]); setUserList([]);
+    setLoading(true); setTab('posts'); setPosts([]); setReposts([]); setUserList([]);
     getUser(id).then((u) => setProfile(u)).catch(() => setProfile(null)).finally(() => setLoading(false));
   }, [id]);
 
@@ -56,6 +61,20 @@ export default function Profile() {
   }, [id]);
 
   useEffect(() => { if (tab === 'posts' && posts.length === 0 && id) loadPosts(); }, [tab, id, loadPosts, posts.length]);
+
+  const loadReposts = useCallback(async (cursor = '') => {
+    if (!id) return;
+    setRepostsLoading(true);
+    try {
+      const data = await getUserReposts(id, cursor);
+      const fetched = data.posts || [];
+      if (cursor) setReposts((p) => [...p, ...fetched]); else setReposts(fetched);
+      setRepostsCursor(data.pagination?.next_cursor || '');
+      setRepostsHasMore(data.pagination?.has_more || false);
+    } catch {} finally { setRepostsLoading(false); }
+  }, [id]);
+
+  useEffect(() => { if (tab === 'reposts' && reposts.length === 0 && id) loadReposts(); }, [tab, id, loadReposts, reposts.length]);
 
   const loadUsers = useCallback(async (type: 'followers' | 'following', cursor = '') => {
     if (!id) return;
@@ -134,9 +153,9 @@ export default function Profile() {
       </div>
 
       <div className={s.tabs}>
-        {(['posts', 'followers', 'following'] as Tab[]).map((t) => (
+        {(['posts', 'reposts', 'followers', 'following'] as Tab[]).map((t) => (
           <button key={t} onClick={() => setTab(t)} className={`${s.tab} ${tab === t ? s.tabActive : ''}`}>
-            {t === 'posts' ? 'Посты' : t === 'followers' ? 'Подписчики' : 'Подписки'}
+            {t === 'posts' ? 'Посты' : t === 'reposts' ? 'Репосты' : t === 'followers' ? 'Подписчики' : 'Подписки'}
           </button>
         ))}
       </div>
@@ -149,6 +168,21 @@ export default function Profile() {
               <div ref={sentinelRef} />
               {postsLoading && posts.length > 0 && <Spinner />}
               {!postsLoading && posts.length === 0 && <p className={s.empty}>Нет постов</p>}
+            </>
+          )}
+        </>
+      )}
+
+      {tab === 'reposts' && (
+        <>
+          {repostsLoading && reposts.length === 0 ? <>{[1,2,3].map((i) => <SkeletonPost key={i} />)}</> : (
+            <>
+              {reposts.map((p) => <PostCard key={p.id} post={p} />)}
+              {repostsLoading && reposts.length > 0 && <Spinner />}
+              {!repostsLoading && reposts.length === 0 && <p className={s.empty}>Нет репостов</p>}
+              {repostsHasMore && !repostsLoading && (
+                <button onClick={() => loadReposts(repostsCursor)} className={s.loadMoreBtn}>Загрузить ещё</button>
+              )}
             </>
           )}
         </>

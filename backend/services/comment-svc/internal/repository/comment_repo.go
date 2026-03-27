@@ -17,7 +17,7 @@ var (
 )
 
 type CommentRepository interface {
-	Create(ctx context.Context, postID, userID string, parentID *string, content string) (*model.Comment, error)
+	Create(ctx context.Context, postID, userID string, parentID *string, content, mediaURL string) (*model.Comment, error)
 	GetTree(ctx context.Context, postID, cursor string, limit int) ([]model.Comment, string, error)
 	SoftDelete(ctx context.Context, commentID, userID string) error
 	IncrementPostComments(ctx context.Context, postID string) error
@@ -32,7 +32,7 @@ func NewCommentRepository(pool *pgxpool.Pool) CommentRepository {
 	return &commentRepo{pool: pool}
 }
 
-func (r *commentRepo) Create(ctx context.Context, postID, userID string, parentID *string, content string) (*model.Comment, error) {
+func (r *commentRepo) Create(ctx context.Context, postID, userID string, parentID *string, content, mediaURL string) (*model.Comment, error) {
 	// Check post exists
 	var postExists bool
 	if err := r.pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM posts WHERE id = $1 AND deleted_at IS NULL)`, postID).Scan(&postExists); err != nil {
@@ -64,11 +64,11 @@ func (r *commentRepo) Create(ctx context.Context, postID, userID string, parentI
 
 	c := &model.Comment{}
 	err := r.pool.QueryRow(ctx,
-		`INSERT INTO comments (post_id, user_id, parent_id, content, depth)
-		 VALUES ($1, $2, $3, $4, $5)
-		 RETURNING id, post_id, user_id, parent_id, content, likes_count, depth, created_at, updated_at`,
-		postID, userID, parentID, content, depth,
-	).Scan(&c.ID, &c.PostID, &c.UserID, &c.ParentID, &c.Content, &c.LikesCount, &c.Depth, &c.CreatedAt, &c.UpdatedAt)
+		`INSERT INTO comments (post_id, user_id, parent_id, content, media_url, depth)
+		 VALUES ($1, $2, $3, $4, $5, $6)
+		 RETURNING id, post_id, user_id, parent_id, content, media_url, likes_count, depth, created_at, updated_at`,
+		postID, userID, parentID, content, mediaURL, depth,
+	).Scan(&c.ID, &c.PostID, &c.UserID, &c.ParentID, &c.Content, &c.MediaURL, &c.LikesCount, &c.Depth, &c.CreatedAt, &c.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func (r *commentRepo) GetTree(ctx context.Context, postID, cursor string, limit 
 
 	// Get root comments with pagination
 	args := []any{postID, limit + 1}
-	q := `SELECT id, post_id, user_id, parent_id, content, likes_count, depth, created_at, updated_at, deleted_at
+	q := `SELECT id, post_id, user_id, parent_id, content, media_url, likes_count, depth, created_at, updated_at, deleted_at
 		  FROM comments
 		  WHERE post_id = $1 AND parent_id IS NULL AND deleted_at IS NULL`
 
@@ -105,7 +105,7 @@ func (r *commentRepo) GetTree(ctx context.Context, postID, cursor string, limit 
 	var roots []model.Comment
 	for rows.Next() {
 		var c model.Comment
-		if err := rows.Scan(&c.ID, &c.PostID, &c.UserID, &c.ParentID, &c.Content, &c.LikesCount, &c.Depth, &c.CreatedAt, &c.UpdatedAt, &c.DeletedAt); err != nil {
+		if err := rows.Scan(&c.ID, &c.PostID, &c.UserID, &c.ParentID, &c.Content, &c.MediaURL, &c.LikesCount, &c.Depth, &c.CreatedAt, &c.UpdatedAt, &c.DeletedAt); err != nil {
 			return nil, "", err
 		}
 		roots = append(roots, c)
@@ -129,16 +129,16 @@ func (r *commentRepo) GetTree(ctx context.Context, postID, cursor string, limit 
 
 	childRows, err := r.pool.Query(ctx, `
 		WITH RECURSIVE tree AS (
-			SELECT id, post_id, user_id, parent_id, content, likes_count, depth, created_at, updated_at, deleted_at
+			SELECT id, post_id, user_id, parent_id, content, media_url, likes_count, depth, created_at, updated_at, deleted_at
 			FROM comments
 			WHERE parent_id = ANY($1)
 			UNION ALL
-			SELECT c.id, c.post_id, c.user_id, c.parent_id, c.content, c.likes_count, c.depth, c.created_at, c.updated_at, c.deleted_at
+			SELECT c.id, c.post_id, c.user_id, c.parent_id, c.content, c.media_url, c.likes_count, c.depth, c.created_at, c.updated_at, c.deleted_at
 			FROM comments c
 			INNER JOIN tree t ON c.parent_id = t.id
 			WHERE c.depth <= 5
 		)
-		SELECT id, post_id, user_id, parent_id, content, likes_count, depth, created_at, updated_at, deleted_at
+		SELECT id, post_id, user_id, parent_id, content, media_url, likes_count, depth, created_at, updated_at, deleted_at
 		FROM tree
 		ORDER BY depth ASC, created_at ASC`, rootIDs)
 	if err != nil {
@@ -149,7 +149,7 @@ func (r *commentRepo) GetTree(ctx context.Context, postID, cursor string, limit 
 	var children []model.Comment
 	for childRows.Next() {
 		var c model.Comment
-		if err := childRows.Scan(&c.ID, &c.PostID, &c.UserID, &c.ParentID, &c.Content, &c.LikesCount, &c.Depth, &c.CreatedAt, &c.UpdatedAt, &c.DeletedAt); err != nil {
+		if err := childRows.Scan(&c.ID, &c.PostID, &c.UserID, &c.ParentID, &c.Content, &c.MediaURL, &c.LikesCount, &c.Depth, &c.CreatedAt, &c.UpdatedAt, &c.DeletedAt); err != nil {
 			return nil, "", err
 		}
 		children = append(children, c)

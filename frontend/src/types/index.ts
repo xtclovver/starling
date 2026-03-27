@@ -34,6 +34,7 @@ export interface Comment {
   user_id: string;
   parent_id: string;
   content: string;
+  media_url?: string;
   likes_count: number;
   depth: number;
   created_at: string;

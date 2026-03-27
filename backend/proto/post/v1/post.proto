@@ -126,6 +126,7 @@ message UpdatePostRequest {
   string id = 1;
   string user_id = 2;
   string content = 3;
+  string media_url = 4;
 }
 
 message UpdatePostResponse {
@@ -191,6 +192,17 @@ message QuotePostResponse {
   Post post = 1;
 }
 
+message GetRepostsByUserRequest {
+  string user_id = 1;
+  common.v1.PaginationRequest pagination = 2;
+  string viewer_id = 3;
+}
+
+message GetRepostsByUserResponse {
+  repeated Post posts = 1;
+  common.v1.PaginationResponse pagination = 2;
+}
+
 service PostService {
   rpc CreatePost(CreatePostRequest) returns (CreatePostResponse);
   rpc GetPost(GetPostRequest) returns (GetPostResponse);
@@ -209,4 +221,5 @@ service PostService {
   rpc RepostPost(RepostPostRequest) returns (RepostPostResponse);
   rpc UnrepostPost(UnrepostPostRequest) returns (UnrepostPostResponse);
   rpc QuotePost(QuotePostRequest) returns (QuotePostResponse);
+  rpc GetRepostsByUser(GetRepostsByUserRequest) returns (GetRepostsByUserResponse);
 }
