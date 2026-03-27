@@ -2,9 +2,9 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
-COPY package.json ./
+COPY package.json package-lock.json ./
 
-RUN npm install --legacy-peer-deps && npm install --legacy-peer-deps @rollup/rollup-linux-x64-musl
+RUN npm ci --legacy-peer-deps && npm install --legacy-peer-deps @rollup/rollup-linux-x64-musl
 
 COPY . .
 
