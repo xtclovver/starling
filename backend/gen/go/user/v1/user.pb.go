@@ -153,6 +153,7 @@ type RegisterRequest struct {
 	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
 	Password      string                 `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
 	DisplayName   string                 `protobuf:"bytes,4,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	UaHash        string                 `protobuf:"bytes,5,opt,name=ua_hash,json=uaHash,proto3" json:"ua_hash,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -211,6 +212,13 @@ func (x *RegisterRequest) GetPassword() string {
 func (x *RegisterRequest) GetDisplayName() string {
 	if x != nil {
 		return x.DisplayName
+	}
+	return ""
+}
+
+func (x *RegisterRequest) GetUaHash() string {
+	if x != nil {
+		return x.UaHash
 	}
 	return ""
 }
@@ -279,6 +287,7 @@ type LoginRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
 	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	UaHash        string                 `protobuf:"bytes,3,opt,name=ua_hash,json=uaHash,proto3" json:"ua_hash,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -323,6 +332,13 @@ func (x *LoginRequest) GetEmail() string {
 func (x *LoginRequest) GetPassword() string {
 	if x != nil {
 		return x.Password
+	}
+	return ""
+}
+
+func (x *LoginRequest) GetUaHash() string {
+	if x != nil {
+		return x.UaHash
 	}
 	return ""
 }
@@ -390,6 +406,7 @@ func (x *LoginResponse) GetRefreshToken() string {
 type RefreshTokenRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RefreshToken  string                 `protobuf:"bytes,1,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
+	UaHash        string                 `protobuf:"bytes,2,opt,name=ua_hash,json=uaHash,proto3" json:"ua_hash,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -427,6 +444,13 @@ func (*RefreshTokenRequest) Descriptor() ([]byte, []int) {
 func (x *RefreshTokenRequest) GetRefreshToken() string {
 	if x != nil {
 		return x.RefreshToken
+	}
+	return ""
+}
+
+func (x *RefreshTokenRequest) GetUaHash() string {
+	if x != nil {
+		return x.UaHash
 	}
 	return ""
 }
@@ -2246,25 +2270,28 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x0ffollowing_count\x18\n" +
 	" \x01(\x05R\x0efollowingCount\x12\x1d\n" +
 	"\n" +
-	"banner_url\x18\v \x01(\tR\tbannerUrl\"\x82\x01\n" +
+	"banner_url\x18\v \x01(\tR\tbannerUrl\"\x9b\x01\n" +
 	"\x0fRegisterRequest\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x03 \x01(\tR\bpassword\x12!\n" +
-	"\fdisplay_name\x18\x04 \x01(\tR\vdisplayName\"}\n" +
+	"\fdisplay_name\x18\x04 \x01(\tR\vdisplayName\x12\x17\n" +
+	"\aua_hash\x18\x05 \x01(\tR\x06uaHash\"}\n" +
 	"\x10RegisterResponse\x12!\n" +
 	"\x04user\x18\x01 \x01(\v2\r.user.v1.UserR\x04user\x12!\n" +
 	"\faccess_token\x18\x02 \x01(\tR\vaccessToken\x12#\n" +
-	"\rrefresh_token\x18\x03 \x01(\tR\frefreshToken\"@\n" +
+	"\rrefresh_token\x18\x03 \x01(\tR\frefreshToken\"Y\n" +
 	"\fLoginRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"z\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x17\n" +
+	"\aua_hash\x18\x03 \x01(\tR\x06uaHash\"z\n" +
 	"\rLoginResponse\x12!\n" +
 	"\x04user\x18\x01 \x01(\v2\r.user.v1.UserR\x04user\x12!\n" +
 	"\faccess_token\x18\x02 \x01(\tR\vaccessToken\x12#\n" +
-	"\rrefresh_token\x18\x03 \x01(\tR\frefreshToken\":\n" +
+	"\rrefresh_token\x18\x03 \x01(\tR\frefreshToken\"S\n" +
 	"\x13RefreshTokenRequest\x12#\n" +
-	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"^\n" +
+	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\x12\x17\n" +
+	"\aua_hash\x18\x02 \x01(\tR\x06uaHash\"^\n" +
 	"\x14RefreshTokenResponse\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
 	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\"W\n" +
