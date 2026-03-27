@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -18,23 +19,26 @@ import (
 
 type Server struct {
 	pb.UnimplementedMediaServiceServer
-	mediaRepo repository.MediaRepository
-	storage   *storage.MinIOClient
-	bucket    string
-	log       *slog.Logger
+	mediaRepo      repository.MediaRepository
+	storage        *storage.MinIOClient
+	bucket         string
+	publicEndpoint string
+	log            *slog.Logger
 }
 
 func NewServer(
 	mediaRepo repository.MediaRepository,
 	storage *storage.MinIOClient,
 	bucket string,
+	publicEndpoint string,
 	log *slog.Logger,
 ) *Server {
 	return &Server{
-		mediaRepo: mediaRepo,
-		storage:   storage,
-		bucket:    bucket,
-		log:       log,
+		mediaRepo:      mediaRepo,
+		storage:        storage,
+		bucket:         bucket,
+		publicEndpoint: publicEndpoint,
+		log:            log,
 	}
 }
 
@@ -74,10 +78,7 @@ func (s *Server) UploadMedia(ctx context.Context, req *pb.UploadMediaRequest) (*
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	url, err := s.storage.GetPresignedURL(ctx, objectKey, time.Hour)
-	if err != nil {
-		s.log.Error("get presigned url failed", "error", err)
-	}
+	url := fmt.Sprintf("%s/%s/%s", s.publicEndpoint, s.bucket, objectKey)
 
 	return &pb.UploadMediaResponse{
 		Media: toProtoMedia(media, url),
@@ -106,12 +107,7 @@ func (s *Server) GetMediaURL(ctx context.Context, req *pb.GetMediaURLRequest) (*
 	start := time.Now()
 	defer func() { s.log.Info("GetMediaURL", "duration", time.Since(start)) }()
 
-	url, err := s.storage.GetPresignedURL(ctx, req.GetObjectKey(), time.Hour)
-	if err != nil {
-		s.log.Error("get presigned url failed", "error", err)
-		return nil, status.Error(codes.Internal, "internal error")
-	}
-
+	url := fmt.Sprintf("%s/%s/%s", s.publicEndpoint, s.bucket, req.GetObjectKey())
 	return &pb.GetMediaURLResponse{Url: url}, nil
 }
 

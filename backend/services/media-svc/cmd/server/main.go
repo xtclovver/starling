@@ -60,7 +60,7 @@ func main() {
 	mediaRepo := repository.NewMediaRepository(pool)
 
 	srv := grpc.NewServer()
-	mediaServer := grpcserver.NewServer(mediaRepo, store, cfg.MinIOBucket, log)
+	mediaServer := grpcserver.NewServer(mediaRepo, store, cfg.MinIOBucket, cfg.MinIOPublicEndpoint, log)
 	pb.RegisterMediaServiceServer(srv, mediaServer)
 
 	healthSrv := health.NewServer()

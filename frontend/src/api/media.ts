@@ -9,3 +9,7 @@ export async function uploadMedia(file: File) {
   });
   return data.data.media;
 }
+
+export async function deleteMedia(id: string) {
+  await client.delete(`/media/${id}`);
+}

@@ -60,3 +60,23 @@ func (h *MediaHandler) Upload(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 }
+
+func (h *MediaHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(r)
+	id := r.PathValue("id")
+	if id == "" {
+		writeError(w, http.StatusBadRequest, "media id is required")
+		return
+	}
+
+	_, err := h.media.DeleteMedia(r.Context(), &mediapb.DeleteMediaRequest{
+		Id:     id,
+		UserId: userID,
+	})
+	if err != nil {
+		handleGRPCError(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

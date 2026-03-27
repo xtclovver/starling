@@ -91,8 +91,8 @@ func (r *postRepo) GetFeed(ctx context.Context, userID, cursor string, limit int
 	args := []any{userID, limit + 1}
 	q := `SELECT p.id, p.user_id, p.content, p.media_url, p.likes_count, p.comments_count, p.reposts_count, p.created_at, p.updated_at, p.edited_at
 		  FROM posts p
-		  INNER JOIN follows f ON f.following_id = p.user_id AND f.follower_id = $1
-		  WHERE p.deleted_at IS NULL`
+		  WHERE p.deleted_at IS NULL
+		  AND (p.user_id = $1 OR EXISTS (SELECT 1 FROM follows f WHERE f.follower_id = $1 AND f.following_id = p.user_id))`
 
 	if cursor != "" {
 		q += ` AND (p.created_at, p.id) < (

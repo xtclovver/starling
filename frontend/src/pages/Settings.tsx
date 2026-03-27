@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Camera } from 'lucide-react';
 import { updateUser } from '@/api/users';
-import { uploadMedia } from '@/api/media';
+import { uploadMedia, deleteMedia } from '@/api/media';
 import { useAuthStore } from '@/store/auth';
 import Avatar from '@/components/Avatar';
 import l from '@/styles/layout.module.css';
@@ -10,7 +10,7 @@ import s from '@/styles/profile.module.css';
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { user, updateUser: updateStore } = useAuthStore();
+  const { user, updateUser: updateStore, avatarMediaId, setAvatarMediaId } = useAuthStore();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [displayName, setDisplayName] = useState(user?.display_name || '');
@@ -35,9 +35,19 @@ export default function Settings() {
     setLoading(true); setError(''); setSuccess(false);
     try {
       let avatarUrl = user.avatar_url;
-      if (avatarFile) { const m = await uploadMedia(avatarFile); avatarUrl = m.url; }
+      let newMediaId: string | null = avatarMediaId;
+      if (avatarFile) {
+        const oldMediaId = avatarMediaId;
+        const m = await uploadMedia(avatarFile);
+        avatarUrl = m.url;
+        newMediaId = m.id;
+        if (oldMediaId) {
+          deleteMedia(oldMediaId).catch(() => {});
+        }
+      }
       const updated = await updateUser(user.id, { display_name: displayName, bio, avatar_url: avatarUrl });
       updateStore(updated);
+      setAvatarMediaId(newMediaId);
       setSuccess(true);
       setAvatarFile(null);
       if (avatarPreview) { URL.revokeObjectURL(avatarPreview); setAvatarPreview(null); }

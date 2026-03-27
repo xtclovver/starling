@@ -121,6 +121,7 @@ func main() {
 
 	// Media
 	mux.Handle("POST /api/upload", auth.Required(http.HandlerFunc(mediaH.Upload)))
+	mux.Handle("DELETE /api/media/{id}", auth.Required(http.HandlerFunc(mediaH.Delete)))
 
 	// WebSocket
 	mux.Handle("GET /api/ws", wsHandler)

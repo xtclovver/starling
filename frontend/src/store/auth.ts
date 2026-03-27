@@ -6,9 +6,11 @@ interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
+  avatarMediaId: string | null;
   login: (user: User, accessToken: string, refreshToken: string) => void;
   logout: () => void;
   updateUser: (user: Partial<User>) => void;
+  setAvatarMediaId: (id: string | null) => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
 }
 
@@ -17,6 +19,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   accessToken: localStorage.getItem('access_token'),
   refreshToken: localStorage.getItem('refresh_token'),
   isAuthenticated: !!localStorage.getItem('access_token'),
+  avatarMediaId: null,
 
   login: (user, accessToken, refreshToken) => {
     localStorage.setItem('access_token', accessToken);
@@ -27,13 +30,15 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
-    set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false });
+    set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false, avatarMediaId: null });
   },
 
   updateUser: (partial) =>
     set((state) => ({
       user: state.user ? { ...state.user, ...partial } : null,
     })),
+
+  setAvatarMediaId: (id) => set({ avatarMediaId: id }),
 
   setTokens: (accessToken, refreshToken) => {
     localStorage.setItem('access_token', accessToken);
