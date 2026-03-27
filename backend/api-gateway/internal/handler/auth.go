@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -42,6 +44,16 @@ func (h *AuthHandler) clearRefreshCookie(w http.ResponseWriter) {
 	})
 }
 
+// computeUAHash returns the first 16 hex chars of SHA256(User-Agent).
+func computeUAHash(r *http.Request) string {
+	ua := r.Header.Get("User-Agent")
+	if ua == "" {
+		return ""
+	}
+	sum := sha256.Sum256([]byte(ua))
+	return hex.EncodeToString(sum[:])[:16]
+}
+
 func extractBearerToken(r *http.Request) string {
 	h := r.Header.Get("Authorization")
 	if strings.HasPrefix(h, "Bearer ") {
@@ -67,6 +79,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		Username: req.Username,
 		Email:    req.Email,
 		Password: req.Password,
+		UaHash:   computeUAHash(r),
 	})
 	if err != nil {
 		handleGRPCError(w, err)
@@ -95,6 +108,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	resp, err := h.user.Login(r.Context(), &userpb.LoginRequest{
 		Email:    req.Email,
 		Password: req.Password,
+		UaHash:   computeUAHash(r),
 	})
 	if err != nil {
 		handleGRPCError(w, err)
@@ -117,6 +131,7 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.user.RefreshToken(r.Context(), &userpb.RefreshTokenRequest{
 		RefreshToken: cookie.Value,
+		UaHash:       computeUAHash(r),
 	})
 	if err != nil {
 		handleGRPCError(w, err)
