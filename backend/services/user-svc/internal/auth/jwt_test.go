@@ -154,8 +154,8 @@ func TestRevokeAllTokens(t *testing.T) {
 		t.Fatalf("RevokeAllTokens error: %v", err)
 	}
 
-	for _, rt := range []string{refresh1, refresh2} {
-		_, _, err := m.RotateRefreshToken(ctx, rt, "ua1")
+	for _, tc := range []struct{ rt, ua string }{{refresh1, "ua1"}, {refresh2, "ua2"}} {
+		_, _, err := m.RotateRefreshToken(ctx, tc.rt, tc.ua)
 		if err != ErrInvalidToken {
 			t.Errorf("expected ErrInvalidToken after revoke-all, got %v", err)
 		}
