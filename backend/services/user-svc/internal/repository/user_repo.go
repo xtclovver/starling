@@ -42,9 +42,9 @@ func (r *userRepo) Create(ctx context.Context, username, email, passwordHash str
 	err := r.pool.QueryRow(ctx,
 		`INSERT INTO users (username, email, password_hash)
 		 VALUES ($1, $2, $3)
-		 RETURNING id, username, email, password_hash, display_name, bio, avatar_url, created_at, updated_at`,
+		 RETURNING id, username, email, password_hash, display_name, bio, avatar_url, banner_url, created_at, updated_at`,
 		username, email, passwordHash,
-	).Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.DisplayName, &u.Bio, &u.AvatarURL, &u.CreatedAt, &u.UpdatedAt)
+	).Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.DisplayName, &u.Bio, &u.AvatarURL, &u.BannerURL, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
@@ -61,9 +61,9 @@ func (r *userRepo) Create(ctx context.Context, username, email, passwordHash str
 func (r *userRepo) GetByID(ctx context.Context, id string) (*model.User, error) {
 	u := &model.User{}
 	err := r.pool.QueryRow(ctx,
-		`SELECT id, username, email, password_hash, display_name, bio, avatar_url, created_at, updated_at
+		`SELECT id, username, email, password_hash, display_name, bio, avatar_url, banner_url, created_at, updated_at
 		 FROM users WHERE id = $1 AND deleted_at IS NULL`, id,
-	).Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.DisplayName, &u.Bio, &u.AvatarURL, &u.CreatedAt, &u.UpdatedAt)
+	).Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.DisplayName, &u.Bio, &u.AvatarURL, &u.BannerURL, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNotFound
@@ -76,9 +76,9 @@ func (r *userRepo) GetByID(ctx context.Context, id string) (*model.User, error) 
 func (r *userRepo) GetByEmail(ctx context.Context, email string) (*model.User, error) {
 	u := &model.User{}
 	err := r.pool.QueryRow(ctx,
-		`SELECT id, username, email, password_hash, display_name, bio, avatar_url, created_at, updated_at
+		`SELECT id, username, email, password_hash, display_name, bio, avatar_url, banner_url, created_at, updated_at
 		 FROM users WHERE email = $1 AND deleted_at IS NULL`, email,
-	).Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.DisplayName, &u.Bio, &u.AvatarURL, &u.CreatedAt, &u.UpdatedAt)
+	).Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.DisplayName, &u.Bio, &u.AvatarURL, &u.BannerURL, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNotFound
@@ -105,13 +105,13 @@ func (r *userRepo) Update(ctx context.Context, id string, fields map[string]stri
 
 	query := fmt.Sprintf(
 		`UPDATE users SET %s WHERE id = $%d AND deleted_at IS NULL
-		 RETURNING id, username, email, password_hash, display_name, bio, avatar_url, created_at, updated_at`,
+		 RETURNING id, username, email, password_hash, display_name, bio, avatar_url, banner_url, created_at, updated_at`,
 		strings.Join(setClauses, ", "), i,
 	)
 
 	u := &model.User{}
 	err := r.pool.QueryRow(ctx, query, args...).Scan(
-		&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.DisplayName, &u.Bio, &u.AvatarURL, &u.CreatedAt, &u.UpdatedAt,
+		&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.DisplayName, &u.Bio, &u.AvatarURL, &u.BannerURL, &u.CreatedAt, &u.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -141,7 +141,7 @@ func (r *userRepo) Search(ctx context.Context, query, cursor string, limit int) 
 	}
 
 	args := []any{query, limit + 1}
-	q := `SELECT id, username, email, password_hash, display_name, bio, avatar_url, created_at, updated_at
+	q := `SELECT id, username, email, password_hash, display_name, bio, avatar_url, banner_url, created_at, updated_at
 		  FROM users
 		  WHERE deleted_at IS NULL
 		    AND (username ILIKE '%' || $1 || '%' OR display_name ILIKE '%' || $1 || '%')`
@@ -165,7 +165,7 @@ func (r *userRepo) Search(ctx context.Context, query, cursor string, limit int) 
 	users := make([]model.User, 0)
 	for rows.Next() {
 		var u model.User
-		if err := rows.Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.DisplayName, &u.Bio, &u.AvatarURL, &u.CreatedAt, &u.UpdatedAt); err != nil {
+		if err := rows.Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.DisplayName, &u.Bio, &u.AvatarURL, &u.BannerURL, &u.CreatedAt, &u.UpdatedAt); err != nil {
 			return nil, "", err
 		}
 		users = append(users, u)
@@ -182,7 +182,7 @@ func (r *userRepo) Search(ctx context.Context, query, cursor string, limit int) 
 
 func (r *userRepo) GetByIDs(ctx context.Context, ids []string) ([]model.User, error) {
 	rows, err := r.pool.Query(ctx,
-		`SELECT id, username, email, password_hash, display_name, bio, avatar_url, created_at, updated_at
+		`SELECT id, username, email, password_hash, display_name, bio, avatar_url, banner_url, created_at, updated_at
 		 FROM users WHERE id = ANY($1) AND deleted_at IS NULL`, ids,
 	)
 	if err != nil {
@@ -193,7 +193,7 @@ func (r *userRepo) GetByIDs(ctx context.Context, ids []string) ([]model.User, er
 	users := make([]model.User, 0, len(ids))
 	for rows.Next() {
 		var u model.User
-		if err := rows.Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.DisplayName, &u.Bio, &u.AvatarURL, &u.CreatedAt, &u.UpdatedAt); err != nil {
+		if err := rows.Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.DisplayName, &u.Bio, &u.AvatarURL, &u.BannerURL, &u.CreatedAt, &u.UpdatedAt); err != nil {
 			return nil, err
 		}
 		users = append(users, u)
@@ -211,7 +211,7 @@ func (r *userRepo) GetRecommended(ctx context.Context, userID string, limit int)
 
 	if userID == "" {
 		// For guests: random active users
-		q = `SELECT id, username, email, password_hash, display_name, bio, avatar_url, created_at, updated_at
+		q = `SELECT id, username, email, password_hash, display_name, bio, avatar_url, banner_url, created_at, updated_at
 			 FROM users
 			 WHERE deleted_at IS NULL
 			 ORDER BY RANDOM()
@@ -219,7 +219,7 @@ func (r *userRepo) GetRecommended(ctx context.Context, userID string, limit int)
 		args = []any{limit}
 	} else {
 		// For auth users: exclude self and already-following
-		q = `SELECT id, username, email, password_hash, display_name, bio, avatar_url, created_at, updated_at
+		q = `SELECT id, username, email, password_hash, display_name, bio, avatar_url, banner_url, created_at, updated_at
 			 FROM users
 			 WHERE deleted_at IS NULL
 			   AND id != $1
@@ -238,7 +238,7 @@ func (r *userRepo) GetRecommended(ctx context.Context, userID string, limit int)
 	var users []model.User
 	for rows.Next() {
 		var u model.User
-		if err := rows.Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.DisplayName, &u.Bio, &u.AvatarURL, &u.CreatedAt, &u.UpdatedAt); err != nil {
+		if err := rows.Scan(&u.ID, &u.Username, &u.Email, &u.PasswordHash, &u.DisplayName, &u.Bio, &u.AvatarURL, &u.BannerURL, &u.CreatedAt, &u.UpdatedAt); err != nil {
 			return nil, err
 		}
 		users = append(users, u)

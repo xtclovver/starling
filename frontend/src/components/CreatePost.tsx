@@ -71,16 +71,22 @@ export default function CreatePost() {
             rows={3}
             className={s.createPostTextarea}
           />
-          {mediaPreview && (
+          {mediaPreview && mediaFile && (
             <div className={s.createPostMediaPreview}>
-              <img src={mediaPreview} alt="" />
+              {mediaFile.type.startsWith('video/') ? (
+                <video src={mediaPreview} controls style={{ width: '100%', borderRadius: 8, maxHeight: 240 }} />
+              ) : mediaFile.type.startsWith('audio/') ? (
+                <audio src={mediaPreview} controls style={{ width: '100%' }} />
+              ) : (
+                <img src={mediaPreview} alt="" />
+              )}
               <button onClick={clearMedia} className={s.mediaRemoveBtn}><X size={14} /></button>
             </div>
           )}
           {error && <p className={s.errorText}>{error}</p>}
           <div className={s.createPostFooter}>
             <div>
-              <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" onChange={handleFile} style={{ display: 'none' }} />
+              <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,audio/mpeg,audio/ogg,audio/wav" onChange={handleFile} style={{ display: 'none' }} />
               <button onClick={() => fileRef.current?.click()} className={s.mediaUploadBtn}>
                 <ImagePlus size={18} />
               </button>

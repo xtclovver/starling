@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -9,13 +10,18 @@ import (
 	userpb "github.com/usedcvnt/microtwitter/gen/go/user/v1"
 )
 
-type PostHandler struct {
-	post postpb.PostServiceClient
-	user userpb.UserServiceClient
+type Notifier interface {
+	PublishNotification(ctx context.Context, userID string, data any)
 }
 
-func NewPostHandler(post postpb.PostServiceClient, user userpb.UserServiceClient) *PostHandler {
-	return &PostHandler{post: post, user: user}
+type PostHandler struct {
+	post     postpb.PostServiceClient
+	user     userpb.UserServiceClient
+	notifier Notifier
+}
+
+func NewPostHandler(post postpb.PostServiceClient, user userpb.UserServiceClient, notifier Notifier) *PostHandler {
+	return &PostHandler{post: post, user: user, notifier: notifier}
 }
 
 type createPostRequest struct {
@@ -41,8 +47,12 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	post := postToMap(resp.GetPost())
+	created := resp.GetPost()
+	post := postToMap(created)
 	h.enrichSinglePost(r, post)
+
+	go notifyMentions(context.Background(), req.Content, userID, created.GetId(), "", h.user, h.notifier)
+
 	writeJSON(w, http.StatusCreated, map[string]any{"post": post})
 }
 
@@ -103,6 +113,25 @@ func (h *PostHandler) LikePost(w http.ResponseWriter, r *http.Request) {
 		handleGRPCError(w, err)
 		return
 	}
+
+	// Notify post owner async
+	go func() {
+		resp, err := h.post.GetPost(context.Background(), &postpb.GetPostRequest{Id: id})
+		if err != nil || resp.GetPost().GetUserId() == userID {
+			return
+		}
+		ownerID := resp.GetPost().GetUserId()
+		nr, err := h.user.CreateNotification(context.Background(), &userpb.CreateNotificationRequest{
+			UserId:  ownerID,
+			ActorId: userID,
+			Type:    "like_post",
+			PostId:  id,
+		})
+		if err == nil && h.notifier != nil {
+			h.notifier.PublishNotification(context.Background(), ownerID, notificationToMap(nr.GetNotification()))
+		}
+	}()
+
 	writeJSON(w, http.StatusOK, nil)
 }
 

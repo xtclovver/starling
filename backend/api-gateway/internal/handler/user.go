@@ -35,6 +35,7 @@ type updateUserRequest struct {
 	DisplayName string `json:"display_name"`
 	Bio         string `json:"bio"`
 	AvatarURL   string `json:"avatar_url"`
+	BannerURL   string `json:"banner_url"`
 }
 
 func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
@@ -56,6 +57,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		DisplayName: req.DisplayName,
 		Bio:         req.Bio,
 		AvatarUrl:   req.AvatarURL,
+		BannerUrl:   req.BannerURL,
 	})
 	if err != nil {
 		handleGRPCError(w, err)

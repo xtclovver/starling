@@ -111,6 +111,53 @@
   border-radius: 2px;
 }
 
+/* Banner edit */
+.bannerEdit {
+  position: relative;
+  height: 120px;
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--bg-tertiary);
+}
+.bannerEditImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.bannerEditPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+  font-size: 13px;
+  color: var(--text-tertiary);
+}
+.bannerEditOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.bannerEdit:hover .bannerEditOverlay { opacity: 1; }
+.bannerRemoveBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--danger);
+  transition: opacity 0.15s;
+}
+.bannerRemoveBtn:hover { opacity: 0.75; }
+
 /* Settings */
 .settingsForm {
   padding: 24px 16px;

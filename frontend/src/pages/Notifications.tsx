@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MessageCircle, UserPlus, Repeat2 } from 'lucide-react';
+import { Heart, MessageCircle, UserPlus, Repeat2, AtSign } from 'lucide-react';
 import { getNotifications, getUnreadCount, markRead, markAllRead } from '@/api/notifications';
 import { useNotificationStore } from '@/store/notifications';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
@@ -17,6 +17,7 @@ const TYPE_CONFIG: Record<string, { icon: typeof Heart; label: string; color: st
   new_follower: { icon: UserPlus, label: 'подписался на вас', color: 'var(--success)' },
   repost: { icon: Repeat2, label: 'репостнул ваш пост', color: 'var(--success)' },
   quote: { icon: Repeat2, label: 'процитировал ваш пост', color: 'var(--accent)' },
+  mention: { icon: AtSign, label: 'упомянул вас', color: 'var(--accent)' },
 };
 
 export default function Notifications() {

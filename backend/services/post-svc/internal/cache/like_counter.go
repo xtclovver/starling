@@ -14,15 +14,17 @@ import (
 type LikeCounter struct {
 	rdb      *redis.Client
 	postRepo repository.PostRepository
+	likeRepo repository.LikeRepository
 	log      *slog.Logger
 	dirty    map[string]int
 	mu       sync.Mutex
 }
 
-func NewLikeCounter(rdb *redis.Client, postRepo repository.PostRepository, log *slog.Logger) *LikeCounter {
+func NewLikeCounter(rdb *redis.Client, postRepo repository.PostRepository, likeRepo repository.LikeRepository, log *slog.Logger) *LikeCounter {
 	return &LikeCounter{
 		rdb:      rdb,
 		postRepo: postRepo,
+		likeRepo: likeRepo,
 		log:      log,
 		dirty:    make(map[string]int),
 	}
@@ -59,12 +61,13 @@ func (c *LikeCounter) Get(ctx context.Context, postID string) (int64, error) {
 	val, err := c.rdb.Get(ctx, key).Result()
 	if err != nil {
 		if err == redis.Nil {
-			post, err := c.postRepo.GetByID(ctx, postID)
+			// Count directly from likes table for accuracy
+			count, err := c.likeRepo.CountByPost(ctx, postID)
 			if err != nil {
 				return 0, err
 			}
-			c.rdb.Set(ctx, key, post.LikesCount, 300*time.Second)
-			return post.LikesCount, nil
+			c.rdb.Set(ctx, key, count, 300*time.Second)
+			return count, nil
 		}
 		return 0, err
 	}

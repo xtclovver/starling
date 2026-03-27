@@ -10,6 +10,7 @@ type User struct {
 	DisplayName  string
 	Bio          string
 	AvatarURL    string
+	BannerURL    string
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 	DeletedAt    *time.Time

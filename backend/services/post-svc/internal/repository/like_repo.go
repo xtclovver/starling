@@ -15,6 +15,7 @@ type LikeRepository interface {
 	UnlikePost(ctx context.Context, postID, userID string) error
 	IsLiked(ctx context.Context, postID, userID string) (bool, error)
 	AreLiked(ctx context.Context, postIDs []string, userID string) (map[string]bool, error)
+	CountByPost(ctx context.Context, postID string) (int64, error)
 }
 
 type likeRepo struct {
@@ -61,6 +62,14 @@ func (r *likeRepo) IsLiked(ctx context.Context, postID, userID string) (bool, er
 		userID, postID,
 	).Scan(&exists)
 	return exists, err
+}
+
+func (r *likeRepo) CountByPost(ctx context.Context, postID string) (int64, error) {
+	var count int64
+	err := r.pool.QueryRow(ctx,
+		`SELECT COUNT(*) FROM likes WHERE post_id = $1`, postID,
+	).Scan(&count)
+	return count, err
 }
 
 func (r *likeRepo) AreLiked(ctx context.Context, postIDs []string, userID string) (map[string]bool, error) {

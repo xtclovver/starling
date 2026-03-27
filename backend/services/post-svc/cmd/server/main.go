@@ -59,7 +59,7 @@ func main() {
 	bookmarkRepo := repository.NewBookmarkRepository(pool)
 	hashtagRepo := repository.NewHashtagRepository(pool)
 	repostRepo := repository.NewRepostRepository(pool)
-	likeCounter := cache.NewLikeCounter(rdb, postRepo, log)
+	likeCounter := cache.NewLikeCounter(rdb, postRepo, likeRepo, log)
 
 	go likeCounter.StartSyncLoop(ctx, cfg.LikeSyncInterval)
 

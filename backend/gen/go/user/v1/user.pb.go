@@ -35,6 +35,7 @@ type User struct {
 	UpdatedAt      *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	FollowersCount int32                  `protobuf:"varint,9,opt,name=followers_count,json=followersCount,proto3" json:"followers_count,omitempty"`
 	FollowingCount int32                  `protobuf:"varint,10,opt,name=following_count,json=followingCount,proto3" json:"following_count,omitempty"`
+	BannerUrl      string                 `protobuf:"bytes,11,opt,name=banner_url,json=bannerUrl,proto3" json:"banner_url,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -137,6 +138,13 @@ func (x *User) GetFollowingCount() int32 {
 		return x.FollowingCount
 	}
 	return 0
+}
+
+func (x *User) GetBannerUrl() string {
+	if x != nil {
+		return x.BannerUrl
+	}
+	return ""
 }
 
 type RegisterRequest struct {
@@ -585,6 +593,7 @@ type UpdateUserRequest struct {
 	DisplayName   string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	Bio           string                 `protobuf:"bytes,3,opt,name=bio,proto3" json:"bio,omitempty"`
 	AvatarUrl     string                 `protobuf:"bytes,4,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
+	BannerUrl     string                 `protobuf:"bytes,5,opt,name=banner_url,json=bannerUrl,proto3" json:"banner_url,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -643,6 +652,13 @@ func (x *UpdateUserRequest) GetBio() string {
 func (x *UpdateUserRequest) GetAvatarUrl() string {
 	if x != nil {
 		return x.AvatarUrl
+	}
+	return ""
+}
+
+func (x *UpdateUserRequest) GetBannerUrl() string {
+	if x != nil {
+		return x.BannerUrl
 	}
 	return ""
 }
@@ -2037,7 +2053,7 @@ var File_user_v1_user_proto protoreflect.FileDescriptor
 
 const file_user_v1_user_proto_rawDesc = "" +
 	"\n" +
-	"\x12user/v1/user.proto\x12\auser.v1\x1a\x16common/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe4\x02\n" +
+	"\x12user/v1/user.proto\x12\auser.v1\x1a\x16common/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x83\x03\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x14\n" +
@@ -2052,7 +2068,9 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12'\n" +
 	"\x0ffollowers_count\x18\t \x01(\x05R\x0efollowersCount\x12'\n" +
 	"\x0ffollowing_count\x18\n" +
-	" \x01(\x05R\x0efollowingCount\"\x82\x01\n" +
+	" \x01(\x05R\x0efollowingCount\x12\x1d\n" +
+	"\n" +
+	"banner_url\x18\v \x01(\tR\tbannerUrl\"\x82\x01\n" +
 	"\x0fRegisterRequest\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1a\n" +
@@ -2079,13 +2097,15 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\tviewer_id\x18\x02 \x01(\tR\bviewerId\"W\n" +
 	"\x0fGetUserResponse\x12!\n" +
 	"\x04user\x18\x01 \x01(\v2\r.user.v1.UserR\x04user\x12!\n" +
-	"\fis_following\x18\x02 \x01(\bR\visFollowing\"w\n" +
+	"\fis_following\x18\x02 \x01(\bR\visFollowing\"\x96\x01\n" +
 	"\x11UpdateUserRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\x10\n" +
 	"\x03bio\x18\x03 \x01(\tR\x03bio\x12\x1d\n" +
 	"\n" +
-	"avatar_url\x18\x04 \x01(\tR\tavatarUrl\"7\n" +
+	"avatar_url\x18\x04 \x01(\tR\tavatarUrl\x12\x1d\n" +
+	"\n" +
+	"banner_url\x18\x05 \x01(\tR\tbannerUrl\"7\n" +
 	"\x12UpdateUserResponse\x12!\n" +
 	"\x04user\x18\x01 \x01(\v2\r.user.v1.UserR\x04user\"'\n" +
 	"\x15SoftDeleteUserRequest\x12\x0e\n" +

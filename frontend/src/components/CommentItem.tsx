@@ -1,13 +1,29 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import s2 from '@/styles/post.module.css';
 import { Heart, MessageCircle, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { likeComment, unlikeComment, deleteComment } from '@/api/comments';
 import { useAuthStore } from '@/store/auth';
 import { timeAgo } from '@/lib/time';
+import { getMediaKind } from '@/lib/media';
 import Avatar from './Avatar';
 import CommentForm from './CommentForm';
 import ImageLightbox from './ImageLightbox';
 import s from '@/styles/comment.module.css';
+
+function renderContent(content: string) {
+  const parts = content.split(/(#\w+|@\w+)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('#')) {
+      const tag = part.slice(1).toLowerCase();
+      return <Link key={i} to={`/hashtag/${tag}`} className={s2.hashtag}>{part}</Link>;
+    }
+    if (part.startsWith('@')) {
+      return <Link key={i} to={`/u/${part.slice(1)}`} className={s2.mention}>{part}</Link>;
+    }
+    return part;
+  });
+}
 import type { Comment } from '@/types';
 
 interface Props {
@@ -70,18 +86,31 @@ export default function CommentItem({ comment, postId, onNewReply, onDelete }: P
             <p className={`${s.commentText} ${s.commentDeleted}`}>[удалено]</p>
           ) : (
             <>
-              <p className={s.commentText}>{comment.content}</p>
-              {comment.media_url && (
-                <div className={s.commentMedia}>
-                  <img
-                    src={comment.media_url}
-                    alt=""
-                    loading="lazy"
-                    onClick={() => setLightboxSrc(comment.media_url!)}
-                    style={{ cursor: 'zoom-in' }}
-                  />
-                </div>
-              )}
+              <p className={s.commentText}>{renderContent(comment.content)}</p>
+              {comment.media_url && (() => {
+                const kind = getMediaKind(comment.media_url);
+                if (kind === 'video') return (
+                  <div className={s.commentMedia}>
+                    <video src={comment.media_url} controls style={{ width: '100%', borderRadius: 8, maxHeight: 320 }} />
+                  </div>
+                );
+                if (kind === 'audio') return (
+                  <div style={{ marginTop: 6 }}>
+                    <audio src={comment.media_url} controls style={{ width: '100%' }} />
+                  </div>
+                );
+                return (
+                  <div className={s.commentMedia}>
+                    <img
+                      src={comment.media_url}
+                      alt=""
+                      loading="lazy"
+                      onClick={() => setLightboxSrc(comment.media_url!)}
+                      style={{ cursor: 'zoom-in' }}
+                    />
+                  </div>
+                );
+              })()}
             </>
           )}
 

@@ -46,11 +46,14 @@ func main() {
 	}
 	defer clients.Close()
 
+	// Publisher for real-time notifications
+	publisher := ws.NewPublisher(rdb)
+
 	// Handlers
 	authH := handler.NewAuthHandler(clients.User)
 	userH := handler.NewUserHandler(clients.User, clients.Post)
-	postH := handler.NewPostHandler(clients.Post, clients.User)
-	commentH := handler.NewCommentHandler(clients.Comment, clients.User)
+	postH := handler.NewPostHandler(clients.Post, clients.User, publisher)
+	commentH := handler.NewCommentHandler(clients.Comment, clients.User, clients.Post, publisher)
 	mediaH := handler.NewMediaHandler(clients.Media)
 
 	// WebSocket

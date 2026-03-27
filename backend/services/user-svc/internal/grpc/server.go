@@ -205,6 +205,9 @@ func (s *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb
 	if req.GetAvatarUrl() != "" {
 		fields["avatar_url"] = req.GetAvatarUrl()
 	}
+	if req.GetBannerUrl() != "" {
+		fields["banner_url"] = req.GetBannerUrl()
+	}
 
 	user, err := s.userRepo.Update(ctx, req.GetId(), fields)
 	if err != nil {

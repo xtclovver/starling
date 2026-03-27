@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Heart, MessageCircle, Trash2 } from 'lucide-react';
 import { getPost, likePost, unlikePost, deletePost } from '@/api/posts';
 import { useAuthStore } from '@/store/auth';
+import { getMediaKind } from '@/lib/media';
 import Avatar from '@/components/Avatar';
 import CommentTree from '@/components/CommentTree';
 import Spinner from '@/components/Spinner';
@@ -73,11 +74,24 @@ export default function PostPage() {
 
         <p className={s.postDetailContent}>{post.content}</p>
 
-        {post.media_url && (
-          <div className={s.postMedia} style={{ marginTop: 12 }}>
-            <img src={post.media_url} alt="" style={{ maxHeight: 600 }} loading="lazy" />
-          </div>
-        )}
+        {post.media_url && (() => {
+          const kind = getMediaKind(post.media_url);
+          if (kind === 'video') return (
+            <div className={s.postMedia} style={{ marginTop: 12 }}>
+              <video src={post.media_url} controls style={{ width: '100%', borderRadius: 12, maxHeight: 480 }} />
+            </div>
+          );
+          if (kind === 'audio') return (
+            <div style={{ marginTop: 12 }}>
+              <audio src={post.media_url} controls style={{ width: '100%' }} />
+            </div>
+          );
+          return (
+            <div className={s.postMedia} style={{ marginTop: 12 }}>
+              <img src={post.media_url} alt="" style={{ maxHeight: 600 }} loading="lazy" />
+            </div>
+          );
+        })()}
 
         <p className={s.postDetailTimestamp}>
           {new Date(post.created_at).toLocaleString('ru-RU', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short', year: 'numeric' })}

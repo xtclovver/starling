@@ -72,6 +72,8 @@
 .actionBtnBookmarked { color: var(--accent); }
 .hashtag { color: var(--accent); }
 .hashtag:hover { text-decoration: underline; }
+.mention { color: var(--accent); }
+.mention:hover { text-decoration: underline; }
 .editedBadge { font-size: 12px; color: var(--text-tertiary); font-style: italic; }
 .deleteBtn {
   margin-left: auto;

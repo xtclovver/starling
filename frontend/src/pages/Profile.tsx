@@ -127,7 +127,7 @@ export default function Profile() {
         </div>
       </header>
 
-      <div className={s.banner} />
+      <div className={s.banner} style={profile.banner_url ? { background: `url(${profile.banner_url}) center/cover no-repeat` } : undefined} />
 
       <div className={s.profileHeader}>
         <div className={s.profileTopRow}>

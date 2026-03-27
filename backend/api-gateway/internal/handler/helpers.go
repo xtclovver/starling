@@ -1,11 +1,14 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
+	"regexp"
 
 	"github.com/usedcvnt/microtwitter/api-gateway/internal/middleware"
 	commentpb "github.com/usedcvnt/microtwitter/gen/go/comment/v1"
+	commonpb "github.com/usedcvnt/microtwitter/gen/go/common/v1"
 	postpb "github.com/usedcvnt/microtwitter/gen/go/post/v1"
 	userpb "github.com/usedcvnt/microtwitter/gen/go/user/v1"
 	"google.golang.org/grpc/codes"
@@ -100,6 +103,7 @@ func userToMap(u *userpb.User) map[string]any {
 		"display_name":    u.GetDisplayName(),
 		"bio":             u.GetBio(),
 		"avatar_url":      u.GetAvatarUrl(),
+		"banner_url":      u.GetBannerUrl(),
 		"created_at":      tsToString(u.GetCreatedAt()),
 		"updated_at":      tsToString(u.GetUpdatedAt()),
 		"followers_count": u.GetFollowersCount(),
@@ -151,4 +155,51 @@ func usersToList(users []*userpb.User) []map[string]any {
 		result[i] = userToMap(u)
 	}
 	return result
+}
+
+var mentionRe = regexp.MustCompile(`@(\w+)`)
+
+func extractMentions(content string) []string {
+	matches := mentionRe.FindAllStringSubmatch(content, -1)
+	seen := make(map[string]struct{})
+	var usernames []string
+	for _, m := range matches {
+		uname := m[1]
+		if _, ok := seen[uname]; !ok {
+			seen[uname] = struct{}{}
+			usernames = append(usernames, uname)
+		}
+	}
+	return usernames
+}
+
+func notifyMentions(ctx context.Context, content, actorID, postID, commentID string, userSvc userpb.UserServiceClient, notifier Notifier) {
+	usernames := extractMentions(content)
+	if len(usernames) == 0 {
+		return
+	}
+	for _, uname := range usernames {
+		resp, err := userSvc.SearchUsers(ctx, &userpb.SearchUsersRequest{
+			Query: uname,
+			Pagination: &commonpb.PaginationRequest{Limit: 5},
+		})
+		if err != nil {
+			continue
+		}
+		for _, u := range resp.GetUsers() {
+			if u.GetUsername() == uname && u.GetId() != actorID {
+				nr, err := userSvc.CreateNotification(ctx, &userpb.CreateNotificationRequest{
+					UserId:    u.GetId(),
+					ActorId:   actorID,
+					Type:      "mention",
+					PostId:    postID,
+					CommentId: commentID,
+				})
+				if err == nil && notifier != nil {
+					notifier.PublishNotification(ctx, u.GetId(), notificationToMap(nr.GetNotification()))
+				}
+				break
+			}
+		}
+	}
 }

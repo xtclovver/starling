@@ -7,17 +7,22 @@ import { useAuthStore } from '@/store/auth';
 import { useFeedStore } from '@/store/feed';
 import { useUIStore } from '@/store/ui';
 import { timeAgo } from '@/lib/time';
+import { getMediaKind } from '@/lib/media';
 import Avatar from './Avatar';
 import ImageLightbox from './ImageLightbox';
 import s from '@/styles/post.module.css';
 import type { Post } from '@/types';
 
 function renderContent(content: string) {
-  const parts = content.split(/(#\w+)/g);
+  const parts = content.split(/(#\w+|@\w+)/g);
   return parts.map((part, i) => {
     if (part.startsWith('#')) {
       const tag = part.slice(1).toLowerCase();
       return <Link key={i} to={`/hashtag/${tag}`} onClick={(e) => e.stopPropagation()} className={s.hashtag}>{part}</Link>;
+    }
+    if (part.startsWith('@')) {
+      const username = part.slice(1);
+      return <Link key={i} to={`/u/${username}`} onClick={(e) => e.stopPropagation()} className={s.mention}>{part}</Link>;
     }
     return part;
   });
@@ -212,15 +217,21 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
                 autoFocus
                 rows={3}
               />
-              {(editMediaPreview || editMediaUrl) && (
-                <div className={s.editMediaPreview}>
-                  <img src={editMediaPreview || editMediaUrl} alt="" />
-                  <button onClick={removeEditMedia} className={s.mediaRemoveBtn}><X size={14} /></button>
-                </div>
-              )}
+              {(editMediaPreview || editMediaUrl) && (() => {
+                const src = editMediaPreview || editMediaUrl;
+                const kind = editMediaFile ? (editMediaFile.type.startsWith('video/') ? 'video' : editMediaFile.type.startsWith('audio/') ? 'audio' : 'image') : getMediaKind(src);
+                return (
+                  <div className={s.editMediaPreview}>
+                    {kind === 'video' ? <video src={src} controls style={{ width: '100%', borderRadius: 8, maxHeight: 200 }} /> :
+                     kind === 'audio' ? <audio src={src} controls style={{ width: '100%' }} /> :
+                     <img src={src} alt="" />}
+                    <button onClick={removeEditMedia} className={s.mediaRemoveBtn}><X size={14} /></button>
+                  </div>
+                );
+              })()}
               <div className={s.inlineEditFooter}>
                 <div className={s.inlineEditLeft}>
-                  <input ref={editFileRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" onChange={handleEditFile} style={{ display: 'none' }} />
+                  <input ref={editFileRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,audio/mpeg,audio/ogg,audio/wav" onChange={handleEditFile} style={{ display: 'none' }} />
                   <button onClick={(e) => { e.stopPropagation(); editFileRef.current?.click(); }} className={s.mediaUploadBtn} title="Прикрепить фото">
                     <ImagePlus size={16} />
                   </button>
@@ -243,17 +254,30 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
           ) : (
             <>
               <p className={s.postContent}>{renderContent(post.content)}</p>
-              {post.media_url && (
-                <div className={s.postMedia}>
-                  <img
-                    src={post.media_url}
-                    alt=""
-                    loading="lazy"
-                    onClick={(e) => { e.stopPropagation(); setLightboxSrc(post.media_url); }}
-                    style={{ cursor: 'zoom-in' }}
-                  />
-                </div>
-              )}
+              {post.media_url && (() => {
+                const kind = getMediaKind(post.media_url);
+                if (kind === 'video') return (
+                  <div className={s.postMedia} onClick={(e) => e.stopPropagation()}>
+                    <video src={post.media_url} controls style={{ width: '100%', borderRadius: 12, maxHeight: 480 }} />
+                  </div>
+                );
+                if (kind === 'audio') return (
+                  <div onClick={(e) => e.stopPropagation()} style={{ marginTop: 8 }}>
+                    <audio src={post.media_url} controls style={{ width: '100%' }} />
+                  </div>
+                );
+                return (
+                  <div className={s.postMedia}>
+                    <img
+                      src={post.media_url}
+                      alt=""
+                      loading="lazy"
+                      onClick={(e) => { e.stopPropagation(); setLightboxSrc(post.media_url); }}
+                      style={{ cursor: 'zoom-in' }}
+                    />
+                  </div>
+                );
+              })()}
             </>
           )}
 

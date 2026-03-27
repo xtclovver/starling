@@ -6,7 +6,7 @@ export async function getUser(id: string) {
   return data.data.user;
 }
 
-export async function updateUser(id: string, fields: { display_name?: string; bio?: string; avatar_url?: string }) {
+export async function updateUser(id: string, fields: { display_name?: string; bio?: string; avatar_url?: string; banner_url?: string }) {
   const { data } = await client.put<ApiResponse<{ user: User }>>(`/users/${id}`, fields);
   return data.data.user;
 }

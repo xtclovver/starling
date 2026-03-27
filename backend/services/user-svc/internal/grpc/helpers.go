@@ -16,6 +16,7 @@ func toProtoUser(u *model.User) *pb.User {
 		DisplayName: u.DisplayName,
 		Bio:         u.Bio,
 		AvatarUrl:   u.AvatarURL,
+		BannerUrl:   u.BannerURL,
 		CreatedAt:   timestamppb.New(u.CreatedAt),
 		UpdatedAt:   timestamppb.New(u.UpdatedAt),
 	}

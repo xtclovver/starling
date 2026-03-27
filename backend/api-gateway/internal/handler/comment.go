@@ -1,21 +1,25 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
 	commentpb "github.com/usedcvnt/microtwitter/gen/go/comment/v1"
 	commonpb "github.com/usedcvnt/microtwitter/gen/go/common/v1"
+	postpb "github.com/usedcvnt/microtwitter/gen/go/post/v1"
 	userpb "github.com/usedcvnt/microtwitter/gen/go/user/v1"
 )
 
 type CommentHandler struct {
-	comment commentpb.CommentServiceClient
-	user    userpb.UserServiceClient
+	comment  commentpb.CommentServiceClient
+	user     userpb.UserServiceClient
+	post     postpb.PostServiceClient
+	notifier Notifier
 }
 
-func NewCommentHandler(comment commentpb.CommentServiceClient, user userpb.UserServiceClient) *CommentHandler {
-	return &CommentHandler{comment: comment, user: user}
+func NewCommentHandler(comment commentpb.CommentServiceClient, user userpb.UserServiceClient, post postpb.PostServiceClient, notifier Notifier) *CommentHandler {
+	return &CommentHandler{comment: comment, user: user, post: post, notifier: notifier}
 }
 
 type createCommentRequest struct {
@@ -46,7 +50,8 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cm := commentToMap(resp.GetComment())
+	comment := resp.GetComment()
+	cm := commentToMap(comment)
 	if userID != "" {
 		usersResp, _ := h.user.GetUsersByIDs(r.Context(), &userpb.GetUsersByIDsRequest{Ids: []string{userID}})
 		if usersResp != nil {
@@ -57,6 +62,28 @@ func (h *CommentHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+
+	// Notify post owner async
+	go func() {
+		postResp, err := h.post.GetPost(context.Background(), &postpb.GetPostRequest{Id: postID})
+		if err != nil || postResp.GetPost().GetUserId() == userID {
+			return
+		}
+		ownerID := postResp.GetPost().GetUserId()
+		nr, err := h.user.CreateNotification(context.Background(), &userpb.CreateNotificationRequest{
+			UserId:    ownerID,
+			ActorId:   userID,
+			Type:      "new_comment",
+			PostId:    postID,
+			CommentId: comment.GetId(),
+		})
+		if err == nil && h.notifier != nil {
+			h.notifier.PublishNotification(context.Background(), ownerID, notificationToMap(nr.GetNotification()))
+		}
+	}()
+
+	go notifyMentions(context.Background(), req.Content, userID, postID, comment.GetId(), h.user, h.notifier)
+
 	writeJSON(w, http.StatusCreated, map[string]any{"comment": cm})
 }
 

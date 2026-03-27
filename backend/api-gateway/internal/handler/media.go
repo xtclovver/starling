@@ -18,8 +18,8 @@ func NewMediaHandler(media mediapb.MediaServiceClient) *MediaHandler {
 func (h *MediaHandler) Upload(w http.ResponseWriter, r *http.Request) {
 	userID := getUserID(r)
 
-	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		writeError(w, http.StatusRequestEntityTooLarge, "file too large (max 10MB)")
+	if err := r.ParseMultipartForm(100 << 20); err != nil {
+		writeError(w, http.StatusRequestEntityTooLarge, "file too large (max 100MB)")
 		return
 	}
 
@@ -55,8 +55,9 @@ func (h *MediaHandler) Upload(w http.ResponseWriter, r *http.Request) {
 	m := resp.GetMedia()
 	writeJSON(w, http.StatusCreated, map[string]any{
 		"media": map[string]any{
-			"id":  m.GetId(),
-			"url": m.GetUrl(),
+			"id":           m.GetId(),
+			"url":          m.GetUrl(),
+			"content_type": m.GetContentType(),
 		},
 	})
 }
