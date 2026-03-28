@@ -34,6 +34,9 @@ func toProtoComment(c *model.Comment) *pb.Comment {
 		CreatedAt:  timestamppb.New(c.CreatedAt),
 		UpdatedAt:  timestamppb.New(c.UpdatedAt),
 	}
+	if c.EditedAt != nil {
+		pc.EditedAt = timestamppb.New(*c.EditedAt)
+	}
 	if c.ParentID != nil {
 		pc.ParentId = *c.ParentID
 	}

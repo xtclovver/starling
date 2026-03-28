@@ -20,6 +20,7 @@ type CommentRepository interface {
 	Create(ctx context.Context, postID, userID string, parentID *string, content, mediaURL string) (*model.Comment, error)
 	GetTree(ctx context.Context, postID, cursor string, limit int) ([]model.Comment, string, error)
 	SoftDelete(ctx context.Context, commentID, userID string) error
+	Update(ctx context.Context, commentID, userID, content, mediaURL string) (*model.Comment, error)
 	IncrementPostComments(ctx context.Context, postID string) error
 	DecrementPostComments(ctx context.Context, postID string) error
 }
@@ -179,6 +180,28 @@ func (r *commentRepo) SoftDelete(ctx context.Context, commentID, userID string) 
 		return ErrNotFound
 	}
 	return nil
+}
+
+func (r *commentRepo) Update(ctx context.Context, commentID, userID, content, mediaURL string) (*model.Comment, error) {
+	c := &model.Comment{}
+	err := r.pool.QueryRow(ctx,
+		`UPDATE comments SET content = $1, media_url = $2, edited_at = NOW(), updated_at = NOW()
+		 WHERE id = $3 AND user_id = $4 AND deleted_at IS NULL
+		 RETURNING id, post_id, user_id, parent_id, content, media_url, likes_count, depth, created_at, updated_at, edited_at`,
+		content, mediaURL, commentID, userID,
+	).Scan(&c.ID, &c.PostID, &c.UserID, &c.ParentID, &c.Content, &c.MediaURL, &c.LikesCount, &c.Depth, &c.CreatedAt, &c.UpdatedAt, &c.EditedAt)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			var exists bool
+			_ = r.pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM comments WHERE id = $1 AND deleted_at IS NULL)`, commentID).Scan(&exists)
+			if exists {
+				return nil, ErrForbidden
+			}
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+	return c, nil
 }
 
 func (r *commentRepo) IncrementPostComments(ctx context.Context, postID string) error {

@@ -13,6 +13,7 @@ type Comment struct {
 	Depth      int32
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
+	EditedAt   *time.Time
 	DeletedAt  *time.Time
 	Children   []*Comment
 }
