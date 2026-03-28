@@ -20,6 +20,7 @@ message Comment {
   repeated Comment children = 10;
   bool liked = 11;
   string media_url = 12;
+  google.protobuf.Timestamp edited_at = 13;
 }
 
 message CreateCommentRequest {
@@ -52,6 +53,17 @@ message DeleteCommentRequest {
 
 message DeleteCommentResponse {}
 
+message UpdateCommentRequest {
+  string id = 1;
+  string user_id = 2;
+  string content = 3;
+  string media_url = 4;
+}
+
+message UpdateCommentResponse {
+  Comment comment = 1;
+}
+
 message LikeCommentRequest {
   string user_id = 1;
   string comment_id = 2;
@@ -70,6 +82,7 @@ service CommentService {
   rpc CreateComment(CreateCommentRequest) returns (CreateCommentResponse);
   rpc GetCommentTree(GetCommentTreeRequest) returns (GetCommentTreeResponse);
   rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse);
+  rpc UpdateComment(UpdateCommentRequest) returns (UpdateCommentResponse);
   rpc LikeComment(LikeCommentRequest) returns (LikeCommentResponse);
   rpc UnlikeComment(UnlikeCommentRequest) returns (UnlikeCommentResponse);
 }

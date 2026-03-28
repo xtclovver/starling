@@ -22,6 +22,7 @@ const (
 	CommentService_CreateComment_FullMethodName  = "/comment.v1.CommentService/CreateComment"
 	CommentService_GetCommentTree_FullMethodName = "/comment.v1.CommentService/GetCommentTree"
 	CommentService_DeleteComment_FullMethodName  = "/comment.v1.CommentService/DeleteComment"
+	CommentService_UpdateComment_FullMethodName  = "/comment.v1.CommentService/UpdateComment"
 	CommentService_LikeComment_FullMethodName    = "/comment.v1.CommentService/LikeComment"
 	CommentService_UnlikeComment_FullMethodName  = "/comment.v1.CommentService/UnlikeComment"
 )
@@ -33,6 +34,7 @@ type CommentServiceClient interface {
 	CreateComment(ctx context.Context, in *CreateCommentRequest, opts ...grpc.CallOption) (*CreateCommentResponse, error)
 	GetCommentTree(ctx context.Context, in *GetCommentTreeRequest, opts ...grpc.CallOption) (*GetCommentTreeResponse, error)
 	DeleteComment(ctx context.Context, in *DeleteCommentRequest, opts ...grpc.CallOption) (*DeleteCommentResponse, error)
+	UpdateComment(ctx context.Context, in *UpdateCommentRequest, opts ...grpc.CallOption) (*UpdateCommentResponse, error)
 	LikeComment(ctx context.Context, in *LikeCommentRequest, opts ...grpc.CallOption) (*LikeCommentResponse, error)
 	UnlikeComment(ctx context.Context, in *UnlikeCommentRequest, opts ...grpc.CallOption) (*UnlikeCommentResponse, error)
 }
@@ -75,6 +77,16 @@ func (c *commentServiceClient) DeleteComment(ctx context.Context, in *DeleteComm
 	return out, nil
 }
 
+func (c *commentServiceClient) UpdateComment(ctx context.Context, in *UpdateCommentRequest, opts ...grpc.CallOption) (*UpdateCommentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateCommentResponse)
+	err := c.cc.Invoke(ctx, CommentService_UpdateComment_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *commentServiceClient) LikeComment(ctx context.Context, in *LikeCommentRequest, opts ...grpc.CallOption) (*LikeCommentResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(LikeCommentResponse)
@@ -102,6 +114,7 @@ type CommentServiceServer interface {
 	CreateComment(context.Context, *CreateCommentRequest) (*CreateCommentResponse, error)
 	GetCommentTree(context.Context, *GetCommentTreeRequest) (*GetCommentTreeResponse, error)
 	DeleteComment(context.Context, *DeleteCommentRequest) (*DeleteCommentResponse, error)
+	UpdateComment(context.Context, *UpdateCommentRequest) (*UpdateCommentResponse, error)
 	LikeComment(context.Context, *LikeCommentRequest) (*LikeCommentResponse, error)
 	UnlikeComment(context.Context, *UnlikeCommentRequest) (*UnlikeCommentResponse, error)
 	mustEmbedUnimplementedCommentServiceServer()
@@ -122,6 +135,9 @@ func (UnimplementedCommentServiceServer) GetCommentTree(context.Context, *GetCom
 }
 func (UnimplementedCommentServiceServer) DeleteComment(context.Context, *DeleteCommentRequest) (*DeleteCommentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteComment not implemented")
+}
+func (UnimplementedCommentServiceServer) UpdateComment(context.Context, *UpdateCommentRequest) (*UpdateCommentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateComment not implemented")
 }
 func (UnimplementedCommentServiceServer) LikeComment(context.Context, *LikeCommentRequest) (*LikeCommentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method LikeComment not implemented")
@@ -204,6 +220,24 @@ func _CommentService_DeleteComment_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CommentService_UpdateComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateCommentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommentServiceServer).UpdateComment(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CommentService_UpdateComment_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommentServiceServer).UpdateComment(ctx, req.(*UpdateCommentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CommentService_LikeComment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LikeCommentRequest)
 	if err := dec(in); err != nil {
@@ -258,6 +292,10 @@ var CommentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteComment",
 			Handler:    _CommentService_DeleteComment_Handler,
+		},
+		{
+			MethodName: "UpdateComment",
+			Handler:    _CommentService_UpdateComment_Handler,
 		},
 		{
 			MethodName: "LikeComment",
