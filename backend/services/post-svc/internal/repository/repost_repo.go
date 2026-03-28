@@ -105,7 +105,7 @@ func (r *repostRepo) GetRepostedPostsByUser(ctx context.Context, userID, cursor 
 	}
 
 	args := []any{userID, limit + 1}
-	q := `SELECT p.id, p.user_id, p.content, p.media_url, p.likes_count, p.comments_count, p.reposts_count, p.created_at, p.updated_at, p.edited_at
+	q := `SELECT p.id, p.user_id, p.content, p.views_count, p.likes_count, p.comments_count, p.reposts_count, p.created_at, p.updated_at, p.edited_at
 		  FROM posts p
 		  INNER JOIN reposts r ON r.post_id = p.id AND r.user_id = $1 AND r.type = 'repost'
 		  WHERE p.deleted_at IS NULL`
@@ -125,7 +125,7 @@ func (r *repostRepo) GetRepostedPostsByUser(ctx context.Context, userID, cursor 
 	posts := make([]model.Post, 0)
 	for rows.Next() {
 		var p model.Post
-		if err := rows.Scan(&p.ID, &p.UserID, &p.Content, &p.MediaURL, &p.LikesCount, &p.CommentsCount, &p.RepostsCount, &p.CreatedAt, &p.UpdatedAt, &p.EditedAt); err != nil {
+		if err := rows.Scan(&p.ID, &p.UserID, &p.Content, &p.ViewsCount, &p.LikesCount, &p.CommentsCount, &p.RepostsCount, &p.CreatedAt, &p.UpdatedAt, &p.EditedAt); err != nil {
 			return nil, "", false, err
 		}
 		posts = append(posts, p)

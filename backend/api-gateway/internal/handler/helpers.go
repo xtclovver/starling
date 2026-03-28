@@ -74,14 +74,23 @@ func tsToString(ts *timestamppb.Timestamp) string {
 }
 
 func postToMap(p *postpb.Post) map[string]any {
+	media := make([]map[string]any, 0, len(p.GetMedia()))
+	for _, mi := range p.GetMedia() {
+		media = append(media, map[string]any{
+			"url":          mi.GetUrl(),
+			"content_type": mi.GetContentType(),
+			"position":     mi.GetPosition(),
+		})
+	}
 	m := map[string]any{
 		"id":             p.GetId(),
 		"user_id":        p.GetUserId(),
 		"content":        p.GetContent(),
-		"media_url":      p.GetMediaUrl(),
+		"media":          media,
 		"likes_count":    p.GetLikesCount(),
 		"comments_count": p.GetCommentsCount(),
 		"reposts_count":  p.GetRepostsCount(),
+		"views_count":    p.GetViewsCount(),
 		"created_at":     tsToString(p.GetCreatedAt()),
 		"updated_at":     tsToString(p.GetUpdatedAt()),
 		"bookmarked":     p.GetBookmarked(),

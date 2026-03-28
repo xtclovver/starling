@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	pb "github.com/usedcvnt/microtwitter/gen/go/media/v1"
@@ -142,10 +143,82 @@ func toProtoMedia(m *model.Media, url string) *pb.Media {
 		ObjectKey:   m.ObjectKey,
 		ContentType: m.ContentType,
 		Url:         url,
+		Position:    int32(m.Position),
 		CreatedAt:   timestamppb.New(m.CreatedAt),
 	}
 	if m.PostID != nil {
 		pm.PostId = *m.PostID
 	}
 	return pm
+}
+
+func (s *Server) toProtoMediaWithURL(m *model.Media) *pb.Media {
+	url := fmt.Sprintf("%s/%s/%s", s.publicEndpoint, s.bucket, m.ObjectKey)
+	return toProtoMedia(m, url)
+}
+
+func (s *Server) GetMediaByPost(ctx context.Context, req *pb.GetMediaByPostRequest) (*pb.GetMediaByPostResponse, error) {
+	items, err := s.mediaRepo.GetByPostID(ctx, req.GetPostId())
+	if err != nil {
+		s.log.Error("get media by post failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	pbItems := make([]*pb.Media, len(items))
+	for i, m := range items {
+		pbItems[i] = s.toProtoMediaWithURL(&m)
+	}
+	return &pb.GetMediaByPostResponse{Media: pbItems}, nil
+}
+
+func (s *Server) GetMediaByPosts(ctx context.Context, req *pb.GetMediaByPostsRequest) (*pb.GetMediaByPostsResponse, error) {
+	mediaMap, err := s.mediaRepo.GetByPostIDs(ctx, req.GetPostIds())
+	if err != nil {
+		s.log.Error("get media by posts failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	result := make(map[string]*pb.MediaList, len(mediaMap))
+	for postID, items := range mediaMap {
+		pbItems := make([]*pb.Media, len(items))
+		for i, m := range items {
+			pbItems[i] = s.toProtoMediaWithURL(&m)
+		}
+		result[postID] = &pb.MediaList{Items: pbItems}
+	}
+	return &pb.GetMediaByPostsResponse{MediaByPost: result}, nil
+}
+
+func (s *Server) LinkMediaToPost(ctx context.Context, req *pb.LinkMediaToPostRequest) (*pb.LinkMediaToPostResponse, error) {
+	if len(req.GetMediaUrls()) > 10 {
+		return nil, status.Error(codes.InvalidArgument, "max 10 media per post")
+	}
+	if len(req.GetMediaUrls()) == 0 {
+		return &pb.LinkMediaToPostResponse{}, nil
+	}
+
+	objectKeys := make([]string, len(req.GetMediaUrls()))
+	for i, url := range req.GetMediaUrls() {
+		key := extractObjectKey(url, s.publicEndpoint, s.bucket)
+		if key == "" {
+			return nil, status.Error(codes.InvalidArgument, "invalid media URL: "+url)
+		}
+		objectKeys[i] = key
+	}
+
+	if err := s.mediaRepo.LinkToPost(ctx, objectKeys, req.GetPostId(), req.GetUserId()); err != nil {
+		s.log.Error("link media to post failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	return &pb.LinkMediaToPostResponse{}, nil
+}
+
+func extractObjectKey(url, publicEndpoint, bucket string) string {
+	prefix := publicEndpoint + "/" + bucket + "/"
+	if strings.HasPrefix(url, prefix) {
+		return strings.TrimPrefix(url, prefix)
+	}
+	parts := strings.SplitN(url, "/"+bucket+"/", 2)
+	if len(parts) == 2 {
+		return parts[1]
+	}
+	return ""
 }

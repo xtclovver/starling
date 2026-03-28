@@ -6,7 +6,7 @@ type Post struct {
 	ID            string
 	UserID        string
 	Content       string
-	MediaURL      string
+	ViewsCount    int64
 	LikesCount    int64
 	CommentsCount int64
 	RepostsCount  int64

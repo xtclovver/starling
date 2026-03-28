@@ -60,11 +60,13 @@ func main() {
 	hashtagRepo := repository.NewHashtagRepository(pool)
 	repostRepo := repository.NewRepostRepository(pool)
 	likeCounter := cache.NewLikeCounter(rdb, postRepo, likeRepo, log)
+	viewCounter := cache.NewViewCounter(rdb, postRepo, log)
 
 	go likeCounter.StartSyncLoop(ctx, cfg.LikeSyncInterval)
+	go viewCounter.StartSyncLoop(ctx, cfg.ViewSyncInterval)
 
 	srv := grpc.NewServer()
-	postServer := grpcserver.NewServer(postRepo, likeRepo, bookmarkRepo, hashtagRepo, repostRepo, likeCounter, log)
+	postServer := grpcserver.NewServer(postRepo, likeRepo, bookmarkRepo, hashtagRepo, repostRepo, likeCounter, viewCounter, log)
 	pb.RegisterPostServiceServer(srv, postServer)
 
 	healthSrv := health.NewServer()

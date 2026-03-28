@@ -10,6 +10,7 @@ type Config struct {
 	RedisURL         string
 	GRPCPort         string
 	LikeSyncInterval time.Duration
+	ViewSyncInterval time.Duration
 }
 
 func Load() *Config {
@@ -18,6 +19,7 @@ func Load() *Config {
 		RedisURL:         getEnv("REDIS_URL", "redis://localhost:6379"),
 		GRPCPort:         getEnv("GRPC_PORT", "50052"),
 		LikeSyncInterval: parseDuration(getEnv("LIKE_SYNC_INTERVAL", "30s")),
+		ViewSyncInterval: parseDuration(getEnv("VIEW_SYNC_INTERVAL", "60s")),
 	}
 }
 

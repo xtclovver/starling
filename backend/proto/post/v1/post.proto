@@ -7,11 +7,17 @@ option go_package = "github.com/usedcvnt/microtwitter/gen/go/post/v1";
 import "common/v1/common.proto";
 import "google/protobuf/timestamp.proto";
 
+message MediaItem {
+  string url = 1;
+  string content_type = 2;
+  int32 position = 3;
+}
+
 message Post {
   string id = 1;
   string user_id = 2;
   string content = 3;
-  string media_url = 4;
+  repeated MediaItem media = 4;
   int32 likes_count = 5;
   int32 comments_count = 6;
   google.protobuf.Timestamp created_at = 7;
@@ -22,12 +28,13 @@ message Post {
   int32 reposts_count = 12;
   bool reposted = 13;
   bool liked = 14;
+  int32 views_count = 15;
 }
 
 message CreatePostRequest {
   string user_id = 1;
   string content = 2;
-  string media_url = 3;
+  repeated string media_urls = 3;
 }
 
 message CreatePostResponse {
@@ -126,7 +133,7 @@ message UpdatePostRequest {
   string id = 1;
   string user_id = 2;
   string content = 3;
-  string media_url = 4;
+  repeated string media_urls = 4;
 }
 
 message UpdatePostResponse {
@@ -203,6 +210,14 @@ message GetRepostsByUserResponse {
   common.v1.PaginationResponse pagination = 2;
 }
 
+// Views
+message RecordViewsRequest {
+  repeated string post_ids = 1;
+  string viewer_id = 2;
+}
+
+message RecordViewsResponse {}
+
 service PostService {
   rpc CreatePost(CreatePostRequest) returns (CreatePostResponse);
   rpc GetPost(GetPostRequest) returns (GetPostResponse);
@@ -222,4 +237,5 @@ service PostService {
   rpc UnrepostPost(UnrepostPostRequest) returns (UnrepostPostResponse);
   rpc QuotePost(QuotePostRequest) returns (QuotePostResponse);
   rpc GetRepostsByUser(GetRepostsByUserRequest) returns (GetRepostsByUserResponse);
+  rpc RecordViews(RecordViewsRequest) returns (RecordViewsResponse);
 }

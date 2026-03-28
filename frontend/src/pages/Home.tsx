@@ -3,8 +3,10 @@ import { useAuthStore } from '@/store/auth';
 import { useFeedStore } from '@/store/feed';
 import { getFeed, getGlobalFeed } from '@/api/posts';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { useViewTracker } from '@/hooks/useViewTracker';
 import CreatePost from '@/components/CreatePost';
 import PostCard from '@/components/PostCard';
+import PostModal from '@/components/PostModal';
 import SkeletonPost from '@/components/SkeletonPost';
 import Spinner from '@/components/Spinner';
 import s from '@/styles/layout.module.css';
@@ -65,6 +67,8 @@ export default function Home() {
   const currentHasMore = isAuthenticated ? hasMore : guestHasMore;
   const currentLoading = isAuthenticated ? loading : guestLoading;
   const sentinelRef = useInfiniteScroll(loadMore, currentHasMore, currentLoading);
+  const { trackRef } = useViewTracker();
+  const [modalPostId, setModalPostId] = useState<string | null>(null);
 
   return (
     <div>
@@ -81,7 +85,7 @@ export default function Home() {
         <>{[1,2,3,4].map((i) => <SkeletonPost key={i} />)}</>
       ) : (
         <>
-          {currentPosts.map((post) => <PostCard key={post.id} post={post} />)}
+          {currentPosts.map((post) => <div key={post.id} ref={trackRef(post.id)}><PostCard post={post} onOpen={setModalPostId} /></div>)}
           <div ref={sentinelRef} />
           {currentLoading && currentPosts.length > 0 && <Spinner />}
           {!currentHasMore && currentPosts.length > 0 && <p className={p.empty}>Вы прочитали все посты</p>}
@@ -92,6 +96,7 @@ export default function Home() {
           )}
         </>
       )}
+      {modalPostId && <PostModal postId={modalPostId} onClose={() => setModalPostId(null)} />}
     </div>
   );
 }

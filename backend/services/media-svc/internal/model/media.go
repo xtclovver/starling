@@ -9,5 +9,6 @@ type Media struct {
 	Bucket      string
 	ObjectKey   string
 	ContentType string
+	Position    int
 	CreatedAt   time.Time
 }

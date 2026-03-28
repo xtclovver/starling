@@ -15,6 +15,7 @@ message Media {
   string content_type = 6;
   string url = 7;
   google.protobuf.Timestamp created_at = 8;
+  int32 position = 9;
 }
 
 message UploadMediaRequest {
@@ -53,9 +54,40 @@ message DeleteMediaRequest {
 
 message DeleteMediaResponse {}
 
+message GetMediaByPostRequest {
+  string post_id = 1;
+}
+
+message GetMediaByPostResponse {
+  repeated Media media = 1;
+}
+
+message GetMediaByPostsRequest {
+  repeated string post_ids = 1;
+}
+
+message MediaList {
+  repeated Media items = 1;
+}
+
+message GetMediaByPostsResponse {
+  map<string, MediaList> media_by_post = 1;
+}
+
+message LinkMediaToPostRequest {
+  repeated string media_urls = 1;
+  string post_id = 2;
+  string user_id = 3;
+}
+
+message LinkMediaToPostResponse {}
+
 service MediaService {
   rpc UploadMedia(UploadMediaRequest) returns (UploadMediaResponse);
   rpc GetPresignedUploadURL(GetPresignedUploadURLRequest) returns (GetPresignedUploadURLResponse);
   rpc GetMediaURL(GetMediaURLRequest) returns (GetMediaURLResponse);
   rpc DeleteMedia(DeleteMediaRequest) returns (DeleteMediaResponse);
+  rpc GetMediaByPost(GetMediaByPostRequest) returns (GetMediaByPostResponse);
+  rpc GetMediaByPosts(GetMediaByPostsRequest) returns (GetMediaByPostsResponse);
+  rpc LinkMediaToPost(LinkMediaToPostRequest) returns (LinkMediaToPostResponse);
 }
