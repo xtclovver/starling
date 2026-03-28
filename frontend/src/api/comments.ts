@@ -13,5 +13,9 @@ export async function getCommentTree(postId: string, cursor = '') {
 }
 
 export async function deleteComment(id: string) { await client.delete(`/comments/${id}`); }
+export async function updateComment(id: string, content: string, mediaUrl = '') {
+  const { data } = await client.put<ApiResponse<{ comment: Comment }>>(`/comments/${id}`, { content, media_url: mediaUrl });
+  return data.data.comment;
+}
 export async function likeComment(id: string) { await client.post(`/comments/${id}/like`); }
 export async function unlikeComment(id: string) { await client.delete(`/comments/${id}/like`); }
