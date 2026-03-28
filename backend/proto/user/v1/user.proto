@@ -217,6 +217,15 @@ message MarkAllReadRequest {
 
 message MarkAllReadResponse {}
 
+message ChangePasswordRequest {
+  string user_id = 1;
+  string current_password = 2;
+  string new_password = 3;
+  string access_token = 4;
+}
+
+message ChangePasswordResponse {}
+
 service UserService {
   rpc Register(RegisterRequest) returns (RegisterResponse);
   rpc Login(LoginRequest) returns (LoginResponse);
@@ -238,4 +247,5 @@ service UserService {
   rpc GetUnreadCount(GetUnreadCountRequest) returns (GetUnreadCountResponse);
   rpc MarkRead(MarkReadRequest) returns (MarkReadResponse);
   rpc MarkAllRead(MarkAllReadRequest) returns (MarkAllReadResponse);
+  rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
 }

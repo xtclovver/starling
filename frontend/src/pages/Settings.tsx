@@ -1,9 +1,9 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Camera, ImagePlus, X, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Camera, ImagePlus, X, ShieldAlert, Lock } from 'lucide-react';
 import { updateUser } from '@/api/users';
 import { uploadMedia, deleteMedia } from '@/api/media';
-import { revokeAllSessions } from '@/api/auth';
+import { revokeAllSessions, changePassword } from '@/api/auth';
 import { useAuthStore } from '@/store/auth';
 import Avatar from '@/components/Avatar';
 import l from '@/styles/layout.module.css';
@@ -28,6 +28,13 @@ export default function Settings() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [revoking, setRevoking] = useState(false);
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [pwLoading, setPwLoading] = useState(false);
+  const [pwSuccess, setPwSuccess] = useState(false);
+  const [pwError, setPwError] = useState('');
 
   if (!user) { navigate('/login'); return null; }
 
@@ -102,6 +109,23 @@ export default function Settings() {
     }
   };
 
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwError(''); setPwSuccess(false);
+    if (newPassword.length < 8) { setPwError('Новый пароль: минимум 8 символов'); return; }
+    if (newPassword !== confirmNewPassword) { setPwError('Пароли не совпадают'); return; }
+    setPwLoading(true);
+    try {
+      await changePassword(currentPassword, newPassword);
+      logout();
+      navigate('/');
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+      setPwError(msg || 'Не удалось сменить пароль');
+      setPwLoading(false);
+    }
+  };
+
   const currentBanner = bannerPreview || user.banner_url;
 
   return (
@@ -136,7 +160,9 @@ export default function Settings() {
         </div>
 
         {/* Avatar */}
-        <div className={s.avatarEdit}>
+        <div>
+          <label className={s.fieldLabel}>Аватар</label>
+          <div className={s.avatarEdit}>
           <div className={s.avatarEditBtn} onClick={() => avatarFileRef.current?.click()}>
             <Avatar url={avatarPreview || user.avatar_url} name={displayName || user.username} size="xl" />
             <div className={s.avatarOverlay}><Camera size={20} color="white" /></div>
@@ -145,6 +171,7 @@ export default function Settings() {
           <div>
             <p className={s.avatarHint}>Нажмите на аватар</p>
             <p className={s.avatarHintSub}>JPEG, PNG, GIF, WebP. До 10 МБ</p>
+          </div>
           </div>
         </div>
 
@@ -169,10 +196,47 @@ export default function Settings() {
 
       <div className={s.securitySection}>
         <h2 className={s.securityTitle}><ShieldAlert size={18} /> Безопасность</h2>
-        <p className={s.securityDesc}>Завершить все активные сессии на всех устройствах. Вам потребуется войти заново.</p>
-        <button onClick={handleRevokeAll} disabled={revoking} className={s.revokeBtn}>
-          {revoking ? 'Завершаем...' : 'Завершить все сессии'}
-        </button>
+
+        <form onSubmit={handleChangePassword} className={s.passwordForm}>
+          <h3 className={s.passwordTitle}><Lock size={16} /> Смена пароля</h3>
+          <input
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            placeholder="Текущий пароль"
+            required
+            className={s.fieldInput}
+          />
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Новый пароль (мин. 8 символов)"
+            required
+            minLength={8}
+            className={s.fieldInput}
+          />
+          <input
+            type="password"
+            value={confirmNewPassword}
+            onChange={(e) => setConfirmNewPassword(e.target.value)}
+            placeholder="Подтвердите новый пароль"
+            required
+            className={s.fieldInput}
+          />
+          {pwError && <p className={s.errorText}>{pwError}</p>}
+          {pwSuccess && <p className={s.successText}>Пароль изменён. Все остальные сессии завершены.</p>}
+          <button type="submit" disabled={pwLoading} className={s.saveBtn}>
+            {pwLoading ? 'Сохранение...' : 'Сменить пароль'}
+          </button>
+        </form>
+
+        <div className={s.sessionSection}>
+          <p className={s.securityDesc}>Завершить все активные сессии на всех устройствах. Вам потребуется войти заново.</p>
+          <button onClick={handleRevokeAll} disabled={revoking} className={s.revokeBtn}>
+            {revoking ? 'Завершаем...' : 'Завершить все сессии'}
+          </button>
+        </div>
       </div>
     </div>
   );

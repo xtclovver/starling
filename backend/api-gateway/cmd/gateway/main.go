@@ -74,6 +74,7 @@ func main() {
 	mux.HandleFunc("POST /api/auth/refresh", authH.Refresh)
 	mux.Handle("POST /api/auth/logout", auth.Required(http.HandlerFunc(authH.Logout)))
 	mux.Handle("POST /api/auth/revoke-all", auth.Required(http.HandlerFunc(authH.RevokeAll)))
+	mux.Handle("POST /api/auth/change-password", auth.Required(http.HandlerFunc(authH.ChangePassword)))
 
 	// User routes - public
 	mux.HandleFunc("GET /api/users/search", userH.SearchUsers)

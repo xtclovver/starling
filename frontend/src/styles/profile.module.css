@@ -264,6 +264,25 @@
 }
 .revokeBtn:hover { background: var(--danger-muted); }
 .revokeBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.passwordForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+  max-width: 400px;
+}
+.passwordTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.sessionSection {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
 
 /* Empty state */
 .empty {

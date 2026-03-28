@@ -18,3 +18,7 @@ export async function logout() {
 export async function revokeAllSessions() {
   await client.post('/auth/revoke-all');
 }
+
+export async function changePassword(currentPassword: string, newPassword: string) {
+  await client.post('/auth/change-password', { current_password: currentPassword, new_password: newPassword });
+}

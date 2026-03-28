@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Feather } from 'lucide-react';
 import { register } from '@/api/auth';
 import { useAuthStore } from '@/store/auth';
+import OnboardingWizard from '@/components/OnboardingWizard';
 import s from '@/styles/auth.module.css';
 
 export default function Register() {
@@ -15,6 +16,7 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +29,7 @@ export default function Register() {
     try {
       const data = await register(username, email, password);
       setAuth(data.user, data.access_token);
-      navigate('/', { replace: true });
+      setShowOnboarding(true);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
       setError(msg || 'Не удалось зарегистрироваться');
@@ -51,6 +53,9 @@ export default function Register() {
           Уже есть аккаунт? <Link to="/login" className={s.footerLink}>Войти</Link>
         </p>
       </div>
+      {showOnboarding && (
+        <OnboardingWizard onClose={() => navigate('/', { replace: true })} />
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { login, register } from '@/api/auth';
 import { useAuthStore } from '@/store/auth';
 import { useUIStore } from '@/store/ui';
 import { useFeedStore } from '@/store/feed';
+import OnboardingWizard from './OnboardingWizard';
 import s from '@/styles/modal.module.css';
 import a from '@/styles/auth.module.css';
 
@@ -19,11 +20,16 @@ export default function AuthModal() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => { setTab(authModalTab); }, [authModalTab]);
   useEffect(() => { if (authModalOpen) { setError(''); setEmail(''); setPassword(''); setUsername(''); setConfirmPassword(''); } }, [authModalOpen]);
 
-  if (!authModalOpen) return null;
+  if (!authModalOpen && !showOnboarding) return null;
+
+  if (showOnboarding) {
+    return <OnboardingWizard onClose={() => { setShowOnboarding(false); closeAuthModal(); }} />;
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +57,7 @@ export default function AuthModal() {
       const data = await register(username, email, password);
       setAuth(data.user, data.access_token);
       resetFeed();
-      closeAuthModal();
+      setShowOnboarding(true);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
       setError(msg || 'Не удалось зарегистрироваться');

@@ -164,22 +164,12 @@ func (r *postRepo) GetGlobalFeed(ctx context.Context, cursor string, limit int) 
 
 func (r *postRepo) Update(ctx context.Context, id, userID, content, mediaURL string) (*model.Post, error) {
 	p := &model.Post{}
-	var err error
-	if mediaURL != "" {
-		err = r.pool.QueryRow(ctx,
-			`UPDATE posts SET content = $1, media_url = $2, edited_at = NOW(), updated_at = NOW()
-			 WHERE id = $3 AND user_id = $4 AND deleted_at IS NULL
-			 RETURNING id, user_id, content, media_url, likes_count, comments_count, reposts_count, created_at, updated_at, edited_at`,
-			content, mediaURL, id, userID,
-		).Scan(&p.ID, &p.UserID, &p.Content, &p.MediaURL, &p.LikesCount, &p.CommentsCount, &p.RepostsCount, &p.CreatedAt, &p.UpdatedAt, &p.EditedAt)
-	} else {
-		err = r.pool.QueryRow(ctx,
-			`UPDATE posts SET content = $1, edited_at = NOW(), updated_at = NOW()
-			 WHERE id = $2 AND user_id = $3 AND deleted_at IS NULL
-			 RETURNING id, user_id, content, media_url, likes_count, comments_count, reposts_count, created_at, updated_at, edited_at`,
-			content, id, userID,
-		).Scan(&p.ID, &p.UserID, &p.Content, &p.MediaURL, &p.LikesCount, &p.CommentsCount, &p.RepostsCount, &p.CreatedAt, &p.UpdatedAt, &p.EditedAt)
-	}
+	err := r.pool.QueryRow(ctx,
+		`UPDATE posts SET content = $1, media_url = $2, edited_at = NOW(), updated_at = NOW()
+		 WHERE id = $3 AND user_id = $4 AND deleted_at IS NULL
+		 RETURNING id, user_id, content, media_url, likes_count, comments_count, reposts_count, created_at, updated_at, edited_at`,
+		content, mediaURL, id, userID,
+	).Scan(&p.ID, &p.UserID, &p.Content, &p.MediaURL, &p.LikesCount, &p.CommentsCount, &p.RepostsCount, &p.CreatedAt, &p.UpdatedAt, &p.EditedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			var exists bool

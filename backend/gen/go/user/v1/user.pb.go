@@ -2249,6 +2249,110 @@ func (*MarkAllReadResponse) Descriptor() ([]byte, []int) {
 	return file_user_v1_user_proto_rawDescGZIP(), []int{41}
 }
 
+type ChangePasswordRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	UserId          string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	CurrentPassword string                 `protobuf:"bytes,2,opt,name=current_password,json=currentPassword,proto3" json:"current_password,omitempty"`
+	NewPassword     string                 `protobuf:"bytes,3,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
+	AccessToken     string                 `protobuf:"bytes,4,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *ChangePasswordRequest) Reset() {
+	*x = ChangePasswordRequest{}
+	mi := &file_user_v1_user_proto_msgTypes[42]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChangePasswordRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChangePasswordRequest) ProtoMessage() {}
+
+func (x *ChangePasswordRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[42]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChangePasswordRequest.ProtoReflect.Descriptor instead.
+func (*ChangePasswordRequest) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{42}
+}
+
+func (x *ChangePasswordRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *ChangePasswordRequest) GetCurrentPassword() string {
+	if x != nil {
+		return x.CurrentPassword
+	}
+	return ""
+}
+
+func (x *ChangePasswordRequest) GetNewPassword() string {
+	if x != nil {
+		return x.NewPassword
+	}
+	return ""
+}
+
+func (x *ChangePasswordRequest) GetAccessToken() string {
+	if x != nil {
+		return x.AccessToken
+	}
+	return ""
+}
+
+type ChangePasswordResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ChangePasswordResponse) Reset() {
+	*x = ChangePasswordResponse{}
+	mi := &file_user_v1_user_proto_msgTypes[43]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ChangePasswordResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ChangePasswordResponse) ProtoMessage() {}
+
+func (x *ChangePasswordResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[43]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ChangePasswordResponse.ProtoReflect.Descriptor instead.
+func (*ChangePasswordResponse) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{43}
+}
+
 var File_user_v1_user_proto protoreflect.FileDescriptor
 
 const file_user_v1_user_proto_rawDesc = "" +
@@ -2412,7 +2516,13 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x10MarkReadResponse\"-\n" +
 	"\x12MarkAllReadRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"\x15\n" +
-	"\x13MarkAllReadResponse2\xe4\v\n" +
+	"\x13MarkAllReadResponse\"\xa1\x01\n" +
+	"\x15ChangePasswordRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12)\n" +
+	"\x10current_password\x18\x02 \x01(\tR\x0fcurrentPassword\x12!\n" +
+	"\fnew_password\x18\x03 \x01(\tR\vnewPassword\x12!\n" +
+	"\faccess_token\x18\x04 \x01(\tR\vaccessToken\"\x18\n" +
+	"\x16ChangePasswordResponse2\xb7\f\n" +
 	"\vUserService\x12?\n" +
 	"\bRegister\x12\x18.user.v1.RegisterRequest\x1a\x19.user.v1.RegisterResponse\x126\n" +
 	"\x05Login\x12\x15.user.v1.LoginRequest\x1a\x16.user.v1.LoginResponse\x12K\n" +
@@ -2434,7 +2544,8 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x10GetNotifications\x12 .user.v1.GetNotificationsRequest\x1a!.user.v1.GetNotificationsResponse\x12Q\n" +
 	"\x0eGetUnreadCount\x12\x1e.user.v1.GetUnreadCountRequest\x1a\x1f.user.v1.GetUnreadCountResponse\x12?\n" +
 	"\bMarkRead\x12\x18.user.v1.MarkReadRequest\x1a\x19.user.v1.MarkReadResponse\x12H\n" +
-	"\vMarkAllRead\x12\x1b.user.v1.MarkAllReadRequest\x1a\x1c.user.v1.MarkAllReadResponseB1Z/github.com/usedcvnt/microtwitter/gen/go/user/v1b\x06proto3"
+	"\vMarkAllRead\x12\x1b.user.v1.MarkAllReadRequest\x1a\x1c.user.v1.MarkAllReadResponse\x12Q\n" +
+	"\x0eChangePassword\x12\x1e.user.v1.ChangePasswordRequest\x1a\x1f.user.v1.ChangePasswordResponseB1Z/github.com/usedcvnt/microtwitter/gen/go/user/v1b\x06proto3"
 
 var (
 	file_user_v1_user_proto_rawDescOnce sync.Once
@@ -2448,7 +2559,7 @@ func file_user_v1_user_proto_rawDescGZIP() []byte {
 	return file_user_v1_user_proto_rawDescData
 }
 
-var file_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 42)
+var file_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 44)
 var file_user_v1_user_proto_goTypes = []any{
 	(*User)(nil),                        // 0: user.v1.User
 	(*RegisterRequest)(nil),             // 1: user.v1.RegisterRequest
@@ -2492,34 +2603,36 @@ var file_user_v1_user_proto_goTypes = []any{
 	(*MarkReadResponse)(nil),            // 39: user.v1.MarkReadResponse
 	(*MarkAllReadRequest)(nil),          // 40: user.v1.MarkAllReadRequest
 	(*MarkAllReadResponse)(nil),         // 41: user.v1.MarkAllReadResponse
-	(*timestamppb.Timestamp)(nil),       // 42: google.protobuf.Timestamp
-	(*v1.PaginationRequest)(nil),        // 43: common.v1.PaginationRequest
-	(*v1.PaginationResponse)(nil),       // 44: common.v1.PaginationResponse
+	(*ChangePasswordRequest)(nil),       // 42: user.v1.ChangePasswordRequest
+	(*ChangePasswordResponse)(nil),      // 43: user.v1.ChangePasswordResponse
+	(*timestamppb.Timestamp)(nil),       // 44: google.protobuf.Timestamp
+	(*v1.PaginationRequest)(nil),        // 45: common.v1.PaginationRequest
+	(*v1.PaginationResponse)(nil),       // 46: common.v1.PaginationResponse
 }
 var file_user_v1_user_proto_depIdxs = []int32{
-	42, // 0: user.v1.User.created_at:type_name -> google.protobuf.Timestamp
-	42, // 1: user.v1.User.updated_at:type_name -> google.protobuf.Timestamp
+	44, // 0: user.v1.User.created_at:type_name -> google.protobuf.Timestamp
+	44, // 1: user.v1.User.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: user.v1.RegisterResponse.user:type_name -> user.v1.User
 	0,  // 3: user.v1.LoginResponse.user:type_name -> user.v1.User
 	0,  // 4: user.v1.GetUserResponse.user:type_name -> user.v1.User
 	0,  // 5: user.v1.UpdateUserResponse.user:type_name -> user.v1.User
-	43, // 6: user.v1.SearchUsersRequest.pagination:type_name -> common.v1.PaginationRequest
+	45, // 6: user.v1.SearchUsersRequest.pagination:type_name -> common.v1.PaginationRequest
 	0,  // 7: user.v1.SearchUsersResponse.users:type_name -> user.v1.User
-	44, // 8: user.v1.SearchUsersResponse.pagination:type_name -> common.v1.PaginationResponse
+	46, // 8: user.v1.SearchUsersResponse.pagination:type_name -> common.v1.PaginationResponse
 	0,  // 9: user.v1.GetUsersByIDsResponse.users:type_name -> user.v1.User
-	43, // 10: user.v1.GetFollowersRequest.pagination:type_name -> common.v1.PaginationRequest
+	45, // 10: user.v1.GetFollowersRequest.pagination:type_name -> common.v1.PaginationRequest
 	0,  // 11: user.v1.GetFollowersResponse.users:type_name -> user.v1.User
-	44, // 12: user.v1.GetFollowersResponse.pagination:type_name -> common.v1.PaginationResponse
-	43, // 13: user.v1.GetFollowingRequest.pagination:type_name -> common.v1.PaginationRequest
+	46, // 12: user.v1.GetFollowersResponse.pagination:type_name -> common.v1.PaginationResponse
+	45, // 13: user.v1.GetFollowingRequest.pagination:type_name -> common.v1.PaginationRequest
 	0,  // 14: user.v1.GetFollowingResponse.users:type_name -> user.v1.User
-	44, // 15: user.v1.GetFollowingResponse.pagination:type_name -> common.v1.PaginationResponse
+	46, // 15: user.v1.GetFollowingResponse.pagination:type_name -> common.v1.PaginationResponse
 	0,  // 16: user.v1.GetRecommendedUsersResponse.users:type_name -> user.v1.User
-	42, // 17: user.v1.Notification.created_at:type_name -> google.protobuf.Timestamp
+	44, // 17: user.v1.Notification.created_at:type_name -> google.protobuf.Timestamp
 	0,  // 18: user.v1.Notification.actor:type_name -> user.v1.User
 	31, // 19: user.v1.CreateNotificationResponse.notification:type_name -> user.v1.Notification
-	43, // 20: user.v1.GetNotificationsRequest.pagination:type_name -> common.v1.PaginationRequest
+	45, // 20: user.v1.GetNotificationsRequest.pagination:type_name -> common.v1.PaginationRequest
 	31, // 21: user.v1.GetNotificationsResponse.notifications:type_name -> user.v1.Notification
-	44, // 22: user.v1.GetNotificationsResponse.pagination:type_name -> common.v1.PaginationResponse
+	46, // 22: user.v1.GetNotificationsResponse.pagination:type_name -> common.v1.PaginationResponse
 	1,  // 23: user.v1.UserService.Register:input_type -> user.v1.RegisterRequest
 	3,  // 24: user.v1.UserService.Login:input_type -> user.v1.LoginRequest
 	5,  // 25: user.v1.UserService.RefreshToken:input_type -> user.v1.RefreshTokenRequest
@@ -2540,28 +2653,30 @@ var file_user_v1_user_proto_depIdxs = []int32{
 	36, // 40: user.v1.UserService.GetUnreadCount:input_type -> user.v1.GetUnreadCountRequest
 	38, // 41: user.v1.UserService.MarkRead:input_type -> user.v1.MarkReadRequest
 	40, // 42: user.v1.UserService.MarkAllRead:input_type -> user.v1.MarkAllReadRequest
-	2,  // 43: user.v1.UserService.Register:output_type -> user.v1.RegisterResponse
-	4,  // 44: user.v1.UserService.Login:output_type -> user.v1.LoginResponse
-	6,  // 45: user.v1.UserService.RefreshToken:output_type -> user.v1.RefreshTokenResponse
-	8,  // 46: user.v1.UserService.Logout:output_type -> user.v1.LogoutResponse
-	10, // 47: user.v1.UserService.RevokeAllTokens:output_type -> user.v1.RevokeAllTokensResponse
-	12, // 48: user.v1.UserService.GetUser:output_type -> user.v1.GetUserResponse
-	14, // 49: user.v1.UserService.UpdateUser:output_type -> user.v1.UpdateUserResponse
-	16, // 50: user.v1.UserService.SoftDeleteUser:output_type -> user.v1.SoftDeleteUserResponse
-	18, // 51: user.v1.UserService.SearchUsers:output_type -> user.v1.SearchUsersResponse
-	20, // 52: user.v1.UserService.GetUsersByIDs:output_type -> user.v1.GetUsersByIDsResponse
-	22, // 53: user.v1.UserService.Follow:output_type -> user.v1.FollowResponse
-	24, // 54: user.v1.UserService.Unfollow:output_type -> user.v1.UnfollowResponse
-	26, // 55: user.v1.UserService.GetFollowers:output_type -> user.v1.GetFollowersResponse
-	28, // 56: user.v1.UserService.GetFollowing:output_type -> user.v1.GetFollowingResponse
-	30, // 57: user.v1.UserService.GetRecommendedUsers:output_type -> user.v1.GetRecommendedUsersResponse
-	33, // 58: user.v1.UserService.CreateNotification:output_type -> user.v1.CreateNotificationResponse
-	35, // 59: user.v1.UserService.GetNotifications:output_type -> user.v1.GetNotificationsResponse
-	37, // 60: user.v1.UserService.GetUnreadCount:output_type -> user.v1.GetUnreadCountResponse
-	39, // 61: user.v1.UserService.MarkRead:output_type -> user.v1.MarkReadResponse
-	41, // 62: user.v1.UserService.MarkAllRead:output_type -> user.v1.MarkAllReadResponse
-	43, // [43:63] is the sub-list for method output_type
-	23, // [23:43] is the sub-list for method input_type
+	42, // 43: user.v1.UserService.ChangePassword:input_type -> user.v1.ChangePasswordRequest
+	2,  // 44: user.v1.UserService.Register:output_type -> user.v1.RegisterResponse
+	4,  // 45: user.v1.UserService.Login:output_type -> user.v1.LoginResponse
+	6,  // 46: user.v1.UserService.RefreshToken:output_type -> user.v1.RefreshTokenResponse
+	8,  // 47: user.v1.UserService.Logout:output_type -> user.v1.LogoutResponse
+	10, // 48: user.v1.UserService.RevokeAllTokens:output_type -> user.v1.RevokeAllTokensResponse
+	12, // 49: user.v1.UserService.GetUser:output_type -> user.v1.GetUserResponse
+	14, // 50: user.v1.UserService.UpdateUser:output_type -> user.v1.UpdateUserResponse
+	16, // 51: user.v1.UserService.SoftDeleteUser:output_type -> user.v1.SoftDeleteUserResponse
+	18, // 52: user.v1.UserService.SearchUsers:output_type -> user.v1.SearchUsersResponse
+	20, // 53: user.v1.UserService.GetUsersByIDs:output_type -> user.v1.GetUsersByIDsResponse
+	22, // 54: user.v1.UserService.Follow:output_type -> user.v1.FollowResponse
+	24, // 55: user.v1.UserService.Unfollow:output_type -> user.v1.UnfollowResponse
+	26, // 56: user.v1.UserService.GetFollowers:output_type -> user.v1.GetFollowersResponse
+	28, // 57: user.v1.UserService.GetFollowing:output_type -> user.v1.GetFollowingResponse
+	30, // 58: user.v1.UserService.GetRecommendedUsers:output_type -> user.v1.GetRecommendedUsersResponse
+	33, // 59: user.v1.UserService.CreateNotification:output_type -> user.v1.CreateNotificationResponse
+	35, // 60: user.v1.UserService.GetNotifications:output_type -> user.v1.GetNotificationsResponse
+	37, // 61: user.v1.UserService.GetUnreadCount:output_type -> user.v1.GetUnreadCountResponse
+	39, // 62: user.v1.UserService.MarkRead:output_type -> user.v1.MarkReadResponse
+	41, // 63: user.v1.UserService.MarkAllRead:output_type -> user.v1.MarkAllReadResponse
+	43, // 64: user.v1.UserService.ChangePassword:output_type -> user.v1.ChangePasswordResponse
+	44, // [44:65] is the sub-list for method output_type
+	23, // [23:44] is the sub-list for method input_type
 	23, // [23:23] is the sub-list for extension type_name
 	23, // [23:23] is the sub-list for extension extendee
 	0,  // [0:23] is the sub-list for field type_name
@@ -2578,7 +2693,7 @@ func file_user_v1_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_user_v1_user_proto_rawDesc), len(file_user_v1_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   42,
+			NumMessages:   44,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

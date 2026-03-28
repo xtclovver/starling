@@ -564,3 +564,44 @@ func (s *Server) MarkAllRead(ctx context.Context, req *pb.MarkAllReadRequest) (*
 	}
 	return &pb.MarkAllReadResponse{}, nil
 }
+
+func (s *Server) ChangePassword(ctx context.Context, req *pb.ChangePasswordRequest) (*pb.ChangePasswordResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("ChangePassword", "duration", time.Since(start)) }()
+
+	if len(req.GetNewPassword()) < 8 {
+		return nil, status.Error(codes.InvalidArgument, "new password must be at least 8 characters")
+	}
+
+	user, err := s.userRepo.GetByID(ctx, req.GetUserId())
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, status.Error(codes.NotFound, "user not found")
+		}
+		s.log.Error("get user failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.GetCurrentPassword())); err != nil {
+		return nil, status.Error(codes.Unauthenticated, "current password is incorrect")
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.GetNewPassword()), 12)
+	if err != nil {
+		s.log.Error("bcrypt hash failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	_, err = s.userRepo.Update(ctx, req.GetUserId(), map[string]string{"password_hash": string(hash)})
+	if err != nil {
+		s.log.Error("update password failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	// Revoke all other sessions after password change
+	if err := s.jwt.RevokeAllTokens(ctx, req.GetUserId(), req.GetAccessToken()); err != nil {
+		s.log.Error("revoke tokens after password change failed", "error", err)
+	}
+
+	return &pb.ChangePasswordResponse{}, nil
+}

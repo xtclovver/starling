@@ -22,7 +22,11 @@ export default function Sidebar() {
   const openAuthModal = useUIStore((st) => st.openAuthModal);
   const unreadCount = useNotificationStore((st) => st.unreadCount);
 
-  const handleLogout = () => { apiLogout().catch(() => {}); logout(); navigate('/'); };
+  const handleLogout = async () => {
+    logout();
+    navigate('/');
+    apiLogout().catch(() => {});
+  };
 
   return (
     <aside className={s.sidebar}>
@@ -59,9 +63,6 @@ export default function Sidebar() {
             </>
           )}
         </nav>
-        {!isAuthenticated && (
-          <button onClick={() => openAuthModal('register')} className={s.sidebarPostBtn}>Регистрация</button>
-        )}
       </div>
 
       {isAuthenticated && user && (

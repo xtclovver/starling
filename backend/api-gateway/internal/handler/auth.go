@@ -177,3 +177,38 @@ func (h *AuthHandler) RevokeAll(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, nil)
 }
 
+type changePasswordRequest struct {
+	CurrentPassword string `json:"current_password"`
+	NewPassword     string `json:"new_password"`
+}
+
+func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	userID := getUserID(r)
+	if userID == "" {
+		writeError(w, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+
+	var req changePasswordRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	accessToken := extractBearerToken(r)
+
+	_, err := h.user.ChangePassword(r.Context(), &userpb.ChangePasswordRequest{
+		UserId:          userID,
+		CurrentPassword: req.CurrentPassword,
+		NewPassword:     req.NewPassword,
+		AccessToken:     accessToken,
+	})
+	if err != nil {
+		handleGRPCError(w, err)
+		return
+	}
+
+	h.clearRefreshCookie(w)
+	writeJSON(w, http.StatusOK, nil)
+}
+

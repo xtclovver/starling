@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Heart, MessageCircle, Trash2, Bookmark, Repeat2, Pencil, X, ImagePlus, Check } from 'lucide-react';
 import { likePost, unlikePost, deletePost, bookmarkPost, unbookmarkPost, repostPost, unrepostPost, updatePost } from '@/api/posts';
@@ -46,6 +46,13 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const editFileRef = useRef<HTMLInputElement>(null);
+  const [localOverrides, setLocalOverrides] = useState<Partial<Post>>({});
+  const displayPost = { ...post, ...localOverrides };
+
+  useEffect(() => {
+    setLocalOverrides({});
+  }, [post.id, post.updated_at]);
+
   const isOwner = user?.id === post.user_id;
 
   const requireAuth = (action: () => void) => {
@@ -157,7 +164,9 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
         mediaUrl = m.url;
       }
       const updated = await updatePost(post.id, editContent, mediaUrl);
-      updateFeedPost(post.id, { content: updated.content, media_url: updated.media_url, edited_at: updated.edited_at || new Date().toISOString() });
+      const editedFields = { content: updated.content, media_url: updated.media_url || '', edited_at: updated.edited_at || new Date().toISOString() };
+      updateFeedPost(post.id, editedFields);
+      setLocalOverrides(editedFields);
       setEditing(false);
       setEditMediaFile(null);
       if (editMediaPreview) URL.revokeObjectURL(editMediaPreview);
@@ -182,7 +191,7 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
             {post.author?.username && <span className={s.postHandle}>@{post.author.username}</span>}
             <span className={s.postDot}>&middot;</span>
             <span className={s.postTime}>{timeAgo(post.created_at)}</span>
-            {post.edited_at && <span className={s.editedBadge}>изменено</span>}
+            {displayPost.edited_at && <span className={s.editedBadge}>изменено</span>}
             {isOwner && !editing && (
               <div className={s.ownerActions}>
                 <button onClick={startEdit} className={s.ownerBtn} title="Редактировать"><Pencil size={14} /></button>
@@ -253,26 +262,26 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
             </div>
           ) : (
             <>
-              <p className={s.postContent}>{renderContent(post.content)}</p>
-              {post.media_url && (() => {
-                const kind = getMediaKind(post.media_url);
+              <p className={s.postContent}>{renderContent(displayPost.content)}</p>
+              {displayPost.media_url && (() => {
+                const kind = getMediaKind(displayPost.media_url);
                 if (kind === 'video') return (
                   <div className={s.postMedia} onClick={(e) => e.stopPropagation()}>
-                    <video src={post.media_url} controls style={{ width: '100%', borderRadius: 12, maxHeight: 480 }} />
+                    <video src={displayPost.media_url} controls style={{ width: '100%', borderRadius: 12, maxHeight: 480 }} />
                   </div>
                 );
                 if (kind === 'audio') return (
                   <div onClick={(e) => e.stopPropagation()} style={{ marginTop: 8 }}>
-                    <audio src={post.media_url} controls style={{ width: '100%' }} />
+                    <audio src={displayPost.media_url} controls style={{ width: '100%' }} />
                   </div>
                 );
                 return (
                   <div className={s.postMedia}>
                     <img
-                      src={post.media_url}
+                      src={displayPost.media_url}
                       alt=""
                       loading="lazy"
-                      onClick={(e) => { e.stopPropagation(); setLightboxSrc(post.media_url); }}
+                      onClick={(e) => { e.stopPropagation(); setLightboxSrc(displayPost.media_url); }}
                       style={{ cursor: 'zoom-in' }}
                     />
                   </div>
