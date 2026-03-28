@@ -150,3 +150,81 @@
 .commentCollapseBtn:hover { color: var(--text-secondary); }
 .commentChildren { padding-left: 20px; }
 .replyForm { margin-top: 8px; }
+
+/* ── Comment Inline Edit ── */
+.commentEditBtn:hover { color: var(--accent); background: var(--accent-muted); }
+.commentEditedBadge {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+.commentInlineEdit {
+  margin-top: 4px;
+}
+.commentInlineTextarea {
+  width: 100%;
+  padding: 6px 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  font-size: 14px;
+  color: var(--text-primary);
+  outline: none;
+  resize: none;
+  transition: border-color 0.15s;
+}
+.commentInlineFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+.commentInlineLeft { display: flex; align-items: center; gap: 4px; }
+.commentInlineRight { display: flex; align-items: center; gap: 4px; }
+.commentEditCharCount { font-size: 11px; color: var(--text-tertiary); }
+.commentInlineCancelBtn {
+  padding: 3px 6px;
+  border-radius: 50%;
+  color: var(--text-tertiary);
+  transition: color 0.15s, background 0.15s;
+}
+.commentInlineCancelBtn:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+.commentInlineSaveBtn {
+  padding: 3px 10px;
+  border-radius: 50px;
+  background: var(--accent);
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background 0.15s, opacity 0.15s;
+}
+.commentInlineSaveBtn:hover { background: var(--accent-hover); }
+.commentInlineSaveBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.commentEditMediaPreview {
+  position: relative;
+  margin-top: 6px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.commentEditMediaPreview img {
+  width: 100%;
+  max-height: 260px;
+  object-fit: contain;
+  background: var(--bg-primary);
+}
+.commentMediaRemoveBtnEdit {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(10, 10, 12, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  transition: background 0.15s;
+}
+.commentMediaRemoveBtnEdit:hover { background: var(--bg-primary); }
