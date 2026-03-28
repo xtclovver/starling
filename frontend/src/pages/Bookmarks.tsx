@@ -23,7 +23,7 @@ export default function Bookmarks() {
       else setPosts(items);
       setCursor(data.pagination?.next_cursor || '');
       setHasMore(data.pagination?.has_more || false);
-    } catch {}
+    } catch { /* ignore */ }
     finally { setLoading(false); }
   }, []);
 

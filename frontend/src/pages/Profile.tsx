@@ -60,7 +60,7 @@ export default function Profile() {
       if (cursor) setPosts((p) => [...p, ...fetched]); else setPosts(fetched);
       setPostsCursor(data.pagination?.next_cursor || '');
       setPostsHasMore(data.pagination?.has_more || false);
-    } catch {} finally { setPostsLoading(false); }
+    } catch { /* ignore */ } finally { setPostsLoading(false); }
   }, [id]);
 
   useEffect(() => { if (tab === 'posts' && posts.length === 0 && id) loadPosts(); }, [tab, id, loadPosts, posts.length]);
@@ -74,7 +74,7 @@ export default function Profile() {
       if (cursor) setReposts((p) => [...p, ...fetched]); else setReposts(fetched);
       setRepostsCursor(data.pagination?.next_cursor || '');
       setRepostsHasMore(data.pagination?.has_more || false);
-    } catch {} finally { setRepostsLoading(false); }
+    } catch { /* ignore */ } finally { setRepostsLoading(false); }
   }, [id]);
 
   useEffect(() => { if (tab === 'reposts' && reposts.length === 0 && id) loadReposts(); }, [tab, id, loadReposts, reposts.length]);
@@ -89,7 +89,7 @@ export default function Profile() {
       if (cursor) setUserList((p) => [...p, ...fetched]); else setUserList(fetched);
       setUserCursor(data.pagination?.next_cursor || '');
       setUserHasMore(data.pagination?.has_more || false);
-    } catch {} finally { setUserLoading(false); }
+    } catch { /* ignore */ } finally { setUserLoading(false); }
   }, [id]);
 
   useEffect(() => {
@@ -102,7 +102,7 @@ export default function Profile() {
     try {
       if (isFollowing) { await unfollow(id); setIsFollowing(false); }
       else { await follow(id); setIsFollowing(true); }
-    } catch {} finally { setFollowLoading(false); }
+    } catch { /* ignore */ } finally { setFollowLoading(false); }
   };
 
   const loadMorePosts = useCallback(() => {

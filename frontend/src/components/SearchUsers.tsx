@@ -15,7 +15,7 @@ export default function SearchUsers() {
   const debounced = useDebounce(query, 300);
 
   useEffect(() => {
-    if (debounced.length < 2) { setResults([]); return; }
+    if (debounced.length < 2) return;
     let cancelled = false;
     searchUsers(debounced).then((data) => {
       if (!cancelled) setResults(data.users || []);
@@ -35,7 +35,7 @@ export default function SearchUsers() {
         <Search size={16} className={s.searchIcon} />
         <input
           value={query}
-          onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+          onChange={(e) => { const v = e.target.value; setQuery(v); setOpen(true); if (v.length < 2) setResults([]); }}
           onFocus={() => setOpen(true)}
           placeholder="Поиск"
           className={s.searchInput}

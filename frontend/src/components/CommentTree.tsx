@@ -41,7 +41,7 @@ export default function CommentTree({ postId }: { postId: string }) {
       else setComments(data.comments || []);
       setCursor(data.pagination?.next_cursor || '');
       setHasMore(data.pagination?.has_more || false);
-    } catch {}
+    } catch { /* ignore */ }
     finally { setLoading(false); }
   }, [postId]);
 

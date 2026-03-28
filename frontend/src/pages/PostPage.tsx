@@ -38,7 +38,7 @@ export default function PostPage() {
 
   const handleDelete = async () => {
     if (!post) return;
-    try { await deletePost(post.id); navigate('/', { replace: true }); } catch {}
+    try { await deletePost(post.id); navigate('/', { replace: true }); } catch { /* ignore */ }
   };
 
   const header = (

@@ -106,7 +106,7 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
       await deletePost(post.id);
       useFeedStore.getState().removePost(post.id);
       onDelete?.();
-    } catch {} finally {
+    } catch { /* ignore */ } finally {
       setDeleteLoading(false);
       setShowDeleteConfirm(false);
     }
@@ -162,7 +162,7 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
       setEditMediaFile(null);
       if (editMediaPreview) URL.revokeObjectURL(editMediaPreview);
       setEditMediaPreview(null);
-    } catch {} finally { setEditLoading(false); }
+    } catch { /* ignore */ } finally { setEditLoading(false); }
   };
 
   const remaining = 280 - editContent.length;

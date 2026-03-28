@@ -26,7 +26,7 @@ export default function RightPanel() {
     try {
       await follow(targetId);
       setFollowedIds((prev) => new Set(prev).add(targetId));
-    } catch {}
+    } catch { /* ignore */ }
   };
 
   return (

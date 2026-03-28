@@ -61,7 +61,7 @@ export default function CommentItem({ comment, postId, onNewReply, onDelete }: P
   };
 
   const handleDelete = async () => {
-    try { await deleteComment(comment.id); onDelete?.(comment.id); } catch {}
+    try { await deleteComment(comment.id); onDelete?.(comment.id); } catch { /* ignore */ }
   };
 
   return (

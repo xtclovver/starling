@@ -30,7 +30,7 @@ export default function Notifications() {
       const items = data.notifications || [];
       if (c) appendNotifications(items, data.pagination?.next_cursor || '', data.pagination?.has_more || false);
       else setNotifications(items, data.pagination?.next_cursor || '', data.pagination?.has_more || false);
-    } catch {}
+    } catch { /* ignore */ }
     finally { setLoading(false); }
   }, [setNotifications, appendNotifications, setLoading]);
 
@@ -49,12 +49,12 @@ export default function Notifications() {
     try {
       await markAllRead();
       markAllAsRead();
-    } catch {}
+    } catch { /* ignore */ }
   };
 
   const handleClickNotification = async (id: string, read: boolean) => {
     if (!read) {
-      try { await markRead(id); useNotificationStore.getState().markAsRead(id); } catch {}
+      try { await markRead(id); useNotificationStore.getState().markAsRead(id); } catch { /* ignore */ }
     }
   };
 

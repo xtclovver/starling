@@ -27,7 +27,7 @@ export default function Home() {
       const feedPosts = data.posts || [];
       if (c) appendPosts(feedPosts, data.pagination?.next_cursor || '', data.pagination?.has_more || false);
       else setPosts(feedPosts, data.pagination?.next_cursor || '', data.pagination?.has_more || false);
-    } catch {}
+    } catch { /* ignore */ }
     finally { setLoading(false); }
   }, [isAuthenticated, setPosts, appendPosts, setLoading]);
 
@@ -44,7 +44,7 @@ export default function Home() {
       }
       setGuestCursor(data.pagination?.next_cursor || '');
       setGuestHasMore(data.pagination?.has_more || false);
-    } catch {}
+    } catch { /* ignore */ }
     finally { setGuestLoading(false); }
   }, [isAuthenticated]);
 
