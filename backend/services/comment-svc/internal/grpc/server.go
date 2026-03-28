@@ -134,6 +134,30 @@ func (s *Server) DeleteComment(ctx context.Context, req *pb.DeleteCommentRequest
 	return &pb.DeleteCommentResponse{}, nil
 }
 
+func (s *Server) UpdateComment(ctx context.Context, req *pb.UpdateCommentRequest) (*pb.UpdateCommentResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("UpdateComment", "duration", time.Since(start)) }()
+
+	content := req.GetContent()
+	if content == "" || len(content) > 500 {
+		return nil, status.Error(codes.InvalidArgument, "content must be 1-500 characters")
+	}
+
+	comment, err := s.commentRepo.Update(ctx, req.GetId(), req.GetUserId(), content, req.GetMediaUrl())
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, status.Error(codes.NotFound, "comment not found")
+		}
+		if errors.Is(err, repository.ErrForbidden) {
+			return nil, status.Error(codes.PermissionDenied, "not comment owner")
+		}
+		s.log.Error("update comment failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	return &pb.UpdateCommentResponse{Comment: toProtoComment(comment)}, nil
+}
+
 func (s *Server) LikeComment(ctx context.Context, req *pb.LikeCommentRequest) (*pb.LikeCommentResponse, error) {
 	start := time.Now()
 	defer func() { s.log.Info("LikeComment", "duration", time.Since(start)) }()
