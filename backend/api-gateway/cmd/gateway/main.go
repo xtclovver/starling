@@ -123,6 +123,7 @@ func main() {
 	mux.Handle("GET /api/posts/{id}/comments", auth.Optional(http.HandlerFunc(commentH.GetCommentTree)))
 	mux.Handle("POST /api/posts/{id}/comments", auth.Required(http.HandlerFunc(commentH.CreateComment)))
 	mux.Handle("DELETE /api/comments/{id}", auth.Required(http.HandlerFunc(commentH.DeleteComment)))
+	mux.Handle("PUT /api/comments/{id}", auth.Required(http.HandlerFunc(commentH.UpdateComment)))
 	mux.Handle("POST /api/comments/{id}/like", auth.Required(http.HandlerFunc(commentH.LikeComment)))
 	mux.Handle("DELETE /api/comments/{id}/like", auth.Required(http.HandlerFunc(commentH.UnlikeComment)))
 

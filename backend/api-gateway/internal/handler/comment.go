@@ -140,6 +140,35 @@ func (h *CommentHandler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, nil)
 }
 
+type updateCommentRequest struct {
+	Content  string `json:"content"`
+	MediaURL string `json:"media_url,omitempty"`
+}
+
+func (h *CommentHandler) UpdateComment(w http.ResponseWriter, r *http.Request) {
+	commentID := r.PathValue("id")
+	userID := getUserID(r)
+
+	var req updateCommentRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	resp, err := h.comment.UpdateComment(r.Context(), &commentpb.UpdateCommentRequest{
+		Id:       commentID,
+		UserId:   userID,
+		Content:  req.Content,
+		MediaUrl: req.MediaURL,
+	})
+	if err != nil {
+		handleGRPCError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{"comment": commentToMap(resp.GetComment())})
+}
+
 func (h *CommentHandler) LikeComment(w http.ResponseWriter, r *http.Request) {
 	commentID := r.PathValue("id")
 	userID := getUserID(r)
