@@ -222,18 +222,24 @@
   line-height: 1.5;
 }
 .createPostTextarea::placeholder { color: var(--text-tertiary); }
+.createPostMediaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
 .createPostMediaPreview {
   position: relative;
-  margin-top: 8px;
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--border);
 }
 .createPostMediaPreview img {
   width: 100%;
-  max-height: 360px;
-  object-fit: contain;
+  max-height: 200px;
+  object-fit: cover;
   background: var(--bg-primary);
+  display: block;
 }
 .mediaRemoveBtn {
   position: absolute;
@@ -342,3 +348,25 @@
 .postDetailActionBtn:hover { color: var(--accent); background: var(--accent-muted); }
 .postDetailLikeBtn:hover { color: var(--like); background: var(--like-muted); }
 .postDetailLiked { color: var(--like); }
+
+/* ── View count ── */
+.viewCount {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-left: auto;
+}
+
+/* ── Edit media grid ── */
+.editMediaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.mediaUploadBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}

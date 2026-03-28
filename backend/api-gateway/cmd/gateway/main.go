@@ -52,7 +52,7 @@ func main() {
 	// Handlers
 	authH := handler.NewAuthHandler(clients.User, cfg.CookieSecure)
 	userH := handler.NewUserHandler(clients.User, clients.Post)
-	postH := handler.NewPostHandler(clients.Post, clients.User, publisher)
+	postH := handler.NewPostHandler(clients.Post, clients.User, clients.Media, publisher)
 	commentH := handler.NewCommentHandler(clients.Comment, clients.User, clients.Post, publisher)
 	mediaH := handler.NewMediaHandler(clients.Media)
 
@@ -118,6 +118,7 @@ func main() {
 	mux.Handle("POST /api/posts/{id}/repost", auth.Required(http.HandlerFunc(postH.RepostPost)))
 	mux.Handle("DELETE /api/posts/{id}/repost", auth.Required(http.HandlerFunc(postH.UnrepostPost)))
 	mux.Handle("POST /api/posts/{id}/quote", auth.Required(http.HandlerFunc(postH.QuotePost)))
+	mux.Handle("POST /api/posts/views", auth.Optional(http.HandlerFunc(postH.RecordViews)))
 
 	// Comment routes
 	mux.Handle("GET /api/posts/{id}/comments", auth.Optional(http.HandlerFunc(commentH.GetCommentTree)))

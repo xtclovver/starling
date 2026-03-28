@@ -85,7 +85,7 @@ func (r *hashtagRepo) GetPostsByHashtag(ctx context.Context, tag, cursor string,
 	}
 
 	args := []any{strings.ToLower(tag), limit + 1}
-	q := `SELECT p.id, p.user_id, p.content, p.media_url, p.likes_count, p.comments_count, p.reposts_count, p.created_at, p.updated_at, p.edited_at
+	q := `SELECT p.id, p.user_id, p.content, p.views_count, p.likes_count, p.comments_count, p.reposts_count, p.created_at, p.updated_at, p.edited_at
 		  FROM posts p
 		  INNER JOIN post_hashtags ph ON ph.post_id = p.id
 		  INNER JOIN hashtags h ON h.id = ph.hashtag_id AND h.tag = $1
@@ -110,7 +110,7 @@ func (r *hashtagRepo) GetPostsByHashtag(ctx context.Context, tag, cursor string,
 	posts := make([]model.Post, 0)
 	for rows.Next() {
 		var p model.Post
-		if err := rows.Scan(&p.ID, &p.UserID, &p.Content, &p.MediaURL, &p.LikesCount, &p.CommentsCount, &p.RepostsCount, &p.CreatedAt, &p.UpdatedAt, &p.EditedAt); err != nil {
+		if err := rows.Scan(&p.ID, &p.UserID, &p.Content, &p.ViewsCount, &p.LikesCount, &p.CommentsCount, &p.RepostsCount, &p.CreatedAt, &p.UpdatedAt, &p.EditedAt); err != nil {
 			return nil, "", false, err
 		}
 		posts = append(posts, p)

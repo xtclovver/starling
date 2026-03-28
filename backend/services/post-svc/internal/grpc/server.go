@@ -22,6 +22,7 @@ type Server struct {
 	hashtagRepo  repository.HashtagRepository
 	repostRepo   repository.RepostRepository
 	likeCounter  *cache.LikeCounter
+	viewCounter  *cache.ViewCounter
 	log          *slog.Logger
 }
 
@@ -32,6 +33,7 @@ func NewServer(
 	hashtagRepo repository.HashtagRepository,
 	repostRepo repository.RepostRepository,
 	likeCounter *cache.LikeCounter,
+	viewCounter *cache.ViewCounter,
 	log *slog.Logger,
 ) *Server {
 	return &Server{
@@ -41,6 +43,7 @@ func NewServer(
 		hashtagRepo:  hashtagRepo,
 		repostRepo:   repostRepo,
 		likeCounter:  likeCounter,
+		viewCounter:  viewCounter,
 		log:          log,
 	}
 }
@@ -71,6 +74,16 @@ func (s *Server) enrichPosts(ctx context.Context, posts []*pb.Post, viewerID str
 		for _, p := range posts {
 			if count, ok := likeCounts[p.GetId()]; ok {
 				p.LikesCount = safeInt32(count)
+			}
+		}
+	}
+
+	// Refresh view counts from Redis
+	viewCounts := s.viewCounter.GetManyCounts(ctx, postIDs)
+	if viewCounts != nil {
+		for _, p := range posts {
+			if count, ok := viewCounts[p.GetId()]; ok && count > int64(p.GetViewsCount()) {
+				p.ViewsCount = safeInt32(count)
 			}
 		}
 	}
@@ -114,7 +127,11 @@ func (s *Server) CreatePost(ctx context.Context, req *pb.CreatePostRequest) (*pb
 		return nil, status.Error(codes.InvalidArgument, "content must be 1-280 characters")
 	}
 
-	post, err := s.postRepo.Create(ctx, req.GetUserId(), content, req.GetMediaUrl())
+	if len(req.GetMediaUrls()) > 10 {
+		return nil, status.Error(codes.InvalidArgument, "max 10 media per post")
+	}
+
+	post, err := s.postRepo.Create(ctx, req.GetUserId(), content)
 	if err != nil {
 		s.log.Error("create post failed", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
@@ -380,7 +397,7 @@ func (s *Server) UpdatePost(ctx context.Context, req *pb.UpdatePostRequest) (*pb
 		return nil, status.Error(codes.InvalidArgument, "content must be 1-280 characters")
 	}
 
-	post, err := s.postRepo.Update(ctx, req.GetId(), req.GetUserId(), content, req.GetMediaUrl())
+	post, err := s.postRepo.Update(ctx, req.GetId(), req.GetUserId(), content)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return nil, status.Error(codes.NotFound, "post not found")
@@ -494,7 +511,7 @@ func (s *Server) QuotePost(ctx context.Context, req *pb.QuotePostRequest) (*pb.Q
 	}
 
 	// Create a new post for the quote
-	post, err := s.postRepo.Create(ctx, req.GetUserId(), content, "")
+	post, err := s.postRepo.Create(ctx, req.GetUserId(), content)
 	if err != nil {
 		s.log.Error("create quote post failed", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
@@ -545,4 +562,21 @@ func (s *Server) GetRepostsByUser(ctx context.Context, req *pb.GetRepostsByUserR
 			HasMore:    hasMore,
 		},
 	}, nil
+}
+
+func (s *Server) RecordViews(ctx context.Context, req *pb.RecordViewsRequest) (*pb.RecordViewsResponse, error) {
+	if len(req.GetPostIds()) == 0 {
+		return &pb.RecordViewsResponse{}, nil
+	}
+	if len(req.GetPostIds()) > 50 {
+		return nil, status.Error(codes.InvalidArgument, "max 50 posts per request")
+	}
+
+	viewerID := req.GetViewerId()
+	if viewerID == "" {
+		return &pb.RecordViewsResponse{}, nil
+	}
+
+	s.viewCounter.RecordViews(ctx, req.GetPostIds(), viewerID)
+	return &pb.RecordViewsResponse{}, nil
 }

@@ -23,7 +23,7 @@ func toProtoPost(p *model.Post) *pb.Post {
 		Id:            p.ID,
 		UserId:        p.UserID,
 		Content:       p.Content,
-		MediaUrl:      p.MediaURL,
+		ViewsCount:    safeInt32(p.ViewsCount),
 		LikesCount:    safeInt32(p.LikesCount),
 		CommentsCount: safeInt32(p.CommentsCount),
 		RepostsCount:  safeInt32(p.RepostsCount),

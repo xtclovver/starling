@@ -1,8 +1,8 @@
 import client from './client';
 import type { ApiResponse, PaginationResponse, Post, TrendingHashtag } from '@/types';
 
-export async function createPost(content: string, mediaUrl = '') {
-  const { data } = await client.post<ApiResponse<{ post: Post }>>('/posts', { content, media_url: mediaUrl });
+export async function createPost(content: string, mediaUrls: string[] = []) {
+  const { data } = await client.post<ApiResponse<{ post: Post }>>('/posts', { content, media_urls: mediaUrls });
   return data.data.post;
 }
 
@@ -43,9 +43,13 @@ export async function getBookmarks(cursor = '') {
   return data.data;
 }
 
-export async function updatePost(id: string, content: string, mediaUrl = '') {
-  const { data } = await client.put<ApiResponse<{ post: Post }>>(`/posts/${id}`, { content, media_url: mediaUrl });
+export async function updatePost(id: string, content: string, mediaUrls: string[] = []) {
+  const { data } = await client.put<ApiResponse<{ post: Post }>>(`/posts/${id}`, { content, media_urls: mediaUrls });
   return data.data.post;
+}
+
+export async function recordViews(postIds: string[]) {
+  await client.post('/posts/views', { post_ids: postIds });
 }
 
 export async function getUserReposts(userId: string, cursor = '') {

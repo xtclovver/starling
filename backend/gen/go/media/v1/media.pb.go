@@ -32,6 +32,7 @@ type Media struct {
 	ContentType   string                 `protobuf:"bytes,6,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
 	Url           string                 `protobuf:"bytes,7,opt,name=url,proto3" json:"url,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Position      int32                  `protobuf:"varint,9,opt,name=position,proto3" json:"position,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -120,6 +121,13 @@ func (x *Media) GetCreatedAt() *timestamppb.Timestamp {
 		return x.CreatedAt
 	}
 	return nil
+}
+
+func (x *Media) GetPosition() int32 {
+	if x != nil {
+		return x.Position
+	}
+	return 0
 }
 
 type UploadMediaRequest struct {
@@ -514,11 +522,327 @@ func (*DeleteMediaResponse) Descriptor() ([]byte, []int) {
 	return file_media_v1_media_proto_rawDescGZIP(), []int{8}
 }
 
+type GetMediaByPostRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PostId        string                 `protobuf:"bytes,1,opt,name=post_id,json=postId,proto3" json:"post_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMediaByPostRequest) Reset() {
+	*x = GetMediaByPostRequest{}
+	mi := &file_media_v1_media_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMediaByPostRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMediaByPostRequest) ProtoMessage() {}
+
+func (x *GetMediaByPostRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_media_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMediaByPostRequest.ProtoReflect.Descriptor instead.
+func (*GetMediaByPostRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_media_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *GetMediaByPostRequest) GetPostId() string {
+	if x != nil {
+		return x.PostId
+	}
+	return ""
+}
+
+type GetMediaByPostResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Media         []*Media               `protobuf:"bytes,1,rep,name=media,proto3" json:"media,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMediaByPostResponse) Reset() {
+	*x = GetMediaByPostResponse{}
+	mi := &file_media_v1_media_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMediaByPostResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMediaByPostResponse) ProtoMessage() {}
+
+func (x *GetMediaByPostResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_media_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMediaByPostResponse.ProtoReflect.Descriptor instead.
+func (*GetMediaByPostResponse) Descriptor() ([]byte, []int) {
+	return file_media_v1_media_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *GetMediaByPostResponse) GetMedia() []*Media {
+	if x != nil {
+		return x.Media
+	}
+	return nil
+}
+
+type GetMediaByPostsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PostIds       []string               `protobuf:"bytes,1,rep,name=post_ids,json=postIds,proto3" json:"post_ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMediaByPostsRequest) Reset() {
+	*x = GetMediaByPostsRequest{}
+	mi := &file_media_v1_media_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMediaByPostsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMediaByPostsRequest) ProtoMessage() {}
+
+func (x *GetMediaByPostsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_media_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMediaByPostsRequest.ProtoReflect.Descriptor instead.
+func (*GetMediaByPostsRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_media_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *GetMediaByPostsRequest) GetPostIds() []string {
+	if x != nil {
+		return x.PostIds
+	}
+	return nil
+}
+
+type MediaList struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*Media               `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MediaList) Reset() {
+	*x = MediaList{}
+	mi := &file_media_v1_media_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MediaList) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MediaList) ProtoMessage() {}
+
+func (x *MediaList) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_media_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MediaList.ProtoReflect.Descriptor instead.
+func (*MediaList) Descriptor() ([]byte, []int) {
+	return file_media_v1_media_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *MediaList) GetItems() []*Media {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+type GetMediaByPostsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MediaByPost   map[string]*MediaList  `protobuf:"bytes,1,rep,name=media_by_post,json=mediaByPost,proto3" json:"media_by_post,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMediaByPostsResponse) Reset() {
+	*x = GetMediaByPostsResponse{}
+	mi := &file_media_v1_media_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMediaByPostsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMediaByPostsResponse) ProtoMessage() {}
+
+func (x *GetMediaByPostsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_media_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMediaByPostsResponse.ProtoReflect.Descriptor instead.
+func (*GetMediaByPostsResponse) Descriptor() ([]byte, []int) {
+	return file_media_v1_media_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *GetMediaByPostsResponse) GetMediaByPost() map[string]*MediaList {
+	if x != nil {
+		return x.MediaByPost
+	}
+	return nil
+}
+
+type LinkMediaToPostRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MediaUrls     []string               `protobuf:"bytes,1,rep,name=media_urls,json=mediaUrls,proto3" json:"media_urls,omitempty"`
+	PostId        string                 `protobuf:"bytes,2,opt,name=post_id,json=postId,proto3" json:"post_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LinkMediaToPostRequest) Reset() {
+	*x = LinkMediaToPostRequest{}
+	mi := &file_media_v1_media_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LinkMediaToPostRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LinkMediaToPostRequest) ProtoMessage() {}
+
+func (x *LinkMediaToPostRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_media_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LinkMediaToPostRequest.ProtoReflect.Descriptor instead.
+func (*LinkMediaToPostRequest) Descriptor() ([]byte, []int) {
+	return file_media_v1_media_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *LinkMediaToPostRequest) GetMediaUrls() []string {
+	if x != nil {
+		return x.MediaUrls
+	}
+	return nil
+}
+
+func (x *LinkMediaToPostRequest) GetPostId() string {
+	if x != nil {
+		return x.PostId
+	}
+	return ""
+}
+
+func (x *LinkMediaToPostRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type LinkMediaToPostResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LinkMediaToPostResponse) Reset() {
+	*x = LinkMediaToPostResponse{}
+	mi := &file_media_v1_media_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LinkMediaToPostResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LinkMediaToPostResponse) ProtoMessage() {}
+
+func (x *LinkMediaToPostResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_media_v1_media_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LinkMediaToPostResponse.ProtoReflect.Descriptor instead.
+func (*LinkMediaToPostResponse) Descriptor() ([]byte, []int) {
+	return file_media_v1_media_proto_rawDescGZIP(), []int{15}
+}
+
 var File_media_v1_media_proto protoreflect.FileDescriptor
 
 const file_media_v1_media_proto_rawDesc = "" +
 	"\n" +
-	"\x14media/v1/media.proto\x12\bmedia.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf0\x01\n" +
+	"\x14media/v1/media.proto\x12\bmedia.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8c\x02\n" +
 	"\x05Media\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x17\n" +
@@ -529,7 +853,8 @@ const file_media_v1_media_proto_rawDesc = "" +
 	"\fcontent_type\x18\x06 \x01(\tR\vcontentType\x12\x10\n" +
 	"\x03url\x18\a \x01(\tR\x03url\x129\n" +
 	"\n" +
-	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"}\n" +
+	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x1a\n" +
+	"\bposition\x18\t \x01(\x05R\bposition\"}\n" +
 	"\x12UploadMediaRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x17\n" +
 	"\apost_id\x18\x02 \x01(\tR\x06postId\x12!\n" +
@@ -553,12 +878,34 @@ const file_media_v1_media_proto_rawDesc = "" +
 	"\x12DeleteMediaRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\"\x15\n" +
-	"\x13DeleteMediaResponse2\xdc\x02\n" +
+	"\x13DeleteMediaResponse\"0\n" +
+	"\x15GetMediaByPostRequest\x12\x17\n" +
+	"\apost_id\x18\x01 \x01(\tR\x06postId\"?\n" +
+	"\x16GetMediaByPostResponse\x12%\n" +
+	"\x05media\x18\x01 \x03(\v2\x0f.media.v1.MediaR\x05media\"3\n" +
+	"\x16GetMediaByPostsRequest\x12\x19\n" +
+	"\bpost_ids\x18\x01 \x03(\tR\apostIds\"2\n" +
+	"\tMediaList\x12%\n" +
+	"\x05items\x18\x01 \x03(\v2\x0f.media.v1.MediaR\x05items\"\xc6\x01\n" +
+	"\x17GetMediaByPostsResponse\x12V\n" +
+	"\rmedia_by_post\x18\x01 \x03(\v22.media.v1.GetMediaByPostsResponse.MediaByPostEntryR\vmediaByPost\x1aS\n" +
+	"\x10MediaByPostEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12)\n" +
+	"\x05value\x18\x02 \x01(\v2\x13.media.v1.MediaListR\x05value:\x028\x01\"i\n" +
+	"\x16LinkMediaToPostRequest\x12\x1d\n" +
+	"\n" +
+	"media_urls\x18\x01 \x03(\tR\tmediaUrls\x12\x17\n" +
+	"\apost_id\x18\x02 \x01(\tR\x06postId\x12\x17\n" +
+	"\auser_id\x18\x03 \x01(\tR\x06userId\"\x19\n" +
+	"\x17LinkMediaToPostResponse2\xe1\x04\n" +
 	"\fMediaService\x12J\n" +
 	"\vUploadMedia\x12\x1c.media.v1.UploadMediaRequest\x1a\x1d.media.v1.UploadMediaResponse\x12h\n" +
 	"\x15GetPresignedUploadURL\x12&.media.v1.GetPresignedUploadURLRequest\x1a'.media.v1.GetPresignedUploadURLResponse\x12J\n" +
 	"\vGetMediaURL\x12\x1c.media.v1.GetMediaURLRequest\x1a\x1d.media.v1.GetMediaURLResponse\x12J\n" +
-	"\vDeleteMedia\x12\x1c.media.v1.DeleteMediaRequest\x1a\x1d.media.v1.DeleteMediaResponseB2Z0github.com/usedcvnt/microtwitter/gen/go/media/v1b\x06proto3"
+	"\vDeleteMedia\x12\x1c.media.v1.DeleteMediaRequest\x1a\x1d.media.v1.DeleteMediaResponse\x12S\n" +
+	"\x0eGetMediaByPost\x12\x1f.media.v1.GetMediaByPostRequest\x1a .media.v1.GetMediaByPostResponse\x12V\n" +
+	"\x0fGetMediaByPosts\x12 .media.v1.GetMediaByPostsRequest\x1a!.media.v1.GetMediaByPostsResponse\x12V\n" +
+	"\x0fLinkMediaToPost\x12 .media.v1.LinkMediaToPostRequest\x1a!.media.v1.LinkMediaToPostResponseB2Z0github.com/usedcvnt/microtwitter/gen/go/media/v1b\x06proto3"
 
 var (
 	file_media_v1_media_proto_rawDescOnce sync.Once
@@ -572,7 +919,7 @@ func file_media_v1_media_proto_rawDescGZIP() []byte {
 	return file_media_v1_media_proto_rawDescData
 }
 
-var file_media_v1_media_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_media_v1_media_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_media_v1_media_proto_goTypes = []any{
 	(*Media)(nil),                         // 0: media.v1.Media
 	(*UploadMediaRequest)(nil),            // 1: media.v1.UploadMediaRequest
@@ -583,24 +930,42 @@ var file_media_v1_media_proto_goTypes = []any{
 	(*GetMediaURLResponse)(nil),           // 6: media.v1.GetMediaURLResponse
 	(*DeleteMediaRequest)(nil),            // 7: media.v1.DeleteMediaRequest
 	(*DeleteMediaResponse)(nil),           // 8: media.v1.DeleteMediaResponse
-	(*timestamppb.Timestamp)(nil),         // 9: google.protobuf.Timestamp
+	(*GetMediaByPostRequest)(nil),         // 9: media.v1.GetMediaByPostRequest
+	(*GetMediaByPostResponse)(nil),        // 10: media.v1.GetMediaByPostResponse
+	(*GetMediaByPostsRequest)(nil),        // 11: media.v1.GetMediaByPostsRequest
+	(*MediaList)(nil),                     // 12: media.v1.MediaList
+	(*GetMediaByPostsResponse)(nil),       // 13: media.v1.GetMediaByPostsResponse
+	(*LinkMediaToPostRequest)(nil),        // 14: media.v1.LinkMediaToPostRequest
+	(*LinkMediaToPostResponse)(nil),       // 15: media.v1.LinkMediaToPostResponse
+	nil,                                   // 16: media.v1.GetMediaByPostsResponse.MediaByPostEntry
+	(*timestamppb.Timestamp)(nil),         // 17: google.protobuf.Timestamp
 }
 var file_media_v1_media_proto_depIdxs = []int32{
-	9, // 0: media.v1.Media.created_at:type_name -> google.protobuf.Timestamp
-	0, // 1: media.v1.UploadMediaResponse.media:type_name -> media.v1.Media
-	1, // 2: media.v1.MediaService.UploadMedia:input_type -> media.v1.UploadMediaRequest
-	3, // 3: media.v1.MediaService.GetPresignedUploadURL:input_type -> media.v1.GetPresignedUploadURLRequest
-	5, // 4: media.v1.MediaService.GetMediaURL:input_type -> media.v1.GetMediaURLRequest
-	7, // 5: media.v1.MediaService.DeleteMedia:input_type -> media.v1.DeleteMediaRequest
-	2, // 6: media.v1.MediaService.UploadMedia:output_type -> media.v1.UploadMediaResponse
-	4, // 7: media.v1.MediaService.GetPresignedUploadURL:output_type -> media.v1.GetPresignedUploadURLResponse
-	6, // 8: media.v1.MediaService.GetMediaURL:output_type -> media.v1.GetMediaURLResponse
-	8, // 9: media.v1.MediaService.DeleteMedia:output_type -> media.v1.DeleteMediaResponse
-	6, // [6:10] is the sub-list for method output_type
-	2, // [2:6] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	17, // 0: media.v1.Media.created_at:type_name -> google.protobuf.Timestamp
+	0,  // 1: media.v1.UploadMediaResponse.media:type_name -> media.v1.Media
+	0,  // 2: media.v1.GetMediaByPostResponse.media:type_name -> media.v1.Media
+	0,  // 3: media.v1.MediaList.items:type_name -> media.v1.Media
+	16, // 4: media.v1.GetMediaByPostsResponse.media_by_post:type_name -> media.v1.GetMediaByPostsResponse.MediaByPostEntry
+	12, // 5: media.v1.GetMediaByPostsResponse.MediaByPostEntry.value:type_name -> media.v1.MediaList
+	1,  // 6: media.v1.MediaService.UploadMedia:input_type -> media.v1.UploadMediaRequest
+	3,  // 7: media.v1.MediaService.GetPresignedUploadURL:input_type -> media.v1.GetPresignedUploadURLRequest
+	5,  // 8: media.v1.MediaService.GetMediaURL:input_type -> media.v1.GetMediaURLRequest
+	7,  // 9: media.v1.MediaService.DeleteMedia:input_type -> media.v1.DeleteMediaRequest
+	9,  // 10: media.v1.MediaService.GetMediaByPost:input_type -> media.v1.GetMediaByPostRequest
+	11, // 11: media.v1.MediaService.GetMediaByPosts:input_type -> media.v1.GetMediaByPostsRequest
+	14, // 12: media.v1.MediaService.LinkMediaToPost:input_type -> media.v1.LinkMediaToPostRequest
+	2,  // 13: media.v1.MediaService.UploadMedia:output_type -> media.v1.UploadMediaResponse
+	4,  // 14: media.v1.MediaService.GetPresignedUploadURL:output_type -> media.v1.GetPresignedUploadURLResponse
+	6,  // 15: media.v1.MediaService.GetMediaURL:output_type -> media.v1.GetMediaURLResponse
+	8,  // 16: media.v1.MediaService.DeleteMedia:output_type -> media.v1.DeleteMediaResponse
+	10, // 17: media.v1.MediaService.GetMediaByPost:output_type -> media.v1.GetMediaByPostResponse
+	13, // 18: media.v1.MediaService.GetMediaByPosts:output_type -> media.v1.GetMediaByPostsResponse
+	15, // 19: media.v1.MediaService.LinkMediaToPost:output_type -> media.v1.LinkMediaToPostResponse
+	13, // [13:20] is the sub-list for method output_type
+	6,  // [6:13] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_media_v1_media_proto_init() }
@@ -614,7 +979,7 @@ func file_media_v1_media_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_media_v1_media_proto_rawDesc), len(file_media_v1_media_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

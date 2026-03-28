@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Heart, MessageCircle, Trash2 } from 'lucide-react';
-import { getPost, likePost, unlikePost, deletePost } from '@/api/posts';
+import { ArrowLeft, Heart, MessageCircle, Trash2, Eye } from 'lucide-react';
+import { getPost, likePost, unlikePost, deletePost, recordViews } from '@/api/posts';
 import { useAuthStore } from '@/store/auth';
-import { getMediaKind } from '@/lib/media';
 import Avatar from '@/components/Avatar';
+import MediaGrid from '@/components/MediaGrid';
 import CommentTree from '@/components/CommentTree';
 import Spinner from '@/components/Spinner';
+import ImageLightbox from '@/components/ImageLightbox';
 import l from '@/styles/layout.module.css';
 import s from '@/styles/post.module.css';
 import type { Post } from '@/types';
@@ -18,11 +19,17 @@ export default function PostPage() {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [likeLoading, setLikeLoading] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
     getPost(id).then((p) => setPost(p)).catch(() => setPost(null)).finally(() => setLoading(false));
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+    recordViews([id]).catch(() => {});
   }, [id]);
 
   const handleLike = async () => {
@@ -74,24 +81,11 @@ export default function PostPage() {
 
         <p className={s.postDetailContent}>{post.content}</p>
 
-        {post.media_url && (() => {
-          const kind = getMediaKind(post.media_url);
-          if (kind === 'video') return (
-            <div className={s.postMedia} style={{ marginTop: 12 }}>
-              <video src={post.media_url} controls style={{ width: '100%', borderRadius: 12, maxHeight: 480 }} />
-            </div>
-          );
-          if (kind === 'audio') return (
-            <div style={{ marginTop: 12 }}>
-              <audio src={post.media_url} controls style={{ width: '100%' }} />
-            </div>
-          );
-          return (
-            <div className={s.postMedia} style={{ marginTop: 12 }}>
-              <img src={post.media_url} alt="" style={{ maxHeight: 600 }} loading="lazy" />
-            </div>
-          );
-        })()}
+        {post.media && post.media.length > 0 && (
+          <div style={{ marginTop: 12 }}>
+            <MediaGrid media={post.media} onImageClick={(url) => setLightboxSrc(url)} />
+          </div>
+        )}
 
         <p className={s.postDetailTimestamp}>
           {new Date(post.created_at).toLocaleString('ru-RU', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short', year: 'numeric' })}
@@ -100,6 +94,9 @@ export default function PostPage() {
         <div className={s.postDetailStats}>
           <span><span className={s.statBold}>{post.likes_count}</span> <span className={s.statLabel}>нравится</span></span>
           <span><span className={s.statBold}>{post.comments_count}</span> <span className={s.statLabel}>комментариев</span></span>
+          {post.views_count > 0 && (
+            <span className={s.viewCount}><Eye size={15} /> <span className={s.statBold}>{post.views_count}</span> <span className={s.statLabel}>просмотров</span></span>
+          )}
         </div>
 
         <div className={s.postDetailActions}>
@@ -114,6 +111,7 @@ export default function PostPage() {
       </article>
 
       <CommentTree postId={post.id} />
+      {lightboxSrc && <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
     </div>
   );
 }

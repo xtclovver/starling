@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Trash2, Bookmark, Repeat2, Pencil, X, ImagePlus, Check } from 'lucide-react';
+import { Heart, MessageCircle, Trash2, Bookmark, Repeat2, Pencil, X, ImagePlus, Check, Eye } from 'lucide-react';
 import { likePost, unlikePost, deletePost, bookmarkPost, unbookmarkPost, repostPost, unrepostPost, updatePost } from '@/api/posts';
 import { uploadMedia } from '@/api/media';
 import { useAuthStore } from '@/store/auth';
@@ -9,9 +9,10 @@ import { useUIStore } from '@/store/ui';
 import { timeAgo } from '@/lib/time';
 import { getMediaKind } from '@/lib/media';
 import Avatar from './Avatar';
+import MediaGrid from './MediaGrid';
 import ImageLightbox from './ImageLightbox';
 import s from '@/styles/post.module.css';
-import type { Post } from '@/types';
+import type { Post, MediaItem } from '@/types';
 
 function renderContent(content: string) {
   const parts = content.split(/(#\w+|@\w+)/g);
@@ -28,7 +29,7 @@ function renderContent(content: string) {
   });
 }
 
-export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post; onDelete?: () => void; onUnbookmark?: () => void }) {
+export default function PostCard({ post, onDelete, onUnbookmark, onOpen }: { post: Post; onDelete?: () => void; onUnbookmark?: () => void; onOpen?: (id: string) => void }) {
   const navigate = useNavigate();
   const user = useAuthStore((st) => st.user);
   const updateFeedPost = useFeedStore((st) => st.updatePost);
@@ -38,14 +39,15 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
   const [repostLoading, setRepostLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
-  const [editMediaUrl, setEditMediaUrl] = useState(post.media_url || '');
-  const [editMediaFile, setEditMediaFile] = useState<File | null>(null);
-  const [editMediaPreview, setEditMediaPreview] = useState<string | null>(null);
+  const [editMediaItems, setEditMediaItems] = useState<MediaItem[]>(post.media || []);
+  const [editNewFiles, setEditNewFiles] = useState<File[]>([]);
+  const [editNewPreviews, setEditNewPreviews] = useState<string[]>([]);
   const [editLoading, setEditLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const editFileRef = useRef<HTMLInputElement>(null);
+  const totalEditMedia = editMediaItems.length + editNewFiles.length;
   const [localOverrides, setLocalOverrides] = useState<Partial<Post>>({});
   const displayPost = { ...post, ...localOverrides };
 
@@ -122,35 +124,38 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
   const startEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
     setEditContent(post.content);
-    setEditMediaUrl(post.media_url || '');
-    setEditMediaFile(null);
-    setEditMediaPreview(null);
+    setEditMediaItems(post.media || []);
+    setEditNewFiles([]);
+    setEditNewPreviews([]);
     setEditing(true);
   };
 
   const cancelEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
     setEditing(false);
-    setEditMediaFile(null);
-    if (editMediaPreview) URL.revokeObjectURL(editMediaPreview);
-    setEditMediaPreview(null);
+    setEditNewFiles([]);
+    editNewPreviews.forEach((u) => URL.revokeObjectURL(u));
+    setEditNewPreviews([]);
   };
 
-  const handleEditFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setEditMediaFile(file);
-    setEditMediaPreview(URL.createObjectURL(file));
-    setEditMediaUrl('');
-  };
-
-  const removeEditMedia = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setEditMediaFile(null);
-    if (editMediaPreview) URL.revokeObjectURL(editMediaPreview);
-    setEditMediaPreview(null);
-    setEditMediaUrl('');
+  const handleEditFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    const allowed = 10 - totalEditMedia;
+    const toAdd = files.slice(0, allowed);
+    setEditNewFiles((prev) => [...prev, ...toAdd]);
+    setEditNewPreviews((prev) => [...prev, ...toAdd.map((f) => URL.createObjectURL(f))]);
     if (editFileRef.current) editFileRef.current.value = '';
+  };
+
+  const removeExistingMedia = (idx: number) => {
+    setEditMediaItems((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const removeNewMedia = (idx: number) => {
+    URL.revokeObjectURL(editNewPreviews[idx]);
+    setEditNewFiles((prev) => prev.filter((_, i) => i !== idx));
+    setEditNewPreviews((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const saveEdit = async (e: React.MouseEvent) => {
@@ -158,19 +163,21 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
     if (!editContent.trim() || editContent.length > 280 || editLoading) return;
     setEditLoading(true);
     try {
-      let mediaUrl = editMediaUrl;
-      if (editMediaFile) {
-        const m = await uploadMedia(editMediaFile);
-        mediaUrl = m.url;
+      const existingUrls = editMediaItems.map((m) => m.url);
+      const newUrls: string[] = [];
+      for (const file of editNewFiles) {
+        const m = await uploadMedia(file);
+        newUrls.push(m.url);
       }
-      const updated = await updatePost(post.id, editContent, mediaUrl);
-      const editedFields = { content: updated.content, media_url: updated.media_url || '', edited_at: updated.edited_at || new Date().toISOString() };
+      const allUrls = [...existingUrls, ...newUrls];
+      const updated = await updatePost(post.id, editContent, allUrls);
+      const editedFields: Partial<Post> = { content: updated.content, media: updated.media || [], edited_at: updated.edited_at || new Date().toISOString() };
       updateFeedPost(post.id, editedFields);
       setLocalOverrides(editedFields);
       setEditing(false);
-      setEditMediaFile(null);
-      if (editMediaPreview) URL.revokeObjectURL(editMediaPreview);
-      setEditMediaPreview(null);
+      setEditNewFiles([]);
+      editNewPreviews.forEach((u) => URL.revokeObjectURL(u));
+      setEditNewPreviews([]);
     } catch { /* ignore */ } finally { setEditLoading(false); }
   };
 
@@ -178,7 +185,7 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
 
   return (
     <>
-    <article className={s.postCard} onClick={() => !editing && navigate(`/post/${post.id}`)}>
+    <article className={s.postCard} onClick={() => !editing && (onOpen ? onOpen(post.id) : navigate(`/post/${post.id}`))}>
       <div className={s.postRow}>
         <Link to={`/profile/${post.user_id}`} onClick={(e) => e.stopPropagation()}>
           <Avatar url={post.author?.avatar_url} name={post.author?.display_name || post.author?.username || '?'} />
@@ -226,22 +233,37 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
                 autoFocus
                 rows={3}
               />
-              {(editMediaPreview || editMediaUrl) && (() => {
-                const src = editMediaPreview || editMediaUrl;
-                const kind = editMediaFile ? (editMediaFile.type.startsWith('video/') ? 'video' : editMediaFile.type.startsWith('audio/') ? 'audio' : 'image') : getMediaKind(src);
-                return (
-                  <div className={s.editMediaPreview}>
-                    {kind === 'video' ? <video src={src} controls style={{ width: '100%', borderRadius: 8, maxHeight: 200 }} /> :
-                     kind === 'audio' ? <audio src={src} controls style={{ width: '100%' }} /> :
-                     <img src={src} alt="" />}
-                    <button onClick={removeEditMedia} className={s.mediaRemoveBtn}><X size={14} /></button>
-                  </div>
-                );
-              })()}
+              {(editMediaItems.length > 0 || editNewPreviews.length > 0) && (
+                <div className={s.editMediaGrid}>
+                  {editMediaItems.map((m, i) => {
+                    const kind = getMediaKind(m.url);
+                    return (
+                      <div key={`existing-${i}`} className={s.editMediaPreview}>
+                        {kind === 'video' ? <video src={m.url} style={{ width: '100%', borderRadius: 8, maxHeight: 200 }} /> :
+                         kind === 'audio' ? <audio src={m.url} controls style={{ width: '100%' }} /> :
+                         <img src={m.url} alt="" />}
+                        <button onClick={() => removeExistingMedia(i)} className={s.mediaRemoveBtn}><X size={14} /></button>
+                      </div>
+                    );
+                  })}
+                  {editNewPreviews.map((src, i) => {
+                    const file = editNewFiles[i];
+                    const kind = file.type.startsWith('video/') ? 'video' : file.type.startsWith('audio/') ? 'audio' : 'image';
+                    return (
+                      <div key={`new-${i}`} className={s.editMediaPreview}>
+                        {kind === 'video' ? <video src={src} style={{ width: '100%', borderRadius: 8, maxHeight: 200 }} /> :
+                         kind === 'audio' ? <audio src={src} controls style={{ width: '100%' }} /> :
+                         <img src={src} alt="" />}
+                        <button onClick={() => removeNewMedia(i)} className={s.mediaRemoveBtn}><X size={14} /></button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
               <div className={s.inlineEditFooter}>
                 <div className={s.inlineEditLeft}>
-                  <input ref={editFileRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,audio/mpeg,audio/ogg,audio/wav" onChange={handleEditFile} style={{ display: 'none' }} />
-                  <button onClick={(e) => { e.stopPropagation(); editFileRef.current?.click(); }} className={s.mediaUploadBtn} title="Прикрепить фото">
+                  <input ref={editFileRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,audio/mpeg,audio/ogg,audio/wav" multiple onChange={handleEditFiles} style={{ display: 'none' }} />
+                  <button onClick={(e) => { e.stopPropagation(); editFileRef.current?.click(); }} className={s.mediaUploadBtn} title="Прикрепить медиа" disabled={totalEditMedia >= 10}>
                     <ImagePlus size={16} />
                   </button>
                   <span className={s.editCharCount} style={{ color: remaining < 0 ? 'var(--danger)' : remaining < 20 ? '#eab308' : 'var(--text-tertiary)' }}>
@@ -263,30 +285,9 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
           ) : (
             <>
               <p className={s.postContent}>{renderContent(displayPost.content)}</p>
-              {displayPost.media_url && (() => {
-                const kind = getMediaKind(displayPost.media_url);
-                if (kind === 'video') return (
-                  <div className={s.postMedia} onClick={(e) => e.stopPropagation()}>
-                    <video src={displayPost.media_url} controls style={{ width: '100%', borderRadius: 12, maxHeight: 480 }} />
-                  </div>
-                );
-                if (kind === 'audio') return (
-                  <div onClick={(e) => e.stopPropagation()} style={{ marginTop: 8 }}>
-                    <audio src={displayPost.media_url} controls style={{ width: '100%' }} />
-                  </div>
-                );
-                return (
-                  <div className={s.postMedia}>
-                    <img
-                      src={displayPost.media_url}
-                      alt=""
-                      loading="lazy"
-                      onClick={(e) => { e.stopPropagation(); setLightboxSrc(displayPost.media_url); }}
-                      style={{ cursor: 'zoom-in' }}
-                    />
-                  </div>
-                );
-              })()}
+              {displayPost.media && displayPost.media.length > 0 && (
+                <MediaGrid media={displayPost.media} onImageClick={(url) => setLightboxSrc(url)} />
+              )}
             </>
           )}
 
@@ -319,6 +320,12 @@ export default function PostCard({ post, onDelete, onUnbookmark }: { post: Post;
               >
                 <Bookmark size={17} fill={post.bookmarked ? 'currentColor' : 'none'} />
               </button>
+              {post.views_count > 0 && (
+                <span className={s.viewCount}>
+                  <Eye size={15} />
+                  <span>{post.views_count}</span>
+                </span>
+              )}
             </div>
           )}
         </div>

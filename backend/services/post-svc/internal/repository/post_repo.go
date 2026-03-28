@@ -15,15 +15,16 @@ var (
 )
 
 type PostRepository interface {
-	Create(ctx context.Context, userID, content, mediaURL string) (*model.Post, error)
+	Create(ctx context.Context, userID, content string) (*model.Post, error)
 	GetByID(ctx context.Context, id string) (*model.Post, error)
 	SoftDelete(ctx context.Context, id, userID string) error
 	GetFeed(ctx context.Context, userID, cursor string, limit int) ([]model.Post, string, bool, error)
 	GetGlobalFeed(ctx context.Context, cursor string, limit int) ([]model.Post, string, bool, error)
 	GetByUser(ctx context.Context, userID, cursor string, limit int) ([]model.Post, string, bool, error)
 	IncrementLikes(ctx context.Context, postID string, delta int) error
-	Update(ctx context.Context, id, userID, content, mediaURL string) (*model.Post, error)
+	Update(ctx context.Context, id, userID, content string) (*model.Post, error)
 	IncrementReposts(ctx context.Context, postID string, delta int) error
+	IncrementViews(ctx context.Context, postID string, delta int) error
 }
 
 type postRepo struct {
@@ -34,14 +35,14 @@ func NewPostRepository(pool *pgxpool.Pool) PostRepository {
 	return &postRepo{pool: pool}
 }
 
-func (r *postRepo) Create(ctx context.Context, userID, content, mediaURL string) (*model.Post, error) {
+func (r *postRepo) Create(ctx context.Context, userID, content string) (*model.Post, error) {
 	p := &model.Post{}
 	err := r.pool.QueryRow(ctx,
-		`INSERT INTO posts (user_id, content, media_url)
-		 VALUES ($1, $2, $3)
-		 RETURNING id, user_id, content, media_url, likes_count, comments_count, reposts_count, created_at, updated_at, edited_at`,
-		userID, content, mediaURL,
-	).Scan(&p.ID, &p.UserID, &p.Content, &p.MediaURL, &p.LikesCount, &p.CommentsCount, &p.RepostsCount, &p.CreatedAt, &p.UpdatedAt, &p.EditedAt)
+		`INSERT INTO posts (user_id, content)
+		 VALUES ($1, $2)
+		 RETURNING id, user_id, content, views_count, likes_count, comments_count, reposts_count, created_at, updated_at, edited_at`,
+		userID, content,
+	).Scan(&p.ID, &p.UserID, &p.Content, &p.ViewsCount, &p.LikesCount, &p.CommentsCount, &p.RepostsCount, &p.CreatedAt, &p.UpdatedAt, &p.EditedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -51,9 +52,9 @@ func (r *postRepo) Create(ctx context.Context, userID, content, mediaURL string)
 func (r *postRepo) GetByID(ctx context.Context, id string) (*model.Post, error) {
 	p := &model.Post{}
 	err := r.pool.QueryRow(ctx,
-		`SELECT id, user_id, content, media_url, likes_count, comments_count, reposts_count, created_at, updated_at, edited_at
+		`SELECT id, user_id, content, views_count, likes_count, comments_count, reposts_count, created_at, updated_at, edited_at
 		 FROM posts WHERE id = $1 AND deleted_at IS NULL`, id,
-	).Scan(&p.ID, &p.UserID, &p.Content, &p.MediaURL, &p.LikesCount, &p.CommentsCount, &p.RepostsCount, &p.CreatedAt, &p.UpdatedAt, &p.EditedAt)
+	).Scan(&p.ID, &p.UserID, &p.Content, &p.ViewsCount, &p.LikesCount, &p.CommentsCount, &p.RepostsCount, &p.CreatedAt, &p.UpdatedAt, &p.EditedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNotFound
@@ -89,7 +90,7 @@ func (r *postRepo) GetFeed(ctx context.Context, userID, cursor string, limit int
 	}
 
 	args := []any{userID, limit + 1}
-	q := `SELECT DISTINCT p.id, p.user_id, p.content, p.media_url, p.likes_count, p.comments_count, p.reposts_count, p.created_at, p.updated_at, p.edited_at
+	q := `SELECT DISTINCT p.id, p.user_id, p.content, p.views_count, p.likes_count, p.comments_count, p.reposts_count, p.created_at, p.updated_at, p.edited_at
 		  FROM posts p
 		  LEFT JOIN follows f ON f.follower_id = $1 AND f.following_id = p.user_id
 		  WHERE p.deleted_at IS NULL
@@ -114,7 +115,7 @@ func (r *postRepo) GetByUser(ctx context.Context, userID, cursor string, limit i
 	}
 
 	args := []any{userID, limit + 1}
-	q := `SELECT id, user_id, content, media_url, likes_count, comments_count, reposts_count, created_at, updated_at, edited_at
+	q := `SELECT id, user_id, content, views_count, likes_count, comments_count, reposts_count, created_at, updated_at, edited_at
 		  FROM posts
 		  WHERE user_id = $1 AND deleted_at IS NULL`
 
@@ -145,7 +146,7 @@ func (r *postRepo) GetGlobalFeed(ctx context.Context, cursor string, limit int) 
 	}
 
 	args := []any{limit + 1}
-	q := `SELECT id, user_id, content, media_url, likes_count, comments_count, reposts_count, created_at, updated_at, edited_at
+	q := `SELECT id, user_id, content, views_count, likes_count, comments_count, reposts_count, created_at, updated_at, edited_at
 		  FROM posts
 		  WHERE deleted_at IS NULL`
 
@@ -162,14 +163,14 @@ func (r *postRepo) GetGlobalFeed(ctx context.Context, cursor string, limit int) 
 	return r.queryPosts(ctx, q, args, limit)
 }
 
-func (r *postRepo) Update(ctx context.Context, id, userID, content, mediaURL string) (*model.Post, error) {
+func (r *postRepo) Update(ctx context.Context, id, userID, content string) (*model.Post, error) {
 	p := &model.Post{}
 	err := r.pool.QueryRow(ctx,
-		`UPDATE posts SET content = $1, media_url = $2, edited_at = NOW(), updated_at = NOW()
-		 WHERE id = $3 AND user_id = $4 AND deleted_at IS NULL
-		 RETURNING id, user_id, content, media_url, likes_count, comments_count, reposts_count, created_at, updated_at, edited_at`,
-		content, mediaURL, id, userID,
-	).Scan(&p.ID, &p.UserID, &p.Content, &p.MediaURL, &p.LikesCount, &p.CommentsCount, &p.RepostsCount, &p.CreatedAt, &p.UpdatedAt, &p.EditedAt)
+		`UPDATE posts SET content = $1, edited_at = NOW(), updated_at = NOW()
+		 WHERE id = $2 AND user_id = $3 AND deleted_at IS NULL
+		 RETURNING id, user_id, content, views_count, likes_count, comments_count, reposts_count, created_at, updated_at, edited_at`,
+		content, id, userID,
+	).Scan(&p.ID, &p.UserID, &p.Content, &p.ViewsCount, &p.LikesCount, &p.CommentsCount, &p.RepostsCount, &p.CreatedAt, &p.UpdatedAt, &p.EditedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			var exists bool
@@ -192,6 +193,14 @@ func (r *postRepo) IncrementReposts(ctx context.Context, postID string, delta in
 	return err
 }
 
+func (r *postRepo) IncrementViews(ctx context.Context, postID string, delta int) error {
+	_, err := r.pool.Exec(ctx,
+		`UPDATE posts SET views_count = GREATEST(views_count + $1, 0) WHERE id = $2`,
+		delta, postID,
+	)
+	return err
+}
+
 func (r *postRepo) queryPosts(ctx context.Context, query string, args []any, limit int) ([]model.Post, string, bool, error) {
 	rows, err := r.pool.Query(ctx, query, args...)
 	if err != nil {
@@ -202,7 +211,7 @@ func (r *postRepo) queryPosts(ctx context.Context, query string, args []any, lim
 	posts := make([]model.Post, 0)
 	for rows.Next() {
 		var p model.Post
-		if err := rows.Scan(&p.ID, &p.UserID, &p.Content, &p.MediaURL, &p.LikesCount, &p.CommentsCount, &p.RepostsCount, &p.CreatedAt, &p.UpdatedAt, &p.EditedAt); err != nil {
+		if err := rows.Scan(&p.ID, &p.UserID, &p.Content, &p.ViewsCount, &p.LikesCount, &p.CommentsCount, &p.RepostsCount, &p.CreatedAt, &p.UpdatedAt, &p.EditedAt); err != nil {
 			return nil, "", false, err
 		}
 		posts = append(posts, p)

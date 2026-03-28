@@ -23,6 +23,9 @@ const (
 	MediaService_GetPresignedUploadURL_FullMethodName = "/media.v1.MediaService/GetPresignedUploadURL"
 	MediaService_GetMediaURL_FullMethodName           = "/media.v1.MediaService/GetMediaURL"
 	MediaService_DeleteMedia_FullMethodName           = "/media.v1.MediaService/DeleteMedia"
+	MediaService_GetMediaByPost_FullMethodName        = "/media.v1.MediaService/GetMediaByPost"
+	MediaService_GetMediaByPosts_FullMethodName       = "/media.v1.MediaService/GetMediaByPosts"
+	MediaService_LinkMediaToPost_FullMethodName       = "/media.v1.MediaService/LinkMediaToPost"
 )
 
 // MediaServiceClient is the client API for MediaService service.
@@ -33,6 +36,9 @@ type MediaServiceClient interface {
 	GetPresignedUploadURL(ctx context.Context, in *GetPresignedUploadURLRequest, opts ...grpc.CallOption) (*GetPresignedUploadURLResponse, error)
 	GetMediaURL(ctx context.Context, in *GetMediaURLRequest, opts ...grpc.CallOption) (*GetMediaURLResponse, error)
 	DeleteMedia(ctx context.Context, in *DeleteMediaRequest, opts ...grpc.CallOption) (*DeleteMediaResponse, error)
+	GetMediaByPost(ctx context.Context, in *GetMediaByPostRequest, opts ...grpc.CallOption) (*GetMediaByPostResponse, error)
+	GetMediaByPosts(ctx context.Context, in *GetMediaByPostsRequest, opts ...grpc.CallOption) (*GetMediaByPostsResponse, error)
+	LinkMediaToPost(ctx context.Context, in *LinkMediaToPostRequest, opts ...grpc.CallOption) (*LinkMediaToPostResponse, error)
 }
 
 type mediaServiceClient struct {
@@ -83,6 +89,36 @@ func (c *mediaServiceClient) DeleteMedia(ctx context.Context, in *DeleteMediaReq
 	return out, nil
 }
 
+func (c *mediaServiceClient) GetMediaByPost(ctx context.Context, in *GetMediaByPostRequest, opts ...grpc.CallOption) (*GetMediaByPostResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetMediaByPostResponse)
+	err := c.cc.Invoke(ctx, MediaService_GetMediaByPost_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mediaServiceClient) GetMediaByPosts(ctx context.Context, in *GetMediaByPostsRequest, opts ...grpc.CallOption) (*GetMediaByPostsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetMediaByPostsResponse)
+	err := c.cc.Invoke(ctx, MediaService_GetMediaByPosts_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mediaServiceClient) LinkMediaToPost(ctx context.Context, in *LinkMediaToPostRequest, opts ...grpc.CallOption) (*LinkMediaToPostResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LinkMediaToPostResponse)
+	err := c.cc.Invoke(ctx, MediaService_LinkMediaToPost_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MediaServiceServer is the server API for MediaService service.
 // All implementations must embed UnimplementedMediaServiceServer
 // for forward compatibility.
@@ -91,6 +127,9 @@ type MediaServiceServer interface {
 	GetPresignedUploadURL(context.Context, *GetPresignedUploadURLRequest) (*GetPresignedUploadURLResponse, error)
 	GetMediaURL(context.Context, *GetMediaURLRequest) (*GetMediaURLResponse, error)
 	DeleteMedia(context.Context, *DeleteMediaRequest) (*DeleteMediaResponse, error)
+	GetMediaByPost(context.Context, *GetMediaByPostRequest) (*GetMediaByPostResponse, error)
+	GetMediaByPosts(context.Context, *GetMediaByPostsRequest) (*GetMediaByPostsResponse, error)
+	LinkMediaToPost(context.Context, *LinkMediaToPostRequest) (*LinkMediaToPostResponse, error)
 	mustEmbedUnimplementedMediaServiceServer()
 }
 
@@ -112,6 +151,15 @@ func (UnimplementedMediaServiceServer) GetMediaURL(context.Context, *GetMediaURL
 }
 func (UnimplementedMediaServiceServer) DeleteMedia(context.Context, *DeleteMediaRequest) (*DeleteMediaResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeleteMedia not implemented")
+}
+func (UnimplementedMediaServiceServer) GetMediaByPost(context.Context, *GetMediaByPostRequest) (*GetMediaByPostResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetMediaByPost not implemented")
+}
+func (UnimplementedMediaServiceServer) GetMediaByPosts(context.Context, *GetMediaByPostsRequest) (*GetMediaByPostsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetMediaByPosts not implemented")
+}
+func (UnimplementedMediaServiceServer) LinkMediaToPost(context.Context, *LinkMediaToPostRequest) (*LinkMediaToPostResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method LinkMediaToPost not implemented")
 }
 func (UnimplementedMediaServiceServer) mustEmbedUnimplementedMediaServiceServer() {}
 func (UnimplementedMediaServiceServer) testEmbeddedByValue()                      {}
@@ -206,6 +254,60 @@ func _MediaService_DeleteMedia_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MediaService_GetMediaByPost_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMediaByPostRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MediaServiceServer).GetMediaByPost(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MediaService_GetMediaByPost_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MediaServiceServer).GetMediaByPost(ctx, req.(*GetMediaByPostRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MediaService_GetMediaByPosts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMediaByPostsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MediaServiceServer).GetMediaByPosts(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MediaService_GetMediaByPosts_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MediaServiceServer).GetMediaByPosts(ctx, req.(*GetMediaByPostsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MediaService_LinkMediaToPost_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LinkMediaToPostRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MediaServiceServer).LinkMediaToPost(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MediaService_LinkMediaToPost_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MediaServiceServer).LinkMediaToPost(ctx, req.(*LinkMediaToPostRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MediaService_ServiceDesc is the grpc.ServiceDesc for MediaService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +330,18 @@ var MediaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteMedia",
 			Handler:    _MediaService_DeleteMedia_Handler,
+		},
+		{
+			MethodName: "GetMediaByPost",
+			Handler:    _MediaService_GetMediaByPost_Handler,
+		},
+		{
+			MethodName: "GetMediaByPosts",
+			Handler:    _MediaService_GetMediaByPosts_Handler,
+		},
+		{
+			MethodName: "LinkMediaToPost",
+			Handler:    _MediaService_LinkMediaToPost_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

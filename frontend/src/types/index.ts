@@ -12,14 +12,21 @@ export interface User {
   banner_url?: string;
 }
 
+export interface MediaItem {
+  url: string;
+  content_type: string;
+  position: number;
+}
+
 export interface Post {
   id: string;
   user_id: string;
   content: string;
-  media_url: string;
+  media: MediaItem[];
   likes_count: number;
   comments_count: number;
   reposts_count: number;
+  views_count: number;
   created_at: string;
   updated_at: string;
   edited_at?: string;
