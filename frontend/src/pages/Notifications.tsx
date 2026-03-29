@@ -10,6 +10,19 @@ import { timeAgo } from '@/lib/time';
 import s from '@/styles/layout.module.css';
 import n from '@/styles/notification.module.css';
 
+function SkeletonNotification() {
+  return (
+    <div className={n.skeletonItem}>
+      <div className={n.skeletonIcon} />
+      <div className={n.skeletonBody}>
+        <div className={n.skeletonLine} style={{ width: '40%' }} />
+        <div className={n.skeletonLine} style={{ width: '65%', marginTop: 6 }} />
+        <div className={n.skeletonLine} style={{ width: '25%', marginTop: 6 }} />
+      </div>
+    </div>
+  );
+}
+
 const TYPE_CONFIG: Record<string, { icon: typeof Heart; label: string; color: string }> = {
   like_post: { icon: Heart, label: 'понравился ваш пост', color: 'var(--like)' },
   like_comment: { icon: Heart, label: 'понравился ваш комментарий', color: 'var(--like)' },
@@ -67,7 +80,7 @@ export default function Notifications() {
         )}
       </header>
       {loading && notifications.length === 0 ? (
-        <Spinner />
+        <>{[1, 2, 3, 4, 5].map((i) => <SkeletonNotification key={i} />)}</>
       ) : (
         <>
           {notifications.map((notif) => {
