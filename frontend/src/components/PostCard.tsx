@@ -331,7 +331,14 @@ export default function PostCard({ post, onDelete, onUnbookmark, onOpen }: { pos
         </div>
       </div>
     </article>
-    {lightboxSrc && <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
+    {lightboxSrc && (
+      <ImageLightbox
+        src={lightboxSrc}
+        allSrcs={(displayPost.media || []).map((m) => m.url)}
+        post={post}
+        onClose={() => setLightboxSrc(null)}
+      />
+    )}
   </>
   );
 }
