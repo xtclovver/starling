@@ -11,6 +11,7 @@ import { WSClient } from '@/lib/websocket';
 import Sidebar from './Sidebar';
 import RightPanel from './RightPanel';
 import AuthModal from './AuthModal';
+import AppSkeleton from './AppSkeleton';
 import s from '@/styles/layout.module.css';
 import type { Post, Notification } from '@/types';
 
@@ -74,15 +75,7 @@ export default function Layout() {
   }, [isAuthenticated, accessToken, setConnected, setReconnecting, addPendingPost, prependNotification, incrementUnread]);
 
   if (initializing) {
-    return (
-      <div className={s.shell}>
-        <div className={s.shellInner}>
-          <div className={s.sidebarCol}><Sidebar /></div>
-          <main className={s.mainCol} />
-          <div className={s.rightCol} />
-        </div>
-      </div>
-    );
+    return <AppSkeleton />;
   }
 
   return (
