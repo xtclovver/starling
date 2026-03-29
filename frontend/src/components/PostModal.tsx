@@ -108,7 +108,14 @@ export default function PostModal({ postId, onClose }: Props) {
           )}
         </div>
       </div>
-      {lightboxSrc && <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
+      {lightboxSrc && post && (
+        <ImageLightbox
+          src={lightboxSrc}
+          allSrcs={(post.media || []).map((m) => m.url)}
+          post={post}
+          onClose={() => setLightboxSrc(null)}
+        />
+      )}
     </>
   );
 }
