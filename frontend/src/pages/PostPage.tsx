@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Heart, MessageCircle, Trash2, Eye } from 'lucide-react';
 import { getPost, likePost, unlikePost, deletePost, recordViews } from '@/api/posts';
+import { getCommentTree } from '@/api/comments';
 import { useAuthStore } from '@/store/auth';
 import Avatar from '@/components/Avatar';
 import MediaGrid from '@/components/MediaGrid';
@@ -11,7 +12,13 @@ import ImageLightbox from '@/components/ImageLightbox';
 import l from '@/styles/layout.module.css';
 import s from '@/styles/post.module.css';
 import c from '@/styles/components.module.css';
-import type { Post } from '@/types';
+import type { Post, Comment } from '@/types';
+
+interface CommentInitialData {
+  comments: Comment[];
+  cursor: string;
+  hasMore: boolean;
+}
 
 function SkeletonComment() {
   return (
@@ -30,6 +37,7 @@ export default function PostPage() {
   const navigate = useNavigate();
   const user = useAuthStore((st) => st.user);
   const [post, setPost] = useState<Post | null>(null);
+  const [commentInitialData, setCommentInitialData] = useState<CommentInitialData | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [likeLoading, setLikeLoading] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
@@ -37,7 +45,19 @@ export default function PostPage() {
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    getPost(id).then((p) => setPost(p)).catch(() => setPost(null)).finally(() => setLoading(false));
+    Promise.all([
+      getPost(id),
+      getCommentTree(id, '').catch(() => null),
+    ]).then(([p, commentData]) => {
+      setPost(p);
+      if (commentData) {
+        setCommentInitialData({
+          comments: commentData.comments || [],
+          cursor: commentData.pagination?.next_cursor || '',
+          hasMore: commentData.pagination?.has_more || false,
+        });
+      }
+    }).catch(() => setPost(null)).finally(() => setLoading(false));
   }, [id]);
 
   useEffect(() => {
@@ -134,7 +154,7 @@ export default function PostPage() {
         </div>
       </article>
 
-      <CommentTree postId={post.id} />
+      <CommentTree postId={post.id} initialData={commentInitialData} />
       {lightboxSrc && post && (
         <ImageLightbox
           src={lightboxSrc}
