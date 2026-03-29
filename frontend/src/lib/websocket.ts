@@ -6,21 +6,26 @@ export class WSClient {
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectDelay = 1000;
   private maxDelay = 30000;
-  private token: string;
+  private getToken: () => string;
   private disposed = false;
   private onStatusChange?: (connected: boolean, reconnecting: boolean) => void;
 
-  constructor(token: string, onStatusChange?: (connected: boolean, reconnecting: boolean) => void) {
-    this.token = token;
+  constructor(getToken: () => string, onStatusChange?: (connected: boolean, reconnecting: boolean) => void) {
+    this.getToken = getToken;
     this.onStatusChange = onStatusChange;
     this.connect();
   }
 
   private connect() {
     if (this.disposed) return;
+    const token = this.getToken();
+    if (!token) {
+      this.scheduleReconnect();
+      return;
+    }
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.host;
-    this.ws = new WebSocket(`${protocol}//${host}/api/ws?token=${this.token}`);
+    this.ws = new WebSocket(`${protocol}//${host}/api/ws?token=${token}`);
 
     this.ws.onopen = () => {
       this.reconnectDelay = 1000;
