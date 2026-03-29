@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, useRef } from 'react';
 import { useAuthStore } from '@/store/auth';
 import { useFeedStore } from '@/store/feed';
 import { getFeed, getGlobalFeed } from '@/api/posts';
@@ -19,16 +19,21 @@ export default function Home() {
   const [guestCursor, setGuestCursor] = useState('');
   const [guestHasMore, setGuestHasMore] = useState(true);
   const [guestLoading, setGuestLoading] = useState(false);
+  const [feedError, setFeedError] = useState(false);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadFeed = useCallback(async (c = '') => {
     if (!isAuthenticated) return;
     setLoading(true);
+    setFeedError(false);
     try {
       const data = await getFeed(c);
       const feedPosts = data.posts || [];
       if (c) appendPosts(feedPosts, data.pagination?.next_cursor || '', data.pagination?.has_more || false);
       else setPosts(feedPosts, data.pagination?.next_cursor || '', data.pagination?.has_more || false);
-    } catch { /* ignore */ }
+    } catch {
+      setFeedError(true);
+    }
     finally { setLoading(false); }
   }, [isAuthenticated, setPosts, appendPosts, setLoading]);
 
@@ -53,6 +58,13 @@ export default function Home() {
     if (isAuthenticated && posts.length === 0) loadFeed();
     if (!isAuthenticated && guestPosts.length === 0) loadGuestFeed();
   }, [isAuthenticated, loadFeed, loadGuestFeed, posts.length, guestPosts.length]);
+
+  // Auto-retry on feed error after 2 seconds
+  useEffect(() => {
+    if (!feedError) return;
+    retryTimerRef.current = setTimeout(() => loadFeed(), 2000);
+    return () => { if (retryTimerRef.current) clearTimeout(retryTimerRef.current); };
+  }, [feedError, loadFeed]);
 
   const loadMore = useCallback(() => {
     if (isAuthenticated) {

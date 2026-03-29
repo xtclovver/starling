@@ -7,7 +7,6 @@ import { useFeedStore } from '@/store/feed';
 import { useNotificationStore } from '@/store/notifications';
 import { getUser } from '@/api/users';
 import { getUnreadCount } from '@/api/notifications';
-import { getFeed } from '@/api/posts';
 import { WSClient } from '@/lib/websocket';
 import Sidebar from './Sidebar';
 import RightPanel from './RightPanel';
@@ -19,7 +18,7 @@ import type { Post, Notification } from '@/types';
 export default function Layout() {
   const { isAuthenticated, accessToken, user, login: setUser, logout, setAccessToken, initializing, setInitializing } = useAuthStore();
   const { setConnected, setReconnecting } = useWsStore();
-  const { setPosts, addPendingPost } = useFeedStore();
+  const { addPendingPost } = useFeedStore();
   const { prependNotification, incrementUnread, setUnreadCount } = useNotificationStore();
   const wsRef = useRef<WSClient | null>(null);
   const triedRefresh = useRef(false);
@@ -36,26 +35,17 @@ export default function Layout() {
         const newAccess = data.data.access_token;
         setAccessToken(newAccess);
         const payload = JSON.parse(atob(newAccess.split('.')[1]));
-        // Run user fetch, feed fetch, and unread count in parallel
         return Promise.all([
           getUser(payload.sub),
-          getFeed('').catch(() => null),
           getUnreadCount().catch(() => 0),
-        ]).then(([u, feedData, unreadCount]) => {
+        ]).then(([u, unreadCount]) => {
           setUser(u, newAccess);
-          if (feedData) {
-            setPosts(
-              feedData.posts || [],
-              feedData.pagination?.next_cursor || '',
-              feedData.pagination?.has_more || false,
-            );
-          }
           setUnreadCount(unreadCount as number);
         });
       })
       .catch(() => { /* no valid session */ })
       .finally(() => setInitializing(false));
-  }, [accessToken, setAccessToken, setUser, setInitializing, setPosts, setUnreadCount]);
+  }, [accessToken, setAccessToken, setUser, setInitializing, setUnreadCount]);
 
   // Fetch user profile when we have a token but no user object (fallback for manual login flow)
   useEffect(() => {
