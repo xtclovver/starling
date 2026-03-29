@@ -7,6 +7,7 @@ import { useFeedStore } from '@/store/feed';
 import { useNotificationStore } from '@/store/notifications';
 import { getUser } from '@/api/users';
 import { getUnreadCount } from '@/api/notifications';
+import { getFeed } from '@/api/posts';
 import { WSClient } from '@/lib/websocket';
 import Sidebar from './Sidebar';
 import RightPanel from './RightPanel';
@@ -18,7 +19,7 @@ import type { Post, Notification } from '@/types';
 export default function Layout() {
   const { isAuthenticated, accessToken, user, login: setUser, logout, setAccessToken, initializing, setInitializing } = useAuthStore();
   const { setConnected, setReconnecting } = useWsStore();
-  const addPendingPost = useFeedStore((st) => st.addPendingPost);
+  const { setPosts, addPendingPost } = useFeedStore();
   const { prependNotification, incrementUnread, setUnreadCount } = useNotificationStore();
   const wsRef = useRef<WSClient | null>(null);
   const triedRefresh = useRef(false);
@@ -35,11 +36,26 @@ export default function Layout() {
         const newAccess = data.data.access_token;
         setAccessToken(newAccess);
         const payload = JSON.parse(atob(newAccess.split('.')[1]));
-        return getUser(payload.sub).then((u) => setUser(u, newAccess));
+        // Run user fetch, feed fetch, and unread count in parallel
+        return Promise.all([
+          getUser(payload.sub),
+          getFeed('').catch(() => null),
+          getUnreadCount().catch(() => 0),
+        ]).then(([u, feedData, unreadCount]) => {
+          setUser(u, newAccess);
+          if (feedData) {
+            setPosts(
+              feedData.posts || [],
+              feedData.pagination?.next_cursor || '',
+              feedData.pagination?.has_more || false,
+            );
+          }
+          setUnreadCount(unreadCount as number);
+        });
       })
       .catch(() => { /* no valid session */ })
       .finally(() => setInitializing(false));
-  }, [accessToken, setAccessToken, setUser, setInitializing]);
+  }, [accessToken, setAccessToken, setUser, setInitializing, setPosts, setUnreadCount]);
 
   // Fetch user profile when we have a token but no user object
   useEffect(() => {
@@ -53,19 +69,16 @@ export default function Layout() {
     } catch { logout(); }
   }, [isAuthenticated, user, accessToken, setUser, logout]);
 
-  // Load unread notification count on auth
-  useEffect(() => {
-    if (!isAuthenticated || !accessToken) return;
-    getUnreadCount().then(setUnreadCount).catch(() => {});
-  }, [isAuthenticated, accessToken, setUnreadCount]);
-
   // WebSocket connection
   useEffect(() => {
     if (!isAuthenticated || !accessToken) return;
-    wsRef.current = new WSClient(accessToken, (connected, reconnecting) => {
-      setConnected(connected);
-      setReconnecting(reconnecting);
-    });
+    wsRef.current = new WSClient(
+      () => useAuthStore.getState().accessToken ?? '',
+      (connected, reconnecting) => {
+        setConnected(connected);
+        setReconnecting(reconnecting);
+      }
+    );
     const unsubPost = wsRef.current.on('new_post', (data) => addPendingPost(data as Post));
     const unsubNotif = wsRef.current.on('notification', (data) => {
       prependNotification(data as Notification);
