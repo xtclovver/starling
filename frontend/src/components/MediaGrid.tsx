@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { getMediaKind } from '@/lib/media';
 import s from '@/styles/media-grid.module.css';
 import type { MediaItem } from '@/types';
@@ -5,6 +6,26 @@ import type { MediaItem } from '@/types';
 interface Props {
   media: MediaItem[];
   onImageClick?: (url: string) => void;
+}
+
+function ImageCell({ url, onImageClick }: { url: string; onImageClick?: (url: string) => void }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <div
+      className={`${s.imgWrapper} ${loaded ? s.imgLoaded : ''}`}
+      onClick={() => onImageClick?.(url)}
+      style={{ cursor: onImageClick ? 'zoom-in' : undefined }}
+    >
+      <img
+        src={url}
+        alt=""
+        loading="lazy"
+        className={s.img}
+        onLoad={() => setLoaded(true)}
+        onError={() => setLoaded(true)}
+      />
+    </div>
+  );
 }
 
 export default function MediaGrid({ media, onImageClick }: Props) {
@@ -34,13 +55,8 @@ export default function MediaGrid({ media, onImageClick }: Props) {
           );
         }
         return (
-          <div
-            key={i}
-            className={s.cell}
-            onClick={() => onImageClick?.(m.url)}
-            style={{ cursor: onImageClick ? 'zoom-in' : undefined }}
-          >
-            <img src={m.url} alt="" loading="lazy" className={s.img} />
+          <div key={i} className={s.cell}>
+            <ImageCell url={m.url} onImageClick={onImageClick} />
           </div>
         );
       })}

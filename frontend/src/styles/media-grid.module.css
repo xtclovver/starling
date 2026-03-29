@@ -49,3 +49,23 @@
   max-height: 480px;
   display: block;
 }
+
+/* Image loading shimmer */
+.imgWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-tertiary);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.imgWrapper.imgLoaded {
+  animation: none;
+  background: none;
+}
+.imgWrapper .img {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.imgWrapper.imgLoaded .img {
+  opacity: 1;
+}
