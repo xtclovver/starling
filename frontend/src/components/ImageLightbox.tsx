@@ -58,7 +58,7 @@ export default function ImageLightbox({ src, allSrcs, post, onClose }: Props) {
       setCommentsLoading(false);
       loadingRef.current = false;
     }
-  }, [post?.id]);
+  }, [post]);
 
   useEffect(() => {
     if (post) {

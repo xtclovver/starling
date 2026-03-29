@@ -59,7 +59,7 @@ export function useViewTracker() {
       observer.observe(el);
 
       // Store cleanup on the element
-      (el as any).__viewObserver = observer;
+      (el as HTMLElement & { __viewObserver?: IntersectionObserver }).__viewObserver = observer;
     };
   }, []);
 
