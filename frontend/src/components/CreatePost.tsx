@@ -115,7 +115,7 @@ export default function CreatePost() {
                 </span>
               )}
               <button onClick={handleSubmit} disabled={!canSubmit} className={s.submitBtn}>
-                {loading ? 'Отправка...' : 'Опубликовать'}
+                {loading ? <span className={s.submitBtnSpinner} /> : 'Опубликовать'}
               </button>
             </div>
           </div>
