@@ -19,6 +19,10 @@
 .avatarLg { width: 48px; height: 48px; font-size: 16px; }
 .avatarXl { width: 80px; height: 80px; font-size: 20px; }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ── Spinner ── */
 .spinner {
   display: flex;

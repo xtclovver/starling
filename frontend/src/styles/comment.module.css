@@ -229,6 +229,10 @@
 }
 .commentMediaRemoveBtnEdit:hover { background: var(--bg-primary); }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Inline spinner for comment submit */
 .commentSubmitSpinner {
   width: 12px;

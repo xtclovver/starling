@@ -377,6 +377,10 @@
   cursor: not-allowed;
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Inline spinner for submit button */
 .submitBtnSpinner {
   width: 14px;
