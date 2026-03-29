@@ -7,6 +7,12 @@ import Spinner from './Spinner';
 import s from '@/styles/profile.module.css';
 import type { Comment } from '@/types';
 
+interface InitialData {
+  comments: Comment[];
+  cursor: string;
+  hasMore: boolean;
+}
+
 function addReplyToTree(comments: Comment[], parentId: string, reply: Comment): Comment[] {
   return comments.map((c) => {
     if (c.id === parentId) return { ...c, children: [reply, ...(c.children || [])] };
@@ -26,12 +32,12 @@ function removeFromTree(comments: Comment[], commentId: string): Comment[] {
   }).filter(Boolean) as Comment[];
 }
 
-export default function CommentTree({ postId }: { postId: string }) {
+export default function CommentTree({ postId, initialData }: { postId: string; initialData?: InitialData }) {
   const user = useAuthStore((st) => st.user);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [cursor, setCursor] = useState('');
-  const [hasMore, setHasMore] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [comments, setComments] = useState<Comment[]>(initialData?.comments ?? []);
+  const [cursor, setCursor] = useState(initialData?.cursor ?? '');
+  const [hasMore, setHasMore] = useState(initialData?.hasMore ?? false);
+  const [loading, setLoading] = useState(!initialData);
 
   const load = useCallback(async (c = '') => {
     setLoading(true);
@@ -45,7 +51,9 @@ export default function CommentTree({ postId }: { postId: string }) {
     finally { setLoading(false); }
   }, [postId]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (!initialData) load();
+  }, [load, initialData]);
 
   return (
     <div>
