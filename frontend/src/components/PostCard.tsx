@@ -185,7 +185,7 @@ export default function PostCard({ post, onDelete, onUnbookmark, onOpen }: { pos
 
   return (
     <>
-    <article className={s.postCard} onClick={() => !editing && (onOpen ? onOpen(post.id) : navigate(`/post/${post.id}`))}>
+    <article className={s.postCard} onClick={() => !editing && !lightboxSrc && (onOpen ? onOpen(post.id) : navigate(`/post/${post.id}`))}>
       <div className={s.postRow}>
         <Link to={`/profile/${post.user_id}`} onClick={(e) => e.stopPropagation()}>
           <Avatar url={post.author?.avatar_url} name={post.author?.display_name || post.author?.username || '?'} />
