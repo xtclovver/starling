@@ -51,7 +51,7 @@ func main() {
 
 	// Handlers
 	authH := handler.NewAuthHandler(clients.User, cfg.CookieSecure)
-	userH := handler.NewUserHandler(clients.User, clients.Post)
+	userH := handler.NewUserHandler(clients.User, clients.Post, publisher)
 	postH := handler.NewPostHandler(clients.Post, clients.User, clients.Media, publisher)
 	commentH := handler.NewCommentHandler(clients.Comment, clients.User, clients.Post, publisher)
 	mediaH := handler.NewMediaHandler(clients.Media)

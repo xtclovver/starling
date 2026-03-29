@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -10,12 +11,13 @@ import (
 )
 
 type UserHandler struct {
-	user userpb.UserServiceClient
-	post postpb.PostServiceClient
+	user     userpb.UserServiceClient
+	post     postpb.PostServiceClient
+	notifier Notifier
 }
 
-func NewUserHandler(user userpb.UserServiceClient, post postpb.PostServiceClient) *UserHandler {
-	return &UserHandler{user: user, post: post}
+func NewUserHandler(user userpb.UserServiceClient, post postpb.PostServiceClient, notifier Notifier) *UserHandler {
+	return &UserHandler{user: user, post: post, notifier: notifier}
 }
 
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
@@ -205,6 +207,20 @@ func (h *UserHandler) Follow(w http.ResponseWriter, r *http.Request) {
 		handleGRPCError(w, err)
 		return
 	}
+
+	if h.notifier != nil {
+		go func() {
+			nr, err := h.user.CreateNotification(context.Background(), &userpb.CreateNotificationRequest{
+				UserId:  targetID,
+				ActorId: userID,
+				Type:    "follow",
+			})
+			if err == nil {
+				h.notifier.PublishNotification(context.Background(), targetID, notificationToMap(nr.GetNotification()))
+			}
+		}()
+	}
+
 	writeJSON(w, http.StatusOK, nil)
 }
 
