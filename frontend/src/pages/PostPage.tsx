@@ -125,7 +125,9 @@ export default function PostPage() {
           <button className={s.postDetailActionBtn}><MessageCircle size={20} /></button>
           <button
             onClick={handleLike}
+            disabled={likeLoading}
             className={`${s.postDetailActionBtn} ${s.postDetailLikeBtn} ${post.liked ? s.postDetailLiked : ''}`}
+            style={likeLoading ? { opacity: 0.5 } : undefined}
           >
             <Heart size={20} fill={post.liked ? 'currentColor' : 'none'} />
           </button>
