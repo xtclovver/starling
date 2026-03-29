@@ -15,10 +15,18 @@ export default function RightPanel() {
   const [trends, setTrends] = useState<TrendingHashtag[]>([]);
   const [recommended, setRecommended] = useState<User[]>([]);
   const [followedIds, setFollowedIds] = useState<Set<string>>(new Set());
+  const [trendsLoading, setTrendsLoading] = useState(true);
+  const [recommendedLoading, setRecommendedLoading] = useState(true);
 
   useEffect(() => {
-    getTrendingHashtags().then(setTrends).catch(() => {});
-    getRecommendedUsers().then(setRecommended).catch(() => {});
+    getTrendingHashtags()
+      .then(setTrends)
+      .catch(() => {})
+      .finally(() => setTrendsLoading(false));
+    getRecommendedUsers()
+      .then(setRecommended)
+      .catch(() => {})
+      .finally(() => setRecommendedLoading(false));
   }, []);
 
   const handleFollow = async (targetId: string) => {
@@ -33,7 +41,17 @@ export default function RightPanel() {
     <aside className={s.rightPanel}>
       <SearchUsers />
 
-      {trends.length > 0 && (
+      {trendsLoading ? (
+        <div className={s.skeletonBox}>
+          <div className={s.skeletonBoxTitle} />
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className={s.skeletonTrendRow}>
+              <div className={s.skeletonTrendTag} />
+              <div className={s.skeletonTrendCount} />
+            </div>
+          ))}
+        </div>
+      ) : trends.length > 0 ? (
         <div className={s.infoBox}>
           <h3 className={s.infoBoxTitle}>Тренды</h3>
           {trends.slice(0, 5).map((t) => (
@@ -43,9 +61,22 @@ export default function RightPanel() {
             </Link>
           ))}
         </div>
-      )}
+      ) : null}
 
-      {recommended.length > 0 && (
+      {recommendedLoading ? (
+        <div className={s.skeletonBox}>
+          <div className={s.skeletonBoxTitle} />
+          {[1, 2, 3].map((i) => (
+            <div key={i} className={s.skeletonRecommendRow}>
+              <div className={s.skeletonRecommendCircle} />
+              <div className={s.skeletonRecommendLines}>
+                <div className={s.skeletonRecommendLine} style={{ width: '60%' }} />
+                <div className={s.skeletonRecommendLine} style={{ width: '40%' }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : recommended.length > 0 ? (
         <div className={s.infoBox}>
           <h3 className={s.infoBoxTitle}>Кого читать</h3>
           {recommended.slice(0, 3).map((u) => (
@@ -66,7 +97,7 @@ export default function RightPanel() {
             </div>
           ))}
         </div>
-      )}
+      ) : null}
 
     </aside>
   );

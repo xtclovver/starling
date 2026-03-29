@@ -308,3 +308,63 @@
   transition: background 0.15s;
 }
 .newPostsBanner:hover { background: var(--bg-hover); }
+
+/* Right Panel Skeletons */
+.skeletonBox {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.skeletonBoxTitle {
+  height: 16px;
+  width: 50%;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  margin-bottom: 14px;
+}
+.skeletonTrendRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+.skeletonTrendRow:last-child { border-bottom: none; }
+.skeletonTrendTag {
+  height: 12px;
+  width: 40%;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+.skeletonTrendCount {
+  height: 10px;
+  width: 20%;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+.skeletonRecommendRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+.skeletonRecommendCircle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  flex-shrink: 0;
+}
+.skeletonRecommendLines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.skeletonRecommendLine {
+  height: 11px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
