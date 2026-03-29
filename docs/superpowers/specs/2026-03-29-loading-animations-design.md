@@ -96,8 +96,22 @@ No new component needed — inline state (`imgLoaded`) per image instance is suf
 
 ---
 
+## 6. Right Panel Skeleton
+
+**Where:** `RightPanel.tsx` — loads trending hashtags and recommended users via two API calls on mount. Currently renders empty while data is in flight.
+
+**What:** Skeleton placeholders for both sections while `trends.length === 0` and `recommended.length === 0`:
+- Search bar: already visible (no skeleton needed)
+- Trends block: heading placeholder + 5 tag-row skeletons (tag name + count)
+- Recommended block: heading placeholder + 3 user-row skeletons (avatar circle + two lines)
+
+**How:** Add `trendsLoading` and `recommendedLoading` local booleans. Show skeleton blocks while loading, replace with real content on resolve. If data comes back empty (no trends/no recommendations), render nothing — same as current behavior.
+
+**Component:** New `SkeletonRightPanel.tsx` (or inline JSX in `RightPanel.tsx` — prefer inline since it's self-contained).
+
+---
+
 ## Out of Scope
 
 - Toast/snackbar error notifications (separate feature)
 - Page transition animations (route-level)
-- Skeleton for the right-hand column (if it exists)
