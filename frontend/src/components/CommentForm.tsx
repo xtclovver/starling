@@ -87,7 +87,7 @@ export default function CommentForm({ postId, parentId = '', onSubmit, onCancel,
         <div className={s.commentFormRight}>
           {onCancel && <button onClick={onCancel} className={s.cancelBtn}>Отмена</button>}
           <button onClick={handleSubmit} disabled={!content.trim() || loading} className={s.commentSubmitBtn}>
-            {loading ? '...' : 'Отправить'}
+            {loading ? <span className={s.commentSubmitSpinner} /> : 'Отправить'}
           </button>
         </div>
       </div>
