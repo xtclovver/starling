@@ -24,3 +24,6 @@ Thumbs.db
 
 # Worktrees
 .worktrees/
+
+# Superpowers brainstorm sessions
+.superpowers/
