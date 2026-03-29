@@ -6,11 +6,24 @@ import { useAuthStore } from '@/store/auth';
 import Avatar from '@/components/Avatar';
 import MediaGrid from '@/components/MediaGrid';
 import CommentTree from '@/components/CommentTree';
-import Spinner from '@/components/Spinner';
+import SkeletonPost from '@/components/SkeletonPost';
 import ImageLightbox from '@/components/ImageLightbox';
 import l from '@/styles/layout.module.css';
 import s from '@/styles/post.module.css';
+import c from '@/styles/components.module.css';
 import type { Post } from '@/types';
+
+function SkeletonComment() {
+  return (
+    <div style={{ display: 'flex', gap: 10, padding: '10px 16px', borderBottom: '1px solid var(--border)', animation: 'pulse 1.5s ease-in-out infinite' }}>
+      <div className={c.skeletonCircle} style={{ width: 32, height: 32 }} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 7 }}>
+        <div className={c.skeletonLine} style={{ width: '35%' }} />
+        <div className={c.skeletonLine} style={{ width: '70%' }} />
+      </div>
+    </div>
+  );
+}
 
 export default function PostPage() {
   const { id } = useParams<{ id: string }>();
@@ -55,7 +68,16 @@ export default function PostPage() {
     </header>
   );
 
-  if (loading) return <div>{header}<Spinner /></div>;
+  if (loading) {
+    return (
+      <div>
+        {header}
+        <SkeletonPost />
+        <SkeletonComment />
+        <SkeletonComment />
+      </div>
+    );
+  }
   if (!post) return <div>{header}<p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '64px 0' }}>Пост не найден</p></div>;
 
   const isOwner = user?.id === post.user_id;
