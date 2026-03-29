@@ -11,6 +11,7 @@ import Bookmarks from './pages/Bookmarks';
 import HashtagPage from './pages/HashtagPage';
 import Notifications from './pages/Notifications';
 import UserByUsername from './pages/UserByUsername';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         </Route>
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );
