@@ -16,6 +16,7 @@ services:
       retries: 5
     networks:
       - backend
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
@@ -31,6 +32,7 @@ services:
       retries: 5
     networks:
       - backend
+    restart: unless-stopped
 
   minio:
     image: minio/minio:latest
@@ -50,6 +52,7 @@ services:
       retries: 5
     networks:
       - backend
+    restart: unless-stopped
 
   minio-init:
     image: minio/mc:latest
@@ -104,8 +107,15 @@ services:
       JWT_SECRET: ${JWT_SECRET}
     ports:
       - "50051:50051"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 50051 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
     networks:
       - backend
+    restart: unless-stopped
 
   post-svc:
     build:
@@ -124,8 +134,15 @@ services:
       GRPC_PORT: "50052"
     ports:
       - "50052:50052"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 50052 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
     networks:
       - backend
+    restart: unless-stopped
 
   comment-svc:
     build:
@@ -144,8 +161,15 @@ services:
       GRPC_PORT: "50053"
     ports:
       - "50053:50053"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 50053 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
     networks:
       - backend
+    restart: unless-stopped
 
   media-svc:
     build:
@@ -170,19 +194,31 @@ services:
       GRPC_PORT: "50054"
     ports:
       - "50054:50054"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 50054 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
     networks:
       - backend
+    restart: unless-stopped
 
   api-gateway:
     build:
       context: ./backend
       dockerfile: api-gateway/Dockerfile
     depends_on:
-      - user-svc
-      - post-svc
-      - comment-svc
-      - media-svc
-      - redis
+      user-svc:
+        condition: service_healthy
+      post-svc:
+        condition: service_healthy
+      comment-svc:
+        condition: service_healthy
+      media-svc:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       PORT: "8080"
       USER_SVC_ADDR: user-svc:50051
@@ -195,6 +231,7 @@ services:
       - "8080:8080"
     networks:
       - backend
+    restart: unless-stopped
 
   frontend:
     build:
@@ -205,6 +242,7 @@ services:
       - "3000:80"
     networks:
       - backend
+    restart: unless-stopped
 
 networks:
   backend:
