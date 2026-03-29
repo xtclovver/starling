@@ -302,21 +302,21 @@ export default function PostCard({ post, onDelete, onUnbookmark, onOpen }: { pos
               </button>
               <button
                 onClick={handleRepost}
-                className={`${s.actionBtn} ${post.reposted ? s.actionBtnReposted : ''}`}
+                className={`${s.actionBtn} ${post.reposted ? s.actionBtnReposted : ''} ${repostLoading ? s.actionBtnPending : ''}`}
               >
                 <Repeat2 size={17} />
                 {post.reposts_count > 0 && <span>{post.reposts_count}</span>}
               </button>
               <button
                 onClick={handleLike}
-                className={`${s.actionBtn} ${s.actionBtnLike} ${post.liked ? s.actionBtnLiked : ''}`}
+                className={`${s.actionBtn} ${s.actionBtnLike} ${post.liked ? s.actionBtnLiked : ''} ${likeLoading ? s.actionBtnPending : ''}`}
               >
                 <Heart size={17} fill={post.liked ? 'currentColor' : 'none'} />
                 {post.likes_count > 0 && <span>{post.likes_count}</span>}
               </button>
               <button
                 onClick={handleBookmark}
-                className={`${s.actionBtn} ${post.bookmarked ? s.actionBtnBookmarked : ''}`}
+                className={`${s.actionBtn} ${post.bookmarked ? s.actionBtnBookmarked : ''} ${bookmarkLoading ? s.actionBtnPending : ''}`}
               >
                 <Bookmark size={17} fill={post.bookmarked ? 'currentColor' : 'none'} />
               </button>

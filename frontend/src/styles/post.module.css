@@ -84,6 +84,12 @@
 }
 .deleteBtn:hover { color: var(--danger); background: var(--danger-muted); }
 
+/* Pending state for action buttons */
+.actionBtnPending {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 /* ── Owner actions (edit/delete) ── */
 .ownerActions {
   margin-left: auto;
