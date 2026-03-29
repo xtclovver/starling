@@ -30,11 +30,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
-    // Lazy imports to avoid circular dependency
-    const { useFeedStore } = require('@/store/feed');
-    const { useNotificationStore } = require('@/store/notifications');
-    useFeedStore.getState().reset();
-    useNotificationStore.getState().reset();
+    import('@/store/feed').then(({ useFeedStore }) => useFeedStore.getState().reset());
+    import('@/store/notifications').then(({ useNotificationStore }) => useNotificationStore.getState().reset());
     set({ user: null, accessToken: null, isAuthenticated: false, avatarMediaId: null, bannerMediaId: null });
   },
 
