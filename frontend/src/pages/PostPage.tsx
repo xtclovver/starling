@@ -111,7 +111,14 @@ export default function PostPage() {
       </article>
 
       <CommentTree postId={post.id} />
-      {lightboxSrc && <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
+      {lightboxSrc && post && (
+        <ImageLightbox
+          src={lightboxSrc}
+          allSrcs={(post.media || []).map((m) => m.url)}
+          post={post}
+          onClose={() => setLightboxSrc(null)}
+        />
+      )}
     </div>
   );
 }
