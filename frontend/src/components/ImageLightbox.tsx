@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { X, ChevronLeft, ChevronRight, Heart, MessageCircle, Repeat2, Share, Bookmark } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Heart, MessageCircle, Repeat2, Bookmark } from 'lucide-react';
 import { getCommentTree, createComment } from '@/api/comments';
+import { likePost, unlikePost, repostPost, unrepostPost, bookmarkPost, unbookmarkPost } from '@/api/posts';
 import { useAuthStore } from '@/store/auth';
+import { useFeedStore } from '@/store/feed';
 import Avatar from './Avatar';
 import CommentItem from './CommentItem';
 import Spinner from './Spinner';
@@ -17,11 +19,15 @@ interface Props {
 
 export default function ImageLightbox({ src, allSrcs, post, onClose }: Props) {
   const user = useAuthStore((st) => st.user);
+  const updateFeedPost = useFeedStore((st) => st.updatePost);
   const srcs = allSrcs && allSrcs.length > 0 ? allSrcs : [src];
   const [idx, setIdx] = useState(() => {
     const i = srcs.indexOf(src);
     return i >= 0 ? i : 0;
   });
+
+  // Local post state for optimistic updates
+  const [localPost, setLocalPost] = useState<Post | undefined>(post);
 
   // Comments state
   const [comments, setComments] = useState<Comment[]>([]);
@@ -55,7 +61,10 @@ export default function ImageLightbox({ src, allSrcs, post, onClose }: Props) {
   }, [post?.id]);
 
   useEffect(() => {
-    if (post) loadComments();
+    if (post) {
+      setLocalPost(post);
+      loadComments();
+    }
   }, [loadComments, post]);
 
   // Infinite scroll via IntersectionObserver
@@ -84,6 +93,47 @@ export default function ImageLightbox({ src, allSrcs, post, onClose }: Props) {
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose, srcs.length]);
 
+  const handleLike = async () => {
+    if (!localPost || !user) return;
+    const wasLiked = localPost.liked;
+    const updated = { ...localPost, liked: !wasLiked, likes_count: localPost.likes_count + (wasLiked ? -1 : 1) };
+    setLocalPost(updated);
+    updateFeedPost(localPost.id, { liked: !wasLiked, likes_count: updated.likes_count });
+    try {
+      if (wasLiked) await unlikePost(localPost.id); else await likePost(localPost.id);
+    } catch {
+      setLocalPost(localPost);
+      updateFeedPost(localPost.id, { liked: wasLiked, likes_count: localPost.likes_count });
+    }
+  };
+
+  const handleRepost = async () => {
+    if (!localPost || !user) return;
+    const wasReposted = localPost.reposted;
+    const updated = { ...localPost, reposted: !wasReposted, reposts_count: localPost.reposts_count + (wasReposted ? -1 : 1) };
+    setLocalPost(updated);
+    updateFeedPost(localPost.id, { reposted: !wasReposted, reposts_count: updated.reposts_count });
+    try {
+      if (wasReposted) await unrepostPost(localPost.id); else await repostPost(localPost.id);
+    } catch {
+      setLocalPost(localPost);
+      updateFeedPost(localPost.id, { reposted: wasReposted, reposts_count: localPost.reposts_count });
+    }
+  };
+
+  const handleBookmark = async () => {
+    if (!localPost || !user) return;
+    const wasBookmarked = localPost.bookmarked;
+    setLocalPost({ ...localPost, bookmarked: !wasBookmarked });
+    updateFeedPost(localPost.id, { bookmarked: !wasBookmarked });
+    try {
+      if (wasBookmarked) await unbookmarkPost(localPost.id); else await bookmarkPost(localPost.id);
+    } catch {
+      setLocalPost(localPost);
+      updateFeedPost(localPost.id, { bookmarked: wasBookmarked });
+    }
+  };
+
   const handleReply = async () => {
     if (!replyText.trim() || replyLoading || !user || !post) return;
     setReplyLoading(true);
@@ -99,8 +149,9 @@ export default function ImageLightbox({ src, allSrcs, post, onClose }: Props) {
   const multiple = srcs.length > 1;
 
   return (
-    <div className={s.overlay}>
-      {/* Image area */}
+    // stopPropagation prevents clicks inside lightbox from bubbling to PostCard/article
+    <div className={s.overlay} onClick={(e) => e.stopPropagation()}>
+      {/* Image area — clicking dark area closes lightbox */}
       <div className={s.imageArea} onClick={onClose}>
         <button className={s.closeBtn} onClick={onClose}>
           <X size={20} />
@@ -141,53 +192,63 @@ export default function ImageLightbox({ src, allSrcs, post, onClose }: Props) {
       </div>
 
       {/* Sidebar — only when post is provided */}
-      {post && (
-        <div className={s.sidebar}>
+      {localPost && (
+        <div className={s.sidebar} onClick={(e) => e.stopPropagation()}>
           <div className={s.sidebarScroll}>
             <div className={s.postHeader}>
               <Avatar
-                url={post.author?.avatar_url}
-                name={post.author?.display_name || post.author?.username || '?'}
+                url={localPost.author?.avatar_url}
+                name={localPost.author?.display_name || localPost.author?.username || '?'}
               />
               <div className={s.authorInfo}>
                 <div className={s.authorName}>
-                  {post.author?.display_name || post.author?.username || 'Unknown'}
+                  {localPost.author?.display_name || localPost.author?.username || 'Unknown'}
                 </div>
-                {post.author?.username && (
-                  <div className={s.authorHandle}>@{post.author.username}</div>
+                {localPost.author?.username && (
+                  <div className={s.authorHandle}>@{localPost.author.username}</div>
                 )}
               </div>
             </div>
 
-            <p className={s.postText}>{post.content}</p>
+            <p className={s.postText}>{localPost.content}</p>
             <p className={s.postMeta}>
-              {new Date(post.created_at).toLocaleString('ru-RU', {
+              {new Date(localPost.created_at).toLocaleString('ru-RU', {
                 hour: '2-digit', minute: '2-digit',
                 day: 'numeric', month: 'short', year: 'numeric',
               })}
             </p>
 
             <div className={s.postStats}>
-              <span><strong>{post.reposts_count}</strong> Репостов</span>
-              <span><strong>{post.likes_count}</strong> Лайков</span>
-              {post.views_count > 0 && (
-                <span><strong>{post.views_count}</strong> Просмотров</span>
+              <span><strong>{localPost.reposts_count}</strong> Репостов</span>
+              <span><strong>{localPost.likes_count}</strong> Лайков</span>
+              {localPost.views_count > 0 && (
+                <span><strong>{localPost.views_count}</strong> Просмотров</span>
               )}
             </div>
 
             <div className={s.actionRow}>
               <button className={s.actionBtn}>
                 <MessageCircle size={18} />
-                {post.comments_count > 0 && <span>{post.comments_count}</span>}
+                {localPost.comments_count > 0 && <span>{localPost.comments_count}</span>}
               </button>
-              <button className={`${s.actionBtn} ${post.reposted ? s.actionBtnReposted : ''}`}>
+              <button
+                className={`${s.actionBtn} ${localPost.reposted ? s.actionBtnReposted : ''}`}
+                onClick={handleRepost}
+              >
                 <Repeat2 size={18} />
               </button>
-              <button className={`${s.actionBtn} ${post.liked ? s.actionBtnLiked : ''}`}>
-                <Heart size={18} fill={post.liked ? 'currentColor' : 'none'} />
+              <button
+                className={`${s.actionBtn} ${localPost.liked ? s.actionBtnLiked : ''}`}
+                onClick={handleLike}
+              >
+                <Heart size={18} fill={localPost.liked ? 'currentColor' : 'none'} />
               </button>
-              <button className={s.actionBtn}><Bookmark size={18} /></button>
-              <button className={s.actionBtn}><Share size={18} /></button>
+              <button
+                className={`${s.actionBtn} ${localPost.bookmarked ? s.actionBtnBookmarked : ''}`}
+                onClick={handleBookmark}
+              >
+                <Bookmark size={18} fill={localPost.bookmarked ? 'currentColor' : 'none'} />
+              </button>
             </div>
 
             <div className={s.commentsHeader}>Комментарии</div>
@@ -195,7 +256,7 @@ export default function ImageLightbox({ src, allSrcs, post, onClose }: Props) {
               <CommentItem
                 key={c.id}
                 comment={c}
-                postId={post.id}
+                postId={localPost.id}
                 onNewReply={(pid, reply) => {
                   setComments((prev) =>
                     prev.map((cm) =>
