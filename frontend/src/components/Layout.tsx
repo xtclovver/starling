@@ -57,9 +57,9 @@ export default function Layout() {
       .finally(() => setInitializing(false));
   }, [accessToken, setAccessToken, setUser, setInitializing, setPosts, setUnreadCount]);
 
-  // Fetch user profile when we have a token but no user object
+  // Fetch user profile when we have a token but no user object (fallback for manual login flow)
   useEffect(() => {
-    if (!isAuthenticated || user || !accessToken) return;
+    if (!isAuthenticated || user || !accessToken || initializing) return;
     try {
       const payload = JSON.parse(atob(accessToken.split('.')[1]));
       const userId = payload.sub;
@@ -67,11 +67,11 @@ export default function Layout() {
         getUser(userId).then((u) => setUser(u, accessToken)).catch(() => logout());
       }
     } catch { logout(); }
-  }, [isAuthenticated, user, accessToken, setUser, logout]);
+  }, [isAuthenticated, user, accessToken, initializing, setUser, logout]);
 
-  // WebSocket connection
+  // WebSocket connection — only re-create when auth state changes, not on every token refresh
   useEffect(() => {
-    if (!isAuthenticated || !accessToken) return;
+    if (!isAuthenticated) return;
     wsRef.current = new WSClient(
       () => useAuthStore.getState().accessToken ?? '',
       (connected, reconnecting) => {
@@ -85,7 +85,7 @@ export default function Layout() {
       incrementUnread();
     });
     return () => { unsubPost(); unsubNotif(); wsRef.current?.disconnect(); };
-  }, [isAuthenticated, accessToken, setConnected, setReconnecting, addPendingPost, prependNotification, incrementUnread]);
+  }, [isAuthenticated, setConnected, setReconnecting, addPendingPost, prependNotification, incrementUnread]);
 
   if (initializing) {
     return <AppSkeleton />;
