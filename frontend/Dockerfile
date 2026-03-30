@@ -4,7 +4,13 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 
-RUN npm ci --legacy-peer-deps && npm install --legacy-peer-deps @rollup/rollup-linux-x64-musl
+RUN npm ci --legacy-peer-deps && \
+    ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        npm install --legacy-peer-deps @rollup/rollup-linux-x64-musl; \
+    elif [ "$ARCH" = "aarch64" ]; then \
+        npm install --legacy-peer-deps @rollup/rollup-linux-arm64-musl; \
+    fi
 
 COPY . .
 
