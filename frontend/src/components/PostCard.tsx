@@ -201,7 +201,7 @@ export default function PostCard({ post, onDelete, onUnbookmark, onOpen }: { pos
             {displayPost.edited_at && <span className={s.editedBadge}>изменено</span>}
             {isOwner && !editing && (
               <div className={s.ownerActions}>
-                <button onClick={startEdit} className={s.ownerBtn} title="Редактировать"><Pencil size={14} /></button>
+                {isOwner && <button onClick={startEdit} className={s.ownerBtn} title="Редактировать"><Pencil size={14} /></button>}
                 <div className={s.deleteWrap}>
                   <button
                     onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm((v) => !v); }}

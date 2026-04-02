@@ -399,6 +399,7 @@ type DeleteCommentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	IsAdmin       bool                   `protobuf:"varint,3,opt,name=is_admin,json=isAdmin,proto3" json:"is_admin,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -445,6 +446,13 @@ func (x *DeleteCommentRequest) GetUserId() string {
 		return x.UserId
 	}
 	return ""
+}
+
+func (x *DeleteCommentRequest) GetIsAdmin() bool {
+	if x != nil {
+		return x.IsAdmin
+	}
+	return false
 }
 
 type DeleteCommentResponse struct {
@@ -813,10 +821,11 @@ const file_comment_v1_comment_proto_rawDesc = "" +
 	"\bcomments\x18\x01 \x03(\v2\x13.comment.v1.CommentR\bcomments\x12=\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1d.common.v1.PaginationResponseR\n" +
-	"pagination\"?\n" +
+	"pagination\"Z\n" +
 	"\x14DeleteCommentRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\"\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x19\n" +
+	"\bis_admin\x18\x03 \x01(\bR\aisAdmin\"\x17\n" +
 	"\x15DeleteCommentResponse\"v\n" +
 	"\x14UpdateCommentRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +

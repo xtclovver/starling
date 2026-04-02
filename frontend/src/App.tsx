@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -12,6 +13,7 @@ import HashtagPage from './pages/HashtagPage';
 import Notifications from './pages/Notifications';
 import UserByUsername from './pages/UserByUsername';
 import NotFound from './pages/NotFound';
+import AdminPanel from './pages/AdminPanel';
 
 function App() {
   return (
@@ -28,6 +30,7 @@ function App() {
           <Route path="/bookmarks" element={<ProtectedRoute><Bookmarks /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+          <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

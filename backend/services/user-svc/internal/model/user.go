@@ -11,6 +11,8 @@ type User struct {
 	Bio          string
 	AvatarURL    string
 	BannerURL    string
+	IsAdmin      bool
+	IsBanned     bool
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 	DeletedAt    *time.Time

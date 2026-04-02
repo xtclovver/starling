@@ -103,6 +103,14 @@ func (s *Server) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.Reg
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
+	// First registered user becomes admin
+	count, err := s.userRepo.CountUsers(ctx)
+	if err == nil && count == 1 {
+		if promoted, err := s.userRepo.SetAdmin(ctx, user.ID, true); err == nil {
+			user = promoted
+		}
+	}
+
 	accessToken, refreshToken, err := s.jwt.GenerateTokenPair(ctx, user.ID, req.GetUaHash())
 	if err != nil {
 		s.log.Error("generate token pair failed", "error", err)
@@ -127,6 +135,10 @@ func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResp
 		}
 		s.log.Error("get user by email failed", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	if user.IsBanned {
+		return nil, status.Error(codes.PermissionDenied, "account is banned")
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.GetPassword())); err != nil {
@@ -604,4 +616,84 @@ func (s *Server) ChangePassword(ctx context.Context, req *pb.ChangePasswordReque
 	}
 
 	return &pb.ChangePasswordResponse{}, nil
+}
+
+func (s *Server) ListUsers(ctx context.Context, req *pb.ListUsersRequest) (*pb.ListUsersResponse, error) {
+	var cursor string
+	var limit int32 = 20
+	if req.GetPagination() != nil {
+		cursor = req.GetPagination().GetCursor()
+		if req.GetPagination().GetLimit() > 0 {
+			limit = req.GetPagination().GetLimit()
+		}
+	}
+
+	users, nextCursor, err := s.userRepo.ListAll(ctx, cursor, int(limit))
+	if err != nil {
+		s.log.Error("list users failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	pbUsers := make([]*pb.User, len(users))
+	for i, u := range users {
+		u := u
+		pbUsers[i] = toProtoUser(&u)
+	}
+
+	s.enrichUsersWithCounts(ctx, pbUsers)
+
+	return &pb.ListUsersResponse{
+		Users: pbUsers,
+		Pagination: &commonpb.PaginationResponse{
+			NextCursor: nextCursor,
+			HasMore:    nextCursor != "",
+		},
+	}, nil
+}
+
+func (s *Server) SetAdmin(ctx context.Context, req *pb.SetAdminRequest) (*pb.SetAdminResponse, error) {
+	// Prevent removing the last admin
+	if !req.GetIsAdmin() {
+		count, err := s.userRepo.CountAdmins(ctx)
+		if err != nil {
+			s.log.Error("count admins failed", "error", err)
+			return nil, status.Error(codes.Internal, "internal error")
+		}
+		if count <= 1 {
+			return nil, status.Error(codes.FailedPrecondition, "cannot remove the last admin")
+		}
+	}
+
+	user, err := s.userRepo.SetAdmin(ctx, req.GetUserId(), req.GetIsAdmin())
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, status.Error(codes.NotFound, "user not found")
+		}
+		s.log.Error("set admin failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	protoUser := toProtoUser(user)
+	s.enrichUserWithCounts(ctx, protoUser)
+	return &pb.SetAdminResponse{User: protoUser}, nil
+}
+
+func (s *Server) BanUser(ctx context.Context, req *pb.BanUserRequest) (*pb.BanUserResponse, error) {
+	user, err := s.userRepo.SetBanned(ctx, req.GetUserId(), req.GetIsBanned())
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return nil, status.Error(codes.NotFound, "user not found")
+		}
+		s.log.Error("ban user failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	// Revoke all tokens when banning to force immediate logout
+	if req.GetIsBanned() {
+		_ = s.jwt.RevokeAllTokens(ctx, req.GetUserId(), "")
+	}
+
+	protoUser := toProtoUser(user)
+	s.enrichUserWithCounts(ctx, protoUser)
+	return &pb.BanUserResponse{User: protoUser}, nil
 }

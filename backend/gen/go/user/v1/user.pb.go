@@ -36,6 +36,8 @@ type User struct {
 	FollowersCount int32                  `protobuf:"varint,9,opt,name=followers_count,json=followersCount,proto3" json:"followers_count,omitempty"`
 	FollowingCount int32                  `protobuf:"varint,10,opt,name=following_count,json=followingCount,proto3" json:"following_count,omitempty"`
 	BannerUrl      string                 `protobuf:"bytes,11,opt,name=banner_url,json=bannerUrl,proto3" json:"banner_url,omitempty"`
+	IsAdmin        bool                   `protobuf:"varint,12,opt,name=is_admin,json=isAdmin,proto3" json:"is_admin,omitempty"`
+	IsBanned       bool                   `protobuf:"varint,13,opt,name=is_banned,json=isBanned,proto3" json:"is_banned,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -145,6 +147,20 @@ func (x *User) GetBannerUrl() string {
 		return x.BannerUrl
 	}
 	return ""
+}
+
+func (x *User) GetIsAdmin() bool {
+	if x != nil {
+		return x.IsAdmin
+	}
+	return false
+}
+
+func (x *User) GetIsBanned() bool {
+	if x != nil {
+		return x.IsBanned
+	}
+	return false
 }
 
 type RegisterRequest struct {
@@ -2353,11 +2369,310 @@ func (*ChangePasswordResponse) Descriptor() ([]byte, []int) {
 	return file_user_v1_user_proto_rawDescGZIP(), []int{43}
 }
 
+// Admin: list all users
+type ListUsersRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Pagination    *v1.PaginationRequest  `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListUsersRequest) Reset() {
+	*x = ListUsersRequest{}
+	mi := &file_user_v1_user_proto_msgTypes[44]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListUsersRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUsersRequest) ProtoMessage() {}
+
+func (x *ListUsersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[44]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUsersRequest.ProtoReflect.Descriptor instead.
+func (*ListUsersRequest) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{44}
+}
+
+func (x *ListUsersRequest) GetPagination() *v1.PaginationRequest {
+	if x != nil {
+		return x.Pagination
+	}
+	return nil
+}
+
+type ListUsersResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Users         []*User                `protobuf:"bytes,1,rep,name=users,proto3" json:"users,omitempty"`
+	Pagination    *v1.PaginationResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	Total         int32                  `protobuf:"varint,3,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListUsersResponse) Reset() {
+	*x = ListUsersResponse{}
+	mi := &file_user_v1_user_proto_msgTypes[45]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListUsersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListUsersResponse) ProtoMessage() {}
+
+func (x *ListUsersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[45]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListUsersResponse.ProtoReflect.Descriptor instead.
+func (*ListUsersResponse) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{45}
+}
+
+func (x *ListUsersResponse) GetUsers() []*User {
+	if x != nil {
+		return x.Users
+	}
+	return nil
+}
+
+func (x *ListUsersResponse) GetPagination() *v1.PaginationResponse {
+	if x != nil {
+		return x.Pagination
+	}
+	return nil
+}
+
+func (x *ListUsersResponse) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+// Admin: set admin status
+type SetAdminRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	IsAdmin       bool                   `protobuf:"varint,2,opt,name=is_admin,json=isAdmin,proto3" json:"is_admin,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetAdminRequest) Reset() {
+	*x = SetAdminRequest{}
+	mi := &file_user_v1_user_proto_msgTypes[46]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetAdminRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetAdminRequest) ProtoMessage() {}
+
+func (x *SetAdminRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[46]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetAdminRequest.ProtoReflect.Descriptor instead.
+func (*SetAdminRequest) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{46}
+}
+
+func (x *SetAdminRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *SetAdminRequest) GetIsAdmin() bool {
+	if x != nil {
+		return x.IsAdmin
+	}
+	return false
+}
+
+type SetAdminResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetAdminResponse) Reset() {
+	*x = SetAdminResponse{}
+	mi := &file_user_v1_user_proto_msgTypes[47]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetAdminResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetAdminResponse) ProtoMessage() {}
+
+func (x *SetAdminResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[47]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetAdminResponse.ProtoReflect.Descriptor instead.
+func (*SetAdminResponse) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{47}
+}
+
+func (x *SetAdminResponse) GetUser() *User {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
+// Admin: ban/unban user
+type BanUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	IsBanned      bool                   `protobuf:"varint,2,opt,name=is_banned,json=isBanned,proto3" json:"is_banned,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BanUserRequest) Reset() {
+	*x = BanUserRequest{}
+	mi := &file_user_v1_user_proto_msgTypes[48]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BanUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BanUserRequest) ProtoMessage() {}
+
+func (x *BanUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[48]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BanUserRequest.ProtoReflect.Descriptor instead.
+func (*BanUserRequest) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{48}
+}
+
+func (x *BanUserRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *BanUserRequest) GetIsBanned() bool {
+	if x != nil {
+		return x.IsBanned
+	}
+	return false
+}
+
+type BanUserResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BanUserResponse) Reset() {
+	*x = BanUserResponse{}
+	mi := &file_user_v1_user_proto_msgTypes[49]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BanUserResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BanUserResponse) ProtoMessage() {}
+
+func (x *BanUserResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[49]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BanUserResponse.ProtoReflect.Descriptor instead.
+func (*BanUserResponse) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{49}
+}
+
+func (x *BanUserResponse) GetUser() *User {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
 var File_user_v1_user_proto protoreflect.FileDescriptor
 
 const file_user_v1_user_proto_rawDesc = "" +
 	"\n" +
-	"\x12user/v1/user.proto\x12\auser.v1\x1a\x16common/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x83\x03\n" +
+	"\x12user/v1/user.proto\x12\auser.v1\x1a\x16common/v1/common.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xbb\x03\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x14\n" +
@@ -2374,7 +2689,9 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x0ffollowing_count\x18\n" +
 	" \x01(\x05R\x0efollowingCount\x12\x1d\n" +
 	"\n" +
-	"banner_url\x18\v \x01(\tR\tbannerUrl\"\x9b\x01\n" +
+	"banner_url\x18\v \x01(\tR\tbannerUrl\x12\x19\n" +
+	"\bis_admin\x18\f \x01(\bR\aisAdmin\x12\x1b\n" +
+	"\tis_banned\x18\r \x01(\bR\bisBanned\"\x9b\x01\n" +
 	"\x0fRegisterRequest\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1a\n" +
@@ -2522,7 +2839,27 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x10current_password\x18\x02 \x01(\tR\x0fcurrentPassword\x12!\n" +
 	"\fnew_password\x18\x03 \x01(\tR\vnewPassword\x12!\n" +
 	"\faccess_token\x18\x04 \x01(\tR\vaccessToken\"\x18\n" +
-	"\x16ChangePasswordResponse2\xb7\f\n" +
+	"\x16ChangePasswordResponse\"P\n" +
+	"\x10ListUsersRequest\x12<\n" +
+	"\n" +
+	"pagination\x18\x01 \x01(\v2\x1c.common.v1.PaginationRequestR\n" +
+	"pagination\"\x8d\x01\n" +
+	"\x11ListUsersResponse\x12#\n" +
+	"\x05users\x18\x01 \x03(\v2\r.user.v1.UserR\x05users\x12=\n" +
+	"\n" +
+	"pagination\x18\x02 \x01(\v2\x1d.common.v1.PaginationResponseR\n" +
+	"pagination\x12\x14\n" +
+	"\x05total\x18\x03 \x01(\x05R\x05total\"E\n" +
+	"\x0fSetAdminRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x19\n" +
+	"\bis_admin\x18\x02 \x01(\bR\aisAdmin\"5\n" +
+	"\x10SetAdminResponse\x12!\n" +
+	"\x04user\x18\x01 \x01(\v2\r.user.v1.UserR\x04user\"F\n" +
+	"\x0eBanUserRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1b\n" +
+	"\tis_banned\x18\x02 \x01(\bR\bisBanned\"4\n" +
+	"\x0fBanUserResponse\x12!\n" +
+	"\x04user\x18\x01 \x01(\v2\r.user.v1.UserR\x04user2\xfa\r\n" +
 	"\vUserService\x12?\n" +
 	"\bRegister\x12\x18.user.v1.RegisterRequest\x1a\x19.user.v1.RegisterResponse\x126\n" +
 	"\x05Login\x12\x15.user.v1.LoginRequest\x1a\x16.user.v1.LoginResponse\x12K\n" +
@@ -2545,7 +2882,10 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\x0eGetUnreadCount\x12\x1e.user.v1.GetUnreadCountRequest\x1a\x1f.user.v1.GetUnreadCountResponse\x12?\n" +
 	"\bMarkRead\x12\x18.user.v1.MarkReadRequest\x1a\x19.user.v1.MarkReadResponse\x12H\n" +
 	"\vMarkAllRead\x12\x1b.user.v1.MarkAllReadRequest\x1a\x1c.user.v1.MarkAllReadResponse\x12Q\n" +
-	"\x0eChangePassword\x12\x1e.user.v1.ChangePasswordRequest\x1a\x1f.user.v1.ChangePasswordResponseB1Z/github.com/usedcvnt/microtwitter/gen/go/user/v1b\x06proto3"
+	"\x0eChangePassword\x12\x1e.user.v1.ChangePasswordRequest\x1a\x1f.user.v1.ChangePasswordResponse\x12B\n" +
+	"\tListUsers\x12\x19.user.v1.ListUsersRequest\x1a\x1a.user.v1.ListUsersResponse\x12?\n" +
+	"\bSetAdmin\x12\x18.user.v1.SetAdminRequest\x1a\x19.user.v1.SetAdminResponse\x12<\n" +
+	"\aBanUser\x12\x17.user.v1.BanUserRequest\x1a\x18.user.v1.BanUserResponseB1Z/github.com/usedcvnt/microtwitter/gen/go/user/v1b\x06proto3"
 
 var (
 	file_user_v1_user_proto_rawDescOnce sync.Once
@@ -2559,7 +2899,7 @@ func file_user_v1_user_proto_rawDescGZIP() []byte {
 	return file_user_v1_user_proto_rawDescData
 }
 
-var file_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 44)
+var file_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 50)
 var file_user_v1_user_proto_goTypes = []any{
 	(*User)(nil),                        // 0: user.v1.User
 	(*RegisterRequest)(nil),             // 1: user.v1.RegisterRequest
@@ -2605,81 +2945,98 @@ var file_user_v1_user_proto_goTypes = []any{
 	(*MarkAllReadResponse)(nil),         // 41: user.v1.MarkAllReadResponse
 	(*ChangePasswordRequest)(nil),       // 42: user.v1.ChangePasswordRequest
 	(*ChangePasswordResponse)(nil),      // 43: user.v1.ChangePasswordResponse
-	(*timestamppb.Timestamp)(nil),       // 44: google.protobuf.Timestamp
-	(*v1.PaginationRequest)(nil),        // 45: common.v1.PaginationRequest
-	(*v1.PaginationResponse)(nil),       // 46: common.v1.PaginationResponse
+	(*ListUsersRequest)(nil),            // 44: user.v1.ListUsersRequest
+	(*ListUsersResponse)(nil),           // 45: user.v1.ListUsersResponse
+	(*SetAdminRequest)(nil),             // 46: user.v1.SetAdminRequest
+	(*SetAdminResponse)(nil),            // 47: user.v1.SetAdminResponse
+	(*BanUserRequest)(nil),              // 48: user.v1.BanUserRequest
+	(*BanUserResponse)(nil),             // 49: user.v1.BanUserResponse
+	(*timestamppb.Timestamp)(nil),       // 50: google.protobuf.Timestamp
+	(*v1.PaginationRequest)(nil),        // 51: common.v1.PaginationRequest
+	(*v1.PaginationResponse)(nil),       // 52: common.v1.PaginationResponse
 }
 var file_user_v1_user_proto_depIdxs = []int32{
-	44, // 0: user.v1.User.created_at:type_name -> google.protobuf.Timestamp
-	44, // 1: user.v1.User.updated_at:type_name -> google.protobuf.Timestamp
+	50, // 0: user.v1.User.created_at:type_name -> google.protobuf.Timestamp
+	50, // 1: user.v1.User.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: user.v1.RegisterResponse.user:type_name -> user.v1.User
 	0,  // 3: user.v1.LoginResponse.user:type_name -> user.v1.User
 	0,  // 4: user.v1.GetUserResponse.user:type_name -> user.v1.User
 	0,  // 5: user.v1.UpdateUserResponse.user:type_name -> user.v1.User
-	45, // 6: user.v1.SearchUsersRequest.pagination:type_name -> common.v1.PaginationRequest
+	51, // 6: user.v1.SearchUsersRequest.pagination:type_name -> common.v1.PaginationRequest
 	0,  // 7: user.v1.SearchUsersResponse.users:type_name -> user.v1.User
-	46, // 8: user.v1.SearchUsersResponse.pagination:type_name -> common.v1.PaginationResponse
+	52, // 8: user.v1.SearchUsersResponse.pagination:type_name -> common.v1.PaginationResponse
 	0,  // 9: user.v1.GetUsersByIDsResponse.users:type_name -> user.v1.User
-	45, // 10: user.v1.GetFollowersRequest.pagination:type_name -> common.v1.PaginationRequest
+	51, // 10: user.v1.GetFollowersRequest.pagination:type_name -> common.v1.PaginationRequest
 	0,  // 11: user.v1.GetFollowersResponse.users:type_name -> user.v1.User
-	46, // 12: user.v1.GetFollowersResponse.pagination:type_name -> common.v1.PaginationResponse
-	45, // 13: user.v1.GetFollowingRequest.pagination:type_name -> common.v1.PaginationRequest
+	52, // 12: user.v1.GetFollowersResponse.pagination:type_name -> common.v1.PaginationResponse
+	51, // 13: user.v1.GetFollowingRequest.pagination:type_name -> common.v1.PaginationRequest
 	0,  // 14: user.v1.GetFollowingResponse.users:type_name -> user.v1.User
-	46, // 15: user.v1.GetFollowingResponse.pagination:type_name -> common.v1.PaginationResponse
+	52, // 15: user.v1.GetFollowingResponse.pagination:type_name -> common.v1.PaginationResponse
 	0,  // 16: user.v1.GetRecommendedUsersResponse.users:type_name -> user.v1.User
-	44, // 17: user.v1.Notification.created_at:type_name -> google.protobuf.Timestamp
+	50, // 17: user.v1.Notification.created_at:type_name -> google.protobuf.Timestamp
 	0,  // 18: user.v1.Notification.actor:type_name -> user.v1.User
 	31, // 19: user.v1.CreateNotificationResponse.notification:type_name -> user.v1.Notification
-	45, // 20: user.v1.GetNotificationsRequest.pagination:type_name -> common.v1.PaginationRequest
+	51, // 20: user.v1.GetNotificationsRequest.pagination:type_name -> common.v1.PaginationRequest
 	31, // 21: user.v1.GetNotificationsResponse.notifications:type_name -> user.v1.Notification
-	46, // 22: user.v1.GetNotificationsResponse.pagination:type_name -> common.v1.PaginationResponse
-	1,  // 23: user.v1.UserService.Register:input_type -> user.v1.RegisterRequest
-	3,  // 24: user.v1.UserService.Login:input_type -> user.v1.LoginRequest
-	5,  // 25: user.v1.UserService.RefreshToken:input_type -> user.v1.RefreshTokenRequest
-	7,  // 26: user.v1.UserService.Logout:input_type -> user.v1.LogoutRequest
-	9,  // 27: user.v1.UserService.RevokeAllTokens:input_type -> user.v1.RevokeAllTokensRequest
-	11, // 28: user.v1.UserService.GetUser:input_type -> user.v1.GetUserRequest
-	13, // 29: user.v1.UserService.UpdateUser:input_type -> user.v1.UpdateUserRequest
-	15, // 30: user.v1.UserService.SoftDeleteUser:input_type -> user.v1.SoftDeleteUserRequest
-	17, // 31: user.v1.UserService.SearchUsers:input_type -> user.v1.SearchUsersRequest
-	19, // 32: user.v1.UserService.GetUsersByIDs:input_type -> user.v1.GetUsersByIDsRequest
-	21, // 33: user.v1.UserService.Follow:input_type -> user.v1.FollowRequest
-	23, // 34: user.v1.UserService.Unfollow:input_type -> user.v1.UnfollowRequest
-	25, // 35: user.v1.UserService.GetFollowers:input_type -> user.v1.GetFollowersRequest
-	27, // 36: user.v1.UserService.GetFollowing:input_type -> user.v1.GetFollowingRequest
-	29, // 37: user.v1.UserService.GetRecommendedUsers:input_type -> user.v1.GetRecommendedUsersRequest
-	32, // 38: user.v1.UserService.CreateNotification:input_type -> user.v1.CreateNotificationRequest
-	34, // 39: user.v1.UserService.GetNotifications:input_type -> user.v1.GetNotificationsRequest
-	36, // 40: user.v1.UserService.GetUnreadCount:input_type -> user.v1.GetUnreadCountRequest
-	38, // 41: user.v1.UserService.MarkRead:input_type -> user.v1.MarkReadRequest
-	40, // 42: user.v1.UserService.MarkAllRead:input_type -> user.v1.MarkAllReadRequest
-	42, // 43: user.v1.UserService.ChangePassword:input_type -> user.v1.ChangePasswordRequest
-	2,  // 44: user.v1.UserService.Register:output_type -> user.v1.RegisterResponse
-	4,  // 45: user.v1.UserService.Login:output_type -> user.v1.LoginResponse
-	6,  // 46: user.v1.UserService.RefreshToken:output_type -> user.v1.RefreshTokenResponse
-	8,  // 47: user.v1.UserService.Logout:output_type -> user.v1.LogoutResponse
-	10, // 48: user.v1.UserService.RevokeAllTokens:output_type -> user.v1.RevokeAllTokensResponse
-	12, // 49: user.v1.UserService.GetUser:output_type -> user.v1.GetUserResponse
-	14, // 50: user.v1.UserService.UpdateUser:output_type -> user.v1.UpdateUserResponse
-	16, // 51: user.v1.UserService.SoftDeleteUser:output_type -> user.v1.SoftDeleteUserResponse
-	18, // 52: user.v1.UserService.SearchUsers:output_type -> user.v1.SearchUsersResponse
-	20, // 53: user.v1.UserService.GetUsersByIDs:output_type -> user.v1.GetUsersByIDsResponse
-	22, // 54: user.v1.UserService.Follow:output_type -> user.v1.FollowResponse
-	24, // 55: user.v1.UserService.Unfollow:output_type -> user.v1.UnfollowResponse
-	26, // 56: user.v1.UserService.GetFollowers:output_type -> user.v1.GetFollowersResponse
-	28, // 57: user.v1.UserService.GetFollowing:output_type -> user.v1.GetFollowingResponse
-	30, // 58: user.v1.UserService.GetRecommendedUsers:output_type -> user.v1.GetRecommendedUsersResponse
-	33, // 59: user.v1.UserService.CreateNotification:output_type -> user.v1.CreateNotificationResponse
-	35, // 60: user.v1.UserService.GetNotifications:output_type -> user.v1.GetNotificationsResponse
-	37, // 61: user.v1.UserService.GetUnreadCount:output_type -> user.v1.GetUnreadCountResponse
-	39, // 62: user.v1.UserService.MarkRead:output_type -> user.v1.MarkReadResponse
-	41, // 63: user.v1.UserService.MarkAllRead:output_type -> user.v1.MarkAllReadResponse
-	43, // 64: user.v1.UserService.ChangePassword:output_type -> user.v1.ChangePasswordResponse
-	44, // [44:65] is the sub-list for method output_type
-	23, // [23:44] is the sub-list for method input_type
-	23, // [23:23] is the sub-list for extension type_name
-	23, // [23:23] is the sub-list for extension extendee
-	0,  // [0:23] is the sub-list for field type_name
+	52, // 22: user.v1.GetNotificationsResponse.pagination:type_name -> common.v1.PaginationResponse
+	51, // 23: user.v1.ListUsersRequest.pagination:type_name -> common.v1.PaginationRequest
+	0,  // 24: user.v1.ListUsersResponse.users:type_name -> user.v1.User
+	52, // 25: user.v1.ListUsersResponse.pagination:type_name -> common.v1.PaginationResponse
+	0,  // 26: user.v1.SetAdminResponse.user:type_name -> user.v1.User
+	0,  // 27: user.v1.BanUserResponse.user:type_name -> user.v1.User
+	1,  // 28: user.v1.UserService.Register:input_type -> user.v1.RegisterRequest
+	3,  // 29: user.v1.UserService.Login:input_type -> user.v1.LoginRequest
+	5,  // 30: user.v1.UserService.RefreshToken:input_type -> user.v1.RefreshTokenRequest
+	7,  // 31: user.v1.UserService.Logout:input_type -> user.v1.LogoutRequest
+	9,  // 32: user.v1.UserService.RevokeAllTokens:input_type -> user.v1.RevokeAllTokensRequest
+	11, // 33: user.v1.UserService.GetUser:input_type -> user.v1.GetUserRequest
+	13, // 34: user.v1.UserService.UpdateUser:input_type -> user.v1.UpdateUserRequest
+	15, // 35: user.v1.UserService.SoftDeleteUser:input_type -> user.v1.SoftDeleteUserRequest
+	17, // 36: user.v1.UserService.SearchUsers:input_type -> user.v1.SearchUsersRequest
+	19, // 37: user.v1.UserService.GetUsersByIDs:input_type -> user.v1.GetUsersByIDsRequest
+	21, // 38: user.v1.UserService.Follow:input_type -> user.v1.FollowRequest
+	23, // 39: user.v1.UserService.Unfollow:input_type -> user.v1.UnfollowRequest
+	25, // 40: user.v1.UserService.GetFollowers:input_type -> user.v1.GetFollowersRequest
+	27, // 41: user.v1.UserService.GetFollowing:input_type -> user.v1.GetFollowingRequest
+	29, // 42: user.v1.UserService.GetRecommendedUsers:input_type -> user.v1.GetRecommendedUsersRequest
+	32, // 43: user.v1.UserService.CreateNotification:input_type -> user.v1.CreateNotificationRequest
+	34, // 44: user.v1.UserService.GetNotifications:input_type -> user.v1.GetNotificationsRequest
+	36, // 45: user.v1.UserService.GetUnreadCount:input_type -> user.v1.GetUnreadCountRequest
+	38, // 46: user.v1.UserService.MarkRead:input_type -> user.v1.MarkReadRequest
+	40, // 47: user.v1.UserService.MarkAllRead:input_type -> user.v1.MarkAllReadRequest
+	42, // 48: user.v1.UserService.ChangePassword:input_type -> user.v1.ChangePasswordRequest
+	44, // 49: user.v1.UserService.ListUsers:input_type -> user.v1.ListUsersRequest
+	46, // 50: user.v1.UserService.SetAdmin:input_type -> user.v1.SetAdminRequest
+	48, // 51: user.v1.UserService.BanUser:input_type -> user.v1.BanUserRequest
+	2,  // 52: user.v1.UserService.Register:output_type -> user.v1.RegisterResponse
+	4,  // 53: user.v1.UserService.Login:output_type -> user.v1.LoginResponse
+	6,  // 54: user.v1.UserService.RefreshToken:output_type -> user.v1.RefreshTokenResponse
+	8,  // 55: user.v1.UserService.Logout:output_type -> user.v1.LogoutResponse
+	10, // 56: user.v1.UserService.RevokeAllTokens:output_type -> user.v1.RevokeAllTokensResponse
+	12, // 57: user.v1.UserService.GetUser:output_type -> user.v1.GetUserResponse
+	14, // 58: user.v1.UserService.UpdateUser:output_type -> user.v1.UpdateUserResponse
+	16, // 59: user.v1.UserService.SoftDeleteUser:output_type -> user.v1.SoftDeleteUserResponse
+	18, // 60: user.v1.UserService.SearchUsers:output_type -> user.v1.SearchUsersResponse
+	20, // 61: user.v1.UserService.GetUsersByIDs:output_type -> user.v1.GetUsersByIDsResponse
+	22, // 62: user.v1.UserService.Follow:output_type -> user.v1.FollowResponse
+	24, // 63: user.v1.UserService.Unfollow:output_type -> user.v1.UnfollowResponse
+	26, // 64: user.v1.UserService.GetFollowers:output_type -> user.v1.GetFollowersResponse
+	28, // 65: user.v1.UserService.GetFollowing:output_type -> user.v1.GetFollowingResponse
+	30, // 66: user.v1.UserService.GetRecommendedUsers:output_type -> user.v1.GetRecommendedUsersResponse
+	33, // 67: user.v1.UserService.CreateNotification:output_type -> user.v1.CreateNotificationResponse
+	35, // 68: user.v1.UserService.GetNotifications:output_type -> user.v1.GetNotificationsResponse
+	37, // 69: user.v1.UserService.GetUnreadCount:output_type -> user.v1.GetUnreadCountResponse
+	39, // 70: user.v1.UserService.MarkRead:output_type -> user.v1.MarkReadResponse
+	41, // 71: user.v1.UserService.MarkAllRead:output_type -> user.v1.MarkAllReadResponse
+	43, // 72: user.v1.UserService.ChangePassword:output_type -> user.v1.ChangePasswordResponse
+	45, // 73: user.v1.UserService.ListUsers:output_type -> user.v1.ListUsersResponse
+	47, // 74: user.v1.UserService.SetAdmin:output_type -> user.v1.SetAdminResponse
+	49, // 75: user.v1.UserService.BanUser:output_type -> user.v1.BanUserResponse
+	52, // [52:76] is the sub-list for method output_type
+	28, // [28:52] is the sub-list for method input_type
+	28, // [28:28] is the sub-list for extension type_name
+	28, // [28:28] is the sub-list for extension extendee
+	0,  // [0:28] is the sub-list for field type_name
 }
 
 func init() { file_user_v1_user_proto_init() }
@@ -2693,7 +3050,7 @@ func file_user_v1_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_user_v1_user_proto_rawDesc), len(file_user_v1_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   44,
+			NumMessages:   50,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, User, Settings, LogOut, Feather, Bookmark, Bell } from 'lucide-react';
+import { Home, User, Settings, LogOut, Feather, Bookmark, Bell, Shield } from 'lucide-react';
 import { logout as apiLogout } from '@/api/auth';
 import { useAuthStore } from '@/store/auth';
 import { useUIStore } from '@/store/ui';
@@ -37,7 +37,8 @@ export default function Sidebar() {
         </Link>
         <nav className={s.sidebarNav}>
           {isAuthenticated ? (
-            NAV_AUTH.map(({ to, icon: Icon, label, badge }) => {
+            <>
+            {NAV_AUTH.map(({ to, icon: Icon, label, badge }) => {
               const href = to === '/profile/:self' ? `/profile/${user?.id}` : to;
               const active = location.pathname === href;
               return (
@@ -49,7 +50,14 @@ export default function Sidebar() {
                   <span className={s.navLabel}>{label}</span>
                 </Link>
               );
-            })
+            })}
+            {user?.is_admin && (
+              <Link to="/admin" className={`${s.navItem} ${location.pathname === '/admin' ? s.navItemActive : ''}`}>
+                <Shield size={24} strokeWidth={location.pathname === '/admin' ? 2.5 : 1.8} />
+                <span className={s.navLabel}>Админ</span>
+              </Link>
+            )}
+            </>
           ) : (
             <>
               <Link to="/" className={`${s.navItem} ${location.pathname === '/' ? s.navItemActive : ''}`}>

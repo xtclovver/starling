@@ -19,7 +19,7 @@ var (
 type CommentRepository interface {
 	Create(ctx context.Context, postID, userID string, parentID *string, content, mediaURL string) (*model.Comment, error)
 	GetTree(ctx context.Context, postID, cursor string, limit int) ([]model.Comment, string, error)
-	SoftDelete(ctx context.Context, commentID, userID string) error
+	SoftDelete(ctx context.Context, commentID, userID string, isAdmin bool) error
 	Update(ctx context.Context, commentID, userID, content, mediaURL string) (*model.Comment, error)
 	IncrementPostComments(ctx context.Context, postID string) error
 	DecrementPostComments(ctx context.Context, postID string) error
@@ -163,7 +163,19 @@ func (r *commentRepo) GetTree(ctx context.Context, postID, cursor string, limit 
 	return result, nextCursor, nil
 }
 
-func (r *commentRepo) SoftDelete(ctx context.Context, commentID, userID string) error {
+func (r *commentRepo) SoftDelete(ctx context.Context, commentID, userID string, isAdmin bool) error {
+	if isAdmin {
+		tag, err := r.pool.Exec(ctx,
+			`UPDATE comments SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL`, commentID,
+		)
+		if err != nil {
+			return err
+		}
+		if tag.RowsAffected() == 0 {
+			return ErrNotFound
+		}
+		return nil
+	}
 	tag, err := r.pool.Exec(ctx,
 		`UPDATE comments SET deleted_at = NOW() WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`,
 		commentID, userID,

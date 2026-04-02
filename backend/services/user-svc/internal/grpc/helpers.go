@@ -17,6 +17,8 @@ func toProtoUser(u *model.User) *pb.User {
 		Bio:         u.Bio,
 		AvatarUrl:   u.AvatarURL,
 		BannerUrl:   u.BannerURL,
+		IsAdmin:     u.IsAdmin,
+		IsBanned:    u.IsBanned,
 		CreatedAt:   timestamppb.New(u.CreatedAt),
 		UpdatedAt:   timestamppb.New(u.UpdatedAt),
 	}

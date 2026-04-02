@@ -53,6 +53,7 @@ message GetPostResponse {
 message DeletePostRequest {
   string id = 1;
   string user_id = 2;
+  bool is_admin = 3;
 }
 
 message DeletePostResponse {}

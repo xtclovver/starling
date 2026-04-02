@@ -19,6 +19,8 @@ message User {
   int32 followers_count = 9;
   int32 following_count = 10;
   string banner_url = 11;
+  bool is_admin = 12;
+  bool is_banned = 13;
 }
 
 message RegisterRequest {
@@ -248,4 +250,38 @@ service UserService {
   rpc MarkRead(MarkReadRequest) returns (MarkReadResponse);
   rpc MarkAllRead(MarkAllReadRequest) returns (MarkAllReadResponse);
   rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  rpc SetAdmin(SetAdminRequest) returns (SetAdminResponse);
+  rpc BanUser(BanUserRequest) returns (BanUserResponse);
+}
+
+// Admin: list all users
+message ListUsersRequest {
+  common.v1.PaginationRequest pagination = 1;
+}
+
+message ListUsersResponse {
+  repeated User users = 1;
+  common.v1.PaginationResponse pagination = 2;
+  int32 total = 3;
+}
+
+// Admin: set admin status
+message SetAdminRequest {
+  string user_id = 1;
+  bool is_admin = 2;
+}
+
+message SetAdminResponse {
+  User user = 1;
+}
+
+// Admin: ban/unban user
+message BanUserRequest {
+  string user_id = 1;
+  bool is_banned = 2;
+}
+
+message BanUserResponse {
+  User user = 1;
 }

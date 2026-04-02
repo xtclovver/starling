@@ -10,6 +10,8 @@ export interface User {
   following_count?: number;
   is_following?: boolean;
   banner_url?: string;
+  is_admin?: boolean;
+  is_banned?: boolean;
 }
 
 export interface MediaItem {

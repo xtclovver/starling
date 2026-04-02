@@ -175,7 +175,7 @@ func (s *Server) DeletePost(ctx context.Context, req *pb.DeletePostRequest) (*pb
 	start := time.Now()
 	defer func() { s.log.Info("DeletePost", "duration", time.Since(start)) }()
 
-	if err := s.postRepo.SoftDelete(ctx, req.GetId(), req.GetUserId()); err != nil {
+	if err := s.postRepo.SoftDelete(ctx, req.GetId(), req.GetUserId(), req.GetIsAdmin()); err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return nil, status.Error(codes.NotFound, "post not found")
 		}

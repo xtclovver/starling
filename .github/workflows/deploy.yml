@@ -75,7 +75,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: 22
-          source: "docker-compose.prod.yml,backend/migrations/"
+          source: "docker-compose.prod.yml,backend/migrations/,nginx/"
           target: ~/microblog
           overwrite: true
 

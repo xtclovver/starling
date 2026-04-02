@@ -120,7 +120,7 @@ func (s *Server) DeleteComment(ctx context.Context, req *pb.DeleteCommentRequest
 	defer func() { s.log.Info("DeleteComment", "duration", time.Since(start)) }()
 
 	// Get comment to know post_id for counter update
-	if err := s.commentRepo.SoftDelete(ctx, req.GetId(), req.GetUserId()); err != nil {
+	if err := s.commentRepo.SoftDelete(ctx, req.GetId(), req.GetUserId(), req.GetIsAdmin()); err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return nil, status.Error(codes.NotFound, "comment not found")
 		}

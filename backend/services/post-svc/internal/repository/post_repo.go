@@ -17,7 +17,7 @@ var (
 type PostRepository interface {
 	Create(ctx context.Context, userID, content string) (*model.Post, error)
 	GetByID(ctx context.Context, id string) (*model.Post, error)
-	SoftDelete(ctx context.Context, id, userID string) error
+	SoftDelete(ctx context.Context, id, userID string, isAdmin bool) error
 	GetFeed(ctx context.Context, userID, cursor string, limit int) ([]model.Post, string, bool, error)
 	GetGlobalFeed(ctx context.Context, cursor string, limit int) ([]model.Post, string, bool, error)
 	GetByUser(ctx context.Context, userID, cursor string, limit int) ([]model.Post, string, bool, error)
@@ -64,7 +64,19 @@ func (r *postRepo) GetByID(ctx context.Context, id string) (*model.Post, error) 
 	return p, nil
 }
 
-func (r *postRepo) SoftDelete(ctx context.Context, id, userID string) error {
+func (r *postRepo) SoftDelete(ctx context.Context, id, userID string, isAdmin bool) error {
+	if isAdmin {
+		tag, err := r.pool.Exec(ctx,
+			`UPDATE posts SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL`, id,
+		)
+		if err != nil {
+			return err
+		}
+		if tag.RowsAffected() == 0 {
+			return ErrNotFound
+		}
+		return nil
+	}
 	tag, err := r.pool.Exec(ctx,
 		`UPDATE posts SET deleted_at = NOW() WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`,
 		id, userID,

@@ -28,7 +28,7 @@ func generateTestToken(secret string, userID string, exp time.Time) string {
 // --- Auth middleware tests ---
 
 func TestAuthRequired_ValidToken(t *testing.T) {
-	auth := NewAuth(testSecret, nil)
+	auth := NewAuth(testSecret, nil, nil)
 	token := generateTestToken(testSecret, "user-123", time.Now().Add(time.Hour))
 
 	var capturedUserID string
@@ -52,7 +52,7 @@ func TestAuthRequired_ValidToken(t *testing.T) {
 }
 
 func TestAuthRequired_NoToken(t *testing.T) {
-	auth := NewAuth(testSecret, nil)
+	auth := NewAuth(testSecret, nil, nil)
 
 	handler := auth.Required(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t.Error("handler should not be called")
@@ -69,7 +69,7 @@ func TestAuthRequired_NoToken(t *testing.T) {
 }
 
 func TestAuthRequired_InvalidToken(t *testing.T) {
-	auth := NewAuth(testSecret, nil)
+	auth := NewAuth(testSecret, nil, nil)
 
 	handler := auth.Required(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t.Error("handler should not be called")
@@ -87,7 +87,7 @@ func TestAuthRequired_InvalidToken(t *testing.T) {
 }
 
 func TestAuthRequired_ExpiredToken(t *testing.T) {
-	auth := NewAuth(testSecret, nil)
+	auth := NewAuth(testSecret, nil, nil)
 	token := generateTestToken(testSecret, "user-123", time.Now().Add(-time.Hour))
 
 	handler := auth.Required(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -106,7 +106,7 @@ func TestAuthRequired_ExpiredToken(t *testing.T) {
 }
 
 func TestAuthRequired_WrongSecret(t *testing.T) {
-	auth := NewAuth(testSecret, nil)
+	auth := NewAuth(testSecret, nil, nil)
 	token := generateTestToken("wrong-secret", "user-123", time.Now().Add(time.Hour))
 
 	handler := auth.Required(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -125,7 +125,7 @@ func TestAuthRequired_WrongSecret(t *testing.T) {
 }
 
 func TestAuthOptional_WithToken(t *testing.T) {
-	auth := NewAuth(testSecret, nil)
+	auth := NewAuth(testSecret, nil, nil)
 	token := generateTestToken(testSecret, "user-456", time.Now().Add(time.Hour))
 
 	var capturedUserID string
@@ -149,7 +149,7 @@ func TestAuthOptional_WithToken(t *testing.T) {
 }
 
 func TestAuthOptional_WithoutToken(t *testing.T) {
-	auth := NewAuth(testSecret, nil)
+	auth := NewAuth(testSecret, nil, nil)
 
 	var called bool
 	var capturedUserID string

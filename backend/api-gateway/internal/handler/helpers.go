@@ -56,6 +56,8 @@ func handleGRPCError(w http.ResponseWriter, err error) {
 		writeError(w, http.StatusForbidden, st.Message())
 	case codes.Unauthenticated:
 		writeError(w, http.StatusUnauthorized, st.Message())
+	case codes.FailedPrecondition:
+		writeError(w, http.StatusConflict, st.Message())
 	default:
 		writeError(w, http.StatusInternalServerError, "internal error")
 	}
@@ -117,6 +119,8 @@ func userToMap(u *userpb.User) map[string]any {
 		"updated_at":      tsToString(u.GetUpdatedAt()),
 		"followers_count": u.GetFollowersCount(),
 		"following_count": u.GetFollowingCount(),
+		"is_admin":        u.GetIsAdmin(),
+		"is_banned":       u.GetIsBanned(),
 	}
 }
 

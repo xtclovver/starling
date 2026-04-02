@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { ArrowLeft, CalendarDays } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Shield } from 'lucide-react';
 import { getUser, follow, unfollow, getFollowers, getFollowing } from '@/api/users';
 import { getUserPosts, getUserReposts } from '@/api/posts';
 import { useAuthStore } from '@/store/auth';
@@ -140,7 +140,10 @@ export default function Profile() {
           {isOwn && <a href="/settings" className={s.editBtn}>Настроить</a>}
         </div>
 
-        <h2 className={s.displayName}>{profile.display_name || profile.username}</h2>
+        <h2 className={s.displayName}>
+          {profile.display_name || profile.username}
+          {profile.is_admin && <span className={s.adminBadge}><Shield size={12} /> Админ</span>}
+        </h2>
         <p className={s.handle}>@{profile.username}</p>
         {profile.bio && <p className={s.bio}>{profile.bio}</p>}
         <div className={s.joinDate}><CalendarDays size={14} /><span>Присоединился {created}</span></div>

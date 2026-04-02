@@ -62,7 +62,7 @@ func main() {
 	wsHandler := ws.NewHandler(hub, cfg.JWTSecret, log)
 
 	// Middleware
-	auth := middleware.NewAuth(cfg.JWTSecret, rdb)
+	auth := middleware.NewAuth(cfg.JWTSecret, rdb, clients.User)
 	rl := middleware.NewRateLimiter(rdb)
 
 	// Router (stdlib)
@@ -131,6 +131,14 @@ func main() {
 	// Media
 	mux.Handle("POST /api/upload", auth.Required(http.HandlerFunc(mediaH.Upload)))
 	mux.Handle("DELETE /api/media/{id}", auth.Required(http.HandlerFunc(mediaH.Delete)))
+
+	// Admin routes
+	adminH := handler.NewAdminHandler(clients.User, clients.Post, clients.Comment)
+	mux.Handle("GET /api/admin/users", auth.AdminRequired(http.HandlerFunc(adminH.ListUsers)))
+	mux.Handle("POST /api/admin/users/{id}/set-admin", auth.AdminRequired(http.HandlerFunc(adminH.SetAdmin)))
+	mux.Handle("POST /api/admin/users/{id}/ban", auth.AdminRequired(http.HandlerFunc(adminH.BanUser)))
+	mux.Handle("DELETE /api/admin/posts/{id}", auth.AdminRequired(http.HandlerFunc(adminH.AdminDeletePost)))
+	mux.Handle("DELETE /api/admin/comments/{id}", auth.AdminRequired(http.HandlerFunc(adminH.AdminDeleteComment)))
 
 	// WebSocket
 	mux.Handle("GET /api/ws", wsHandler)
