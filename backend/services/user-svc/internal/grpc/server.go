@@ -7,36 +7,45 @@ import (
 	"time"
 
 	commonpb "github.com/usedcvnt/microtwitter/gen/go/common/v1"
+	postpb "github.com/usedcvnt/microtwitter/gen/go/post/v1"
 	pb "github.com/usedcvnt/microtwitter/gen/go/user/v1"
 	"github.com/usedcvnt/microtwitter/user-svc/internal/auth"
 	"github.com/usedcvnt/microtwitter/user-svc/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type Server struct {
 	pb.UnimplementedUserServiceServer
-	userRepo   repository.UserRepository
-	followRepo repository.FollowRepository
-	notifRepo  repository.NotificationRepository
-	jwt        *auth.JWTManager
-	log        *slog.Logger
+	userRepo         repository.UserRepository
+	followRepo       repository.FollowRepository
+	notifRepo        repository.NotificationRepository
+	loginHistoryRepo repository.LoginHistoryRepository
+	postClient       postpb.PostServiceClient
+	jwt              *auth.JWTManager
+	log              *slog.Logger
 }
 
 func NewServer(
 	userRepo repository.UserRepository,
 	followRepo repository.FollowRepository,
 	notifRepo repository.NotificationRepository,
+	loginHistoryRepo repository.LoginHistoryRepository,
+	postClient postpb.PostServiceClient,
 	jwt *auth.JWTManager,
 	log *slog.Logger,
 ) *Server {
 	return &Server{
-		userRepo:   userRepo,
-		followRepo: followRepo,
-		notifRepo:  notifRepo,
-		jwt:        jwt,
-		log:        log,
+		userRepo:         userRepo,
+		followRepo:       followRepo,
+		notifRepo:        notifRepo,
+		loginHistoryRepo: loginHistoryRepo,
+		postClient:       postClient,
+		jwt:              jwt,
+		log:              log,
 	}
 }
 
@@ -117,6 +126,19 @@ func (s *Server) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.Reg
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
+	md, ok := metadata.FromIncomingContext(ctx)
+	ip := ""
+	ua := ""
+	if ok {
+		if vals := md.Get("x-client-ip"); len(vals) > 0 {
+			ip = vals[0]
+		}
+		if vals := md.Get("x-client-ua"); len(vals) > 0 {
+			ua = vals[0]
+		}
+	}
+	_ = s.loginHistoryRepo.Create(ctx, user.ID, ip, ua)
+
 	return &pb.RegisterResponse{
 		User:         toProtoUser(user),
 		AccessToken:  accessToken,
@@ -150,6 +172,19 @@ func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResp
 		s.log.Error("generate token pair failed", "error", err)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
+
+	md, ok := metadata.FromIncomingContext(ctx)
+	ip := ""
+	ua := ""
+	if ok {
+		if vals := md.Get("x-client-ip"); len(vals) > 0 {
+			ip = vals[0]
+		}
+		if vals := md.Get("x-client-ua"); len(vals) > 0 {
+			ua = vals[0]
+		}
+	}
+	_ = s.loginHistoryRepo.Create(ctx, user.ID, ip, ua)
 
 	protoUser := toProtoUser(user)
 	s.enrichUserWithCounts(ctx, protoUser)
@@ -693,7 +728,37 @@ func (s *Server) BanUser(ctx context.Context, req *pb.BanUserRequest) (*pb.BanUs
 		_ = s.jwt.RevokeAllTokens(ctx, req.GetUserId(), "")
 	}
 
+	if s.postClient != nil {
+		_, _ = s.postClient.UpdateAuthorBanned(ctx, &postpb.UpdateAuthorBannedRequest{
+			UserId: req.GetUserId(),
+			Banned: req.GetIsBanned(),
+		})
+	}
+
 	protoUser := toProtoUser(user)
 	s.enrichUserWithCounts(ctx, protoUser)
 	return &pb.BanUserResponse{User: protoUser}, nil
+}
+
+func (s *Server) GetLoginHistory(ctx context.Context, req *pb.GetLoginHistoryRequest) (*pb.GetLoginHistoryResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("GetLoginHistory", "duration", time.Since(start)) }()
+
+	limit := int(req.GetLimit())
+	entries, err := s.loginHistoryRepo.GetByUser(ctx, req.GetUserId(), limit)
+	if err != nil {
+		s.log.Error("get login history failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
+	pbEntries := make([]*pb.LoginHistoryEntry, len(entries))
+	for i, e := range entries {
+		pbEntries[i] = &pb.LoginHistoryEntry{
+			Id:        e.ID,
+			Ip:        e.IP,
+			UserAgent: e.UserAgent,
+			CreatedAt: timestamppb.New(e.CreatedAt),
+		}
+	}
+	return &pb.GetLoginHistoryResponse{Entries: pbEntries}, nil
 }
