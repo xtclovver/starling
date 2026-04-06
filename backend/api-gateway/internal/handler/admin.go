@@ -118,6 +118,30 @@ func (h *AdminHandler) AdminDeleteComment(w http.ResponseWriter, r *http.Request
 	writeJSON(w, http.StatusOK, nil)
 }
 
+func (h *AdminHandler) GetLoginHistory(w http.ResponseWriter, r *http.Request) {
+	userID := r.PathValue("id")
+
+	resp, err := h.user.GetLoginHistory(r.Context(), &userpb.GetLoginHistoryRequest{
+		UserId: userID,
+		Limit:  20,
+	})
+	if err != nil {
+		handleGRPCError(w, err)
+		return
+	}
+
+	entries := make([]map[string]any, len(resp.GetEntries()))
+	for i, e := range resp.GetEntries() {
+		entries[i] = map[string]any{
+			"id":         e.GetId(),
+			"ip":         e.GetIp(),
+			"user_agent": e.GetUserAgent(),
+			"created_at": tsToString(e.GetCreatedAt()),
+		}
+	}
+	writeJSON(w, http.StatusOK, entries)
+}
+
 func paginationToMap(p *commonpb.PaginationResponse) map[string]any {
 	if p == nil {
 		return map[string]any{"next_cursor": "", "has_more": false}

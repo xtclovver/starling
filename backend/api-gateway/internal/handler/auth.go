@@ -1,13 +1,16 @@
 package handler
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"net"
 	"net/http"
 	"strings"
 
 	userpb "github.com/usedcvnt/microtwitter/gen/go/user/v1"
+	"google.golang.org/grpc/metadata"
 )
 
 type AuthHandler struct {
@@ -54,6 +57,16 @@ func computeUAHash(r *http.Request) string {
 	return hex.EncodeToString(sum[:])[:16]
 }
 
+func clientMetadataCtx(r *http.Request) context.Context {
+	ip := r.Header.Get("X-Forwarded-For")
+	if ip == "" {
+		ip, _, _ = net.SplitHostPort(r.RemoteAddr)
+	}
+	ua := r.Header.Get("User-Agent")
+	md := metadata.Pairs("x-client-ip", ip, "x-client-ua", ua)
+	return metadata.NewOutgoingContext(r.Context(), md)
+}
+
 func extractBearerToken(r *http.Request) string {
 	h := r.Header.Get("Authorization")
 	if strings.HasPrefix(h, "Bearer ") {
@@ -75,7 +88,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := h.user.Register(r.Context(), &userpb.RegisterRequest{
+	resp, err := h.user.Register(clientMetadataCtx(r), &userpb.RegisterRequest{
 		Username: req.Username,
 		Email:    req.Email,
 		Password: req.Password,
@@ -105,7 +118,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := h.user.Login(r.Context(), &userpb.LoginRequest{
+	resp, err := h.user.Login(clientMetadataCtx(r), &userpb.LoginRequest{
 		Email:    req.Email,
 		Password: req.Password,
 		UaHash:   computeUAHash(r),

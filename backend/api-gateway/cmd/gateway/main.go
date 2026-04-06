@@ -139,6 +139,7 @@ func main() {
 	mux.Handle("POST /api/admin/users/{id}/ban", auth.AdminRequired(http.HandlerFunc(adminH.BanUser)))
 	mux.Handle("DELETE /api/admin/posts/{id}", auth.AdminRequired(http.HandlerFunc(adminH.AdminDeletePost)))
 	mux.Handle("DELETE /api/admin/comments/{id}", auth.AdminRequired(http.HandlerFunc(adminH.AdminDeleteComment)))
+	mux.Handle("GET /api/admin/users/{id}/login-history", auth.AdminRequired(http.HandlerFunc(adminH.GetLoginHistory)))
 
 	// WebSocket
 	mux.Handle("GET /api/ws", wsHandler)
