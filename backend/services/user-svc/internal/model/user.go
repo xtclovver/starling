@@ -35,3 +35,11 @@ type Notification struct {
 	Read      bool
 	CreatedAt time.Time
 }
+
+type LoginHistory struct {
+	ID        string
+	UserID    string
+	IP        string
+	UserAgent string
+	CreatedAt time.Time
+}

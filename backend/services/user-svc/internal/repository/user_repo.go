@@ -337,3 +337,50 @@ func (r *userRepo) CountAdmins(ctx context.Context) (int64, error) {
 	err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM users WHERE is_admin = TRUE AND deleted_at IS NULL`).Scan(&count)
 	return count, err
 }
+
+type LoginHistoryRepository interface {
+	Create(ctx context.Context, userID, ip, userAgent string) error
+	GetByUser(ctx context.Context, userID string, limit int) ([]model.LoginHistory, error)
+}
+
+type loginHistoryRepo struct {
+	pool *pgxpool.Pool
+}
+
+func NewLoginHistoryRepository(pool *pgxpool.Pool) LoginHistoryRepository {
+	return &loginHistoryRepo{pool: pool}
+}
+
+func (r *loginHistoryRepo) Create(ctx context.Context, userID, ip, userAgent string) error {
+	_, err := r.pool.Exec(ctx,
+		`INSERT INTO login_history (user_id, ip, user_agent) VALUES ($1, $2, $3)`,
+		userID, ip, userAgent,
+	)
+	return err
+}
+
+func (r *loginHistoryRepo) GetByUser(ctx context.Context, userID string, limit int) ([]model.LoginHistory, error) {
+	if limit <= 0 || limit > 20 {
+		limit = 20
+	}
+	rows, err := r.pool.Query(ctx,
+		`SELECT id, user_id, ip, user_agent, created_at
+		 FROM login_history WHERE user_id = $1
+		 ORDER BY created_at DESC LIMIT $2`,
+		userID, limit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var entries []model.LoginHistory
+	for rows.Next() {
+		var e model.LoginHistory
+		if err := rows.Scan(&e.ID, &e.UserID, &e.IP, &e.UserAgent, &e.CreatedAt); err != nil {
+			return nil, err
+		}
+		entries = append(entries, e)
+	}
+	return entries, rows.Err()
+}
