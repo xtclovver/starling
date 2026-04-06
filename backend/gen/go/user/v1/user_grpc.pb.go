@@ -43,6 +43,7 @@ const (
 	UserService_ListUsers_FullMethodName           = "/user.v1.UserService/ListUsers"
 	UserService_SetAdmin_FullMethodName            = "/user.v1.UserService/SetAdmin"
 	UserService_BanUser_FullMethodName             = "/user.v1.UserService/BanUser"
+	UserService_GetLoginHistory_FullMethodName     = "/user.v1.UserService/GetLoginHistory"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -73,6 +74,7 @@ type UserServiceClient interface {
 	ListUsers(ctx context.Context, in *ListUsersRequest, opts ...grpc.CallOption) (*ListUsersResponse, error)
 	SetAdmin(ctx context.Context, in *SetAdminRequest, opts ...grpc.CallOption) (*SetAdminResponse, error)
 	BanUser(ctx context.Context, in *BanUserRequest, opts ...grpc.CallOption) (*BanUserResponse, error)
+	GetLoginHistory(ctx context.Context, in *GetLoginHistoryRequest, opts ...grpc.CallOption) (*GetLoginHistoryResponse, error)
 }
 
 type userServiceClient struct {
@@ -323,6 +325,16 @@ func (c *userServiceClient) BanUser(ctx context.Context, in *BanUserRequest, opt
 	return out, nil
 }
 
+func (c *userServiceClient) GetLoginHistory(ctx context.Context, in *GetLoginHistoryRequest, opts ...grpc.CallOption) (*GetLoginHistoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetLoginHistoryResponse)
+	err := c.cc.Invoke(ctx, UserService_GetLoginHistory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility.
@@ -351,6 +363,7 @@ type UserServiceServer interface {
 	ListUsers(context.Context, *ListUsersRequest) (*ListUsersResponse, error)
 	SetAdmin(context.Context, *SetAdminRequest) (*SetAdminResponse, error)
 	BanUser(context.Context, *BanUserRequest) (*BanUserResponse, error)
+	GetLoginHistory(context.Context, *GetLoginHistoryRequest) (*GetLoginHistoryResponse, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -432,6 +445,9 @@ func (UnimplementedUserServiceServer) SetAdmin(context.Context, *SetAdminRequest
 }
 func (UnimplementedUserServiceServer) BanUser(context.Context, *BanUserRequest) (*BanUserResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method BanUser not implemented")
+}
+func (UnimplementedUserServiceServer) GetLoginHistory(context.Context, *GetLoginHistoryRequest) (*GetLoginHistoryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetLoginHistory not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 func (UnimplementedUserServiceServer) testEmbeddedByValue()                     {}
@@ -886,6 +902,24 @@ func _UserService_BanUser_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_GetLoginHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLoginHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetLoginHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetLoginHistory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetLoginHistory(ctx, req.(*GetLoginHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -988,6 +1022,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "BanUser",
 			Handler:    _UserService_BanUser_Handler,
+		},
+		{
+			MethodName: "GetLoginHistory",
+			Handler:    _UserService_GetLoginHistory_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

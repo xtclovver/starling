@@ -38,6 +38,7 @@ const (
 	PostService_QuotePost_FullMethodName           = "/post.v1.PostService/QuotePost"
 	PostService_GetRepostsByUser_FullMethodName    = "/post.v1.PostService/GetRepostsByUser"
 	PostService_RecordViews_FullMethodName         = "/post.v1.PostService/RecordViews"
+	PostService_UpdateAuthorBanned_FullMethodName  = "/post.v1.PostService/UpdateAuthorBanned"
 )
 
 // PostServiceClient is the client API for PostService service.
@@ -63,6 +64,7 @@ type PostServiceClient interface {
 	QuotePost(ctx context.Context, in *QuotePostRequest, opts ...grpc.CallOption) (*QuotePostResponse, error)
 	GetRepostsByUser(ctx context.Context, in *GetRepostsByUserRequest, opts ...grpc.CallOption) (*GetRepostsByUserResponse, error)
 	RecordViews(ctx context.Context, in *RecordViewsRequest, opts ...grpc.CallOption) (*RecordViewsResponse, error)
+	UpdateAuthorBanned(ctx context.Context, in *UpdateAuthorBannedRequest, opts ...grpc.CallOption) (*UpdateAuthorBannedResponse, error)
 }
 
 type postServiceClient struct {
@@ -263,6 +265,16 @@ func (c *postServiceClient) RecordViews(ctx context.Context, in *RecordViewsRequ
 	return out, nil
 }
 
+func (c *postServiceClient) UpdateAuthorBanned(ctx context.Context, in *UpdateAuthorBannedRequest, opts ...grpc.CallOption) (*UpdateAuthorBannedResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateAuthorBannedResponse)
+	err := c.cc.Invoke(ctx, PostService_UpdateAuthorBanned_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PostServiceServer is the server API for PostService service.
 // All implementations must embed UnimplementedPostServiceServer
 // for forward compatibility.
@@ -286,6 +298,7 @@ type PostServiceServer interface {
 	QuotePost(context.Context, *QuotePostRequest) (*QuotePostResponse, error)
 	GetRepostsByUser(context.Context, *GetRepostsByUserRequest) (*GetRepostsByUserResponse, error)
 	RecordViews(context.Context, *RecordViewsRequest) (*RecordViewsResponse, error)
+	UpdateAuthorBanned(context.Context, *UpdateAuthorBannedRequest) (*UpdateAuthorBannedResponse, error)
 	mustEmbedUnimplementedPostServiceServer()
 }
 
@@ -352,6 +365,9 @@ func (UnimplementedPostServiceServer) GetRepostsByUser(context.Context, *GetRepo
 }
 func (UnimplementedPostServiceServer) RecordViews(context.Context, *RecordViewsRequest) (*RecordViewsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RecordViews not implemented")
+}
+func (UnimplementedPostServiceServer) UpdateAuthorBanned(context.Context, *UpdateAuthorBannedRequest) (*UpdateAuthorBannedResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateAuthorBanned not implemented")
 }
 func (UnimplementedPostServiceServer) mustEmbedUnimplementedPostServiceServer() {}
 func (UnimplementedPostServiceServer) testEmbeddedByValue()                     {}
@@ -716,6 +732,24 @@ func _PostService_RecordViews_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PostService_UpdateAuthorBanned_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateAuthorBannedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PostServiceServer).UpdateAuthorBanned(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PostService_UpdateAuthorBanned_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PostServiceServer).UpdateAuthorBanned(ctx, req.(*UpdateAuthorBannedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PostService_ServiceDesc is the grpc.ServiceDesc for PostService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -798,6 +832,10 @@ var PostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RecordViews",
 			Handler:    _PostService_RecordViews_Handler,
+		},
+		{
+			MethodName: "UpdateAuthorBanned",
+			Handler:    _PostService_UpdateAuthorBanned_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

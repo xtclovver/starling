@@ -219,6 +219,13 @@ message RecordViewsRequest {
 
 message RecordViewsResponse {}
 
+message UpdateAuthorBannedRequest {
+  string user_id = 1;
+  bool   banned  = 2;
+}
+
+message UpdateAuthorBannedResponse {}
+
 service PostService {
   rpc CreatePost(CreatePostRequest) returns (CreatePostResponse);
   rpc GetPost(GetPostRequest) returns (GetPostResponse);
@@ -239,4 +246,5 @@ service PostService {
   rpc QuotePost(QuotePostRequest) returns (QuotePostResponse);
   rpc GetRepostsByUser(GetRepostsByUserRequest) returns (GetRepostsByUserResponse);
   rpc RecordViews(RecordViewsRequest) returns (RecordViewsResponse);
+  rpc UpdateAuthorBanned(UpdateAuthorBannedRequest) returns (UpdateAuthorBannedResponse);
 }

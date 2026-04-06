@@ -2245,6 +2245,94 @@ func (*RecordViewsResponse) Descriptor() ([]byte, []int) {
 	return file_post_v1_post_proto_rawDescGZIP(), []int{41}
 }
 
+type UpdateAuthorBannedRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Banned        bool                   `protobuf:"varint,2,opt,name=banned,proto3" json:"banned,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateAuthorBannedRequest) Reset() {
+	*x = UpdateAuthorBannedRequest{}
+	mi := &file_post_v1_post_proto_msgTypes[42]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateAuthorBannedRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateAuthorBannedRequest) ProtoMessage() {}
+
+func (x *UpdateAuthorBannedRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_post_v1_post_proto_msgTypes[42]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateAuthorBannedRequest.ProtoReflect.Descriptor instead.
+func (*UpdateAuthorBannedRequest) Descriptor() ([]byte, []int) {
+	return file_post_v1_post_proto_rawDescGZIP(), []int{42}
+}
+
+func (x *UpdateAuthorBannedRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *UpdateAuthorBannedRequest) GetBanned() bool {
+	if x != nil {
+		return x.Banned
+	}
+	return false
+}
+
+type UpdateAuthorBannedResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateAuthorBannedResponse) Reset() {
+	*x = UpdateAuthorBannedResponse{}
+	mi := &file_post_v1_post_proto_msgTypes[43]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateAuthorBannedResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateAuthorBannedResponse) ProtoMessage() {}
+
+func (x *UpdateAuthorBannedResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_post_v1_post_proto_msgTypes[43]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateAuthorBannedResponse.ProtoReflect.Descriptor instead.
+func (*UpdateAuthorBannedResponse) Descriptor() ([]byte, []int) {
+	return file_post_v1_post_proto_rawDescGZIP(), []int{43}
+}
+
 var File_post_v1_post_proto protoreflect.FileDescriptor
 
 const file_post_v1_post_proto_rawDesc = "" +
@@ -2414,7 +2502,11 @@ const file_post_v1_post_proto_rawDesc = "" +
 	"\x12RecordViewsRequest\x12\x19\n" +
 	"\bpost_ids\x18\x01 \x03(\tR\apostIds\x12\x1b\n" +
 	"\tviewer_id\x18\x02 \x01(\tR\bviewerId\"\x15\n" +
-	"\x13RecordViewsResponse2\xaf\v\n" +
+	"\x13RecordViewsResponse\"L\n" +
+	"\x19UpdateAuthorBannedRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x16\n" +
+	"\x06banned\x18\x02 \x01(\bR\x06banned\"\x1c\n" +
+	"\x1aUpdateAuthorBannedResponse2\x8e\f\n" +
 	"\vPostService\x12E\n" +
 	"\n" +
 	"CreatePost\x12\x1a.post.v1.CreatePostRequest\x1a\x1b.post.v1.CreatePostResponse\x12<\n" +
@@ -2439,7 +2531,8 @@ const file_post_v1_post_proto_rawDesc = "" +
 	"\fUnrepostPost\x12\x1c.post.v1.UnrepostPostRequest\x1a\x1d.post.v1.UnrepostPostResponse\x12B\n" +
 	"\tQuotePost\x12\x19.post.v1.QuotePostRequest\x1a\x1a.post.v1.QuotePostResponse\x12W\n" +
 	"\x10GetRepostsByUser\x12 .post.v1.GetRepostsByUserRequest\x1a!.post.v1.GetRepostsByUserResponse\x12H\n" +
-	"\vRecordViews\x12\x1b.post.v1.RecordViewsRequest\x1a\x1c.post.v1.RecordViewsResponseB1Z/github.com/usedcvnt/microtwitter/gen/go/post/v1b\x06proto3"
+	"\vRecordViews\x12\x1b.post.v1.RecordViewsRequest\x1a\x1c.post.v1.RecordViewsResponse\x12]\n" +
+	"\x12UpdateAuthorBanned\x12\".post.v1.UpdateAuthorBannedRequest\x1a#.post.v1.UpdateAuthorBannedResponseB1Z/github.com/usedcvnt/microtwitter/gen/go/post/v1b\x06proto3"
 
 var (
 	file_post_v1_post_proto_rawDescOnce sync.Once
@@ -2453,7 +2546,7 @@ func file_post_v1_post_proto_rawDescGZIP() []byte {
 	return file_post_v1_post_proto_rawDescData
 }
 
-var file_post_v1_post_proto_msgTypes = make([]protoimpl.MessageInfo, 42)
+var file_post_v1_post_proto_msgTypes = make([]protoimpl.MessageInfo, 44)
 var file_post_v1_post_proto_goTypes = []any{
 	(*MediaItem)(nil),                   // 0: post.v1.MediaItem
 	(*Post)(nil),                        // 1: post.v1.Post
@@ -2497,39 +2590,41 @@ var file_post_v1_post_proto_goTypes = []any{
 	(*GetRepostsByUserResponse)(nil),    // 39: post.v1.GetRepostsByUserResponse
 	(*RecordViewsRequest)(nil),          // 40: post.v1.RecordViewsRequest
 	(*RecordViewsResponse)(nil),         // 41: post.v1.RecordViewsResponse
-	(*timestamppb.Timestamp)(nil),       // 42: google.protobuf.Timestamp
-	(*v1.PaginationRequest)(nil),        // 43: common.v1.PaginationRequest
-	(*v1.PaginationResponse)(nil),       // 44: common.v1.PaginationResponse
+	(*UpdateAuthorBannedRequest)(nil),   // 42: post.v1.UpdateAuthorBannedRequest
+	(*UpdateAuthorBannedResponse)(nil),  // 43: post.v1.UpdateAuthorBannedResponse
+	(*timestamppb.Timestamp)(nil),       // 44: google.protobuf.Timestamp
+	(*v1.PaginationRequest)(nil),        // 45: common.v1.PaginationRequest
+	(*v1.PaginationResponse)(nil),       // 46: common.v1.PaginationResponse
 }
 var file_post_v1_post_proto_depIdxs = []int32{
 	0,  // 0: post.v1.Post.media:type_name -> post.v1.MediaItem
-	42, // 1: post.v1.Post.created_at:type_name -> google.protobuf.Timestamp
-	42, // 2: post.v1.Post.updated_at:type_name -> google.protobuf.Timestamp
-	42, // 3: post.v1.Post.edited_at:type_name -> google.protobuf.Timestamp
+	44, // 1: post.v1.Post.created_at:type_name -> google.protobuf.Timestamp
+	44, // 2: post.v1.Post.updated_at:type_name -> google.protobuf.Timestamp
+	44, // 3: post.v1.Post.edited_at:type_name -> google.protobuf.Timestamp
 	1,  // 4: post.v1.CreatePostResponse.post:type_name -> post.v1.Post
 	1,  // 5: post.v1.GetPostResponse.post:type_name -> post.v1.Post
-	43, // 6: post.v1.GetFeedRequest.pagination:type_name -> common.v1.PaginationRequest
+	45, // 6: post.v1.GetFeedRequest.pagination:type_name -> common.v1.PaginationRequest
 	1,  // 7: post.v1.GetFeedResponse.posts:type_name -> post.v1.Post
-	44, // 8: post.v1.GetFeedResponse.pagination:type_name -> common.v1.PaginationResponse
-	43, // 9: post.v1.GetPostsByUserRequest.pagination:type_name -> common.v1.PaginationRequest
+	46, // 8: post.v1.GetFeedResponse.pagination:type_name -> common.v1.PaginationResponse
+	45, // 9: post.v1.GetPostsByUserRequest.pagination:type_name -> common.v1.PaginationRequest
 	1,  // 10: post.v1.GetPostsByUserResponse.posts:type_name -> post.v1.Post
-	44, // 11: post.v1.GetPostsByUserResponse.pagination:type_name -> common.v1.PaginationResponse
-	43, // 12: post.v1.GetGlobalFeedRequest.pagination:type_name -> common.v1.PaginationRequest
+	46, // 11: post.v1.GetPostsByUserResponse.pagination:type_name -> common.v1.PaginationResponse
+	45, // 12: post.v1.GetGlobalFeedRequest.pagination:type_name -> common.v1.PaginationRequest
 	1,  // 13: post.v1.GetGlobalFeedResponse.posts:type_name -> post.v1.Post
-	44, // 14: post.v1.GetGlobalFeedResponse.pagination:type_name -> common.v1.PaginationResponse
-	43, // 15: post.v1.GetBookmarksRequest.pagination:type_name -> common.v1.PaginationRequest
+	46, // 14: post.v1.GetGlobalFeedResponse.pagination:type_name -> common.v1.PaginationResponse
+	45, // 15: post.v1.GetBookmarksRequest.pagination:type_name -> common.v1.PaginationRequest
 	1,  // 16: post.v1.GetBookmarksResponse.posts:type_name -> post.v1.Post
-	44, // 17: post.v1.GetBookmarksResponse.pagination:type_name -> common.v1.PaginationResponse
+	46, // 17: post.v1.GetBookmarksResponse.pagination:type_name -> common.v1.PaginationResponse
 	1,  // 18: post.v1.UpdatePostResponse.post:type_name -> post.v1.Post
-	43, // 19: post.v1.GetPostsByHashtagRequest.pagination:type_name -> common.v1.PaginationRequest
+	45, // 19: post.v1.GetPostsByHashtagRequest.pagination:type_name -> common.v1.PaginationRequest
 	1,  // 20: post.v1.GetPostsByHashtagResponse.posts:type_name -> post.v1.Post
-	44, // 21: post.v1.GetPostsByHashtagResponse.pagination:type_name -> common.v1.PaginationResponse
+	46, // 21: post.v1.GetPostsByHashtagResponse.pagination:type_name -> common.v1.PaginationResponse
 	26, // 22: post.v1.GetTrendingHashtagsResponse.hashtags:type_name -> post.v1.TrendingHashtag
-	42, // 23: post.v1.Repost.created_at:type_name -> google.protobuf.Timestamp
+	44, // 23: post.v1.Repost.created_at:type_name -> google.protobuf.Timestamp
 	1,  // 24: post.v1.QuotePostResponse.post:type_name -> post.v1.Post
-	43, // 25: post.v1.GetRepostsByUserRequest.pagination:type_name -> common.v1.PaginationRequest
+	45, // 25: post.v1.GetRepostsByUserRequest.pagination:type_name -> common.v1.PaginationRequest
 	1,  // 26: post.v1.GetRepostsByUserResponse.posts:type_name -> post.v1.Post
-	44, // 27: post.v1.GetRepostsByUserResponse.pagination:type_name -> common.v1.PaginationResponse
+	46, // 27: post.v1.GetRepostsByUserResponse.pagination:type_name -> common.v1.PaginationResponse
 	2,  // 28: post.v1.PostService.CreatePost:input_type -> post.v1.CreatePostRequest
 	4,  // 29: post.v1.PostService.GetPost:input_type -> post.v1.GetPostRequest
 	6,  // 30: post.v1.PostService.DeletePost:input_type -> post.v1.DeletePostRequest
@@ -2549,27 +2644,29 @@ var file_post_v1_post_proto_depIdxs = []int32{
 	36, // 44: post.v1.PostService.QuotePost:input_type -> post.v1.QuotePostRequest
 	38, // 45: post.v1.PostService.GetRepostsByUser:input_type -> post.v1.GetRepostsByUserRequest
 	40, // 46: post.v1.PostService.RecordViews:input_type -> post.v1.RecordViewsRequest
-	3,  // 47: post.v1.PostService.CreatePost:output_type -> post.v1.CreatePostResponse
-	5,  // 48: post.v1.PostService.GetPost:output_type -> post.v1.GetPostResponse
-	7,  // 49: post.v1.PostService.DeletePost:output_type -> post.v1.DeletePostResponse
-	9,  // 50: post.v1.PostService.GetFeed:output_type -> post.v1.GetFeedResponse
-	17, // 51: post.v1.PostService.GetGlobalFeed:output_type -> post.v1.GetGlobalFeedResponse
-	11, // 52: post.v1.PostService.LikePost:output_type -> post.v1.LikePostResponse
-	13, // 53: post.v1.PostService.UnlikePost:output_type -> post.v1.UnlikePostResponse
-	15, // 54: post.v1.PostService.GetPostsByUser:output_type -> post.v1.GetPostsByUserResponse
-	19, // 55: post.v1.PostService.BookmarkPost:output_type -> post.v1.BookmarkPostResponse
-	21, // 56: post.v1.PostService.UnbookmarkPost:output_type -> post.v1.UnbookmarkPostResponse
-	23, // 57: post.v1.PostService.GetBookmarks:output_type -> post.v1.GetBookmarksResponse
-	25, // 58: post.v1.PostService.UpdatePost:output_type -> post.v1.UpdatePostResponse
-	28, // 59: post.v1.PostService.GetPostsByHashtag:output_type -> post.v1.GetPostsByHashtagResponse
-	30, // 60: post.v1.PostService.GetTrendingHashtags:output_type -> post.v1.GetTrendingHashtagsResponse
-	33, // 61: post.v1.PostService.RepostPost:output_type -> post.v1.RepostPostResponse
-	35, // 62: post.v1.PostService.UnrepostPost:output_type -> post.v1.UnrepostPostResponse
-	37, // 63: post.v1.PostService.QuotePost:output_type -> post.v1.QuotePostResponse
-	39, // 64: post.v1.PostService.GetRepostsByUser:output_type -> post.v1.GetRepostsByUserResponse
-	41, // 65: post.v1.PostService.RecordViews:output_type -> post.v1.RecordViewsResponse
-	47, // [47:66] is the sub-list for method output_type
-	28, // [28:47] is the sub-list for method input_type
+	42, // 47: post.v1.PostService.UpdateAuthorBanned:input_type -> post.v1.UpdateAuthorBannedRequest
+	3,  // 48: post.v1.PostService.CreatePost:output_type -> post.v1.CreatePostResponse
+	5,  // 49: post.v1.PostService.GetPost:output_type -> post.v1.GetPostResponse
+	7,  // 50: post.v1.PostService.DeletePost:output_type -> post.v1.DeletePostResponse
+	9,  // 51: post.v1.PostService.GetFeed:output_type -> post.v1.GetFeedResponse
+	17, // 52: post.v1.PostService.GetGlobalFeed:output_type -> post.v1.GetGlobalFeedResponse
+	11, // 53: post.v1.PostService.LikePost:output_type -> post.v1.LikePostResponse
+	13, // 54: post.v1.PostService.UnlikePost:output_type -> post.v1.UnlikePostResponse
+	15, // 55: post.v1.PostService.GetPostsByUser:output_type -> post.v1.GetPostsByUserResponse
+	19, // 56: post.v1.PostService.BookmarkPost:output_type -> post.v1.BookmarkPostResponse
+	21, // 57: post.v1.PostService.UnbookmarkPost:output_type -> post.v1.UnbookmarkPostResponse
+	23, // 58: post.v1.PostService.GetBookmarks:output_type -> post.v1.GetBookmarksResponse
+	25, // 59: post.v1.PostService.UpdatePost:output_type -> post.v1.UpdatePostResponse
+	28, // 60: post.v1.PostService.GetPostsByHashtag:output_type -> post.v1.GetPostsByHashtagResponse
+	30, // 61: post.v1.PostService.GetTrendingHashtags:output_type -> post.v1.GetTrendingHashtagsResponse
+	33, // 62: post.v1.PostService.RepostPost:output_type -> post.v1.RepostPostResponse
+	35, // 63: post.v1.PostService.UnrepostPost:output_type -> post.v1.UnrepostPostResponse
+	37, // 64: post.v1.PostService.QuotePost:output_type -> post.v1.QuotePostResponse
+	39, // 65: post.v1.PostService.GetRepostsByUser:output_type -> post.v1.GetRepostsByUserResponse
+	41, // 66: post.v1.PostService.RecordViews:output_type -> post.v1.RecordViewsResponse
+	43, // 67: post.v1.PostService.UpdateAuthorBanned:output_type -> post.v1.UpdateAuthorBannedResponse
+	48, // [48:68] is the sub-list for method output_type
+	28, // [28:48] is the sub-list for method input_type
 	28, // [28:28] is the sub-list for extension type_name
 	28, // [28:28] is the sub-list for extension extendee
 	0,  // [0:28] is the sub-list for field type_name
@@ -2586,7 +2683,7 @@ func file_post_v1_post_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_post_v1_post_proto_rawDesc), len(file_post_v1_post_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   42,
+			NumMessages:   44,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
