@@ -424,3 +424,16 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.bannedBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 16px;
+  margin: 16px;
+  border-radius: 8px;
+  background: var(--danger-muted);
+  color: var(--danger);
+  font-size: 14px;
+  font-weight: 500;
+}

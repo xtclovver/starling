@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { ArrowLeft, CalendarDays, Shield } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Shield, Ban } from 'lucide-react';
 import { getUser, follow, unfollow, getFollowers, getFollowing } from '@/api/users';
 import { getUserPosts, getUserReposts } from '@/api/posts';
 import { useAuthStore } from '@/store/auth';
@@ -63,7 +63,7 @@ export default function Profile() {
     } catch { /* ignore */ } finally { setPostsLoading(false); }
   }, [id]);
 
-  useEffect(() => { if (tab === 'posts' && posts.length === 0 && id) loadPosts(); }, [tab, id, loadPosts, posts.length]);
+  useEffect(() => { if (tab === 'posts' && posts.length === 0 && id && !profile?.is_banned) loadPosts(); }, [tab, id, loadPosts, posts.length, profile?.is_banned]);
 
   const loadReposts = useCallback(async (cursor = '') => {
     if (!id) return;
@@ -77,7 +77,7 @@ export default function Profile() {
     } catch { /* ignore */ } finally { setRepostsLoading(false); }
   }, [id]);
 
-  useEffect(() => { if (tab === 'reposts' && reposts.length === 0 && id) loadReposts(); }, [tab, id, loadReposts, reposts.length]);
+  useEffect(() => { if (tab === 'reposts' && reposts.length === 0 && id && !profile?.is_banned) loadReposts(); }, [tab, id, loadReposts, reposts.length, profile?.is_banned]);
 
   const loadUsers = useCallback(async (type: 'followers' | 'following', cursor = '') => {
     if (!id) return;
@@ -167,16 +167,25 @@ export default function Profile() {
       </div>
 
       {tab === 'posts' && (
-        <>
-          {postsLoading && posts.length === 0 ? <>{[1,2,3].map((i) => <SkeletonPost key={i} />)}</> : (
+        <div>
+          {profile?.is_banned ? (
+            <div className={s.bannedBanner}>
+              <Ban size={20} />
+              <span>Аккаунт заблокирован. Посты скрыты.</span>
+            </div>
+          ) : (
             <>
-              {posts.map((p) => <PostCard key={p.id} post={p} />)}
-              <div ref={sentinelRef} />
-              {postsLoading && posts.length > 0 && <Spinner />}
-              {!postsLoading && posts.length === 0 && <p className={s.empty}>Нет постов</p>}
+              {postsLoading && posts.length === 0 ? <>{[1,2,3].map((i) => <SkeletonPost key={i} />)}</> : (
+                <div>
+                  {posts.map((p) => <PostCard key={p.id} post={p} onDelete={() => setPosts((prev) => prev.filter((x) => x.id !== p.id))} />)}
+                  <div ref={sentinelRef} />
+                  {postsLoading && posts.length > 0 && <Spinner />}
+                  {!postsLoading && posts.length === 0 && <p className={s.empty}>Нет постов</p>}
+                </div>
+              )}
             </>
           )}
-        </>
+        </div>
       )}
 
       {tab === 'reposts' && (
