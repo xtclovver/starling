@@ -25,6 +25,7 @@ type PostRepository interface {
 	Update(ctx context.Context, id, userID, content string) (*model.Post, error)
 	IncrementReposts(ctx context.Context, postID string, delta int) error
 	IncrementViews(ctx context.Context, postID string, delta int) error
+	UpdateAuthorBanned(ctx context.Context, userID string, banned bool) error
 }
 
 type postRepo struct {
@@ -106,6 +107,7 @@ func (r *postRepo) GetFeed(ctx context.Context, userID, cursor string, limit int
 		  FROM posts p
 		  LEFT JOIN follows f ON f.follower_id = $1 AND f.following_id = p.user_id
 		  WHERE p.deleted_at IS NULL
+		  AND p.author_banned = FALSE
 		  AND (p.user_id = $1 OR f.follower_id IS NOT NULL)`
 
 	if cursor != "" {
@@ -129,7 +131,7 @@ func (r *postRepo) GetByUser(ctx context.Context, userID, cursor string, limit i
 	args := []any{userID, limit + 1}
 	q := `SELECT id, user_id, content, views_count, likes_count, comments_count, reposts_count, created_at, updated_at, edited_at
 		  FROM posts
-		  WHERE user_id = $1 AND deleted_at IS NULL`
+		  WHERE user_id = $1 AND deleted_at IS NULL AND author_banned = FALSE`
 
 	if cursor != "" {
 		q += ` AND (created_at, id) < (
@@ -160,7 +162,7 @@ func (r *postRepo) GetGlobalFeed(ctx context.Context, cursor string, limit int) 
 	args := []any{limit + 1}
 	q := `SELECT id, user_id, content, views_count, likes_count, comments_count, reposts_count, created_at, updated_at, edited_at
 		  FROM posts
-		  WHERE deleted_at IS NULL`
+		  WHERE deleted_at IS NULL AND author_banned = FALSE`
 
 	if cursor != "" {
 		q += ` AND (created_at, id) < (
@@ -209,6 +211,14 @@ func (r *postRepo) IncrementViews(ctx context.Context, postID string, delta int)
 	_, err := r.pool.Exec(ctx,
 		`UPDATE posts SET views_count = GREATEST(views_count + $1, 0) WHERE id = $2`,
 		delta, postID,
+	)
+	return err
+}
+
+func (r *postRepo) UpdateAuthorBanned(ctx context.Context, userID string, banned bool) error {
+	_, err := r.pool.Exec(ctx,
+		`UPDATE posts SET author_banned = $1 WHERE user_id = $2 AND deleted_at IS NULL`,
+		banned, userID,
 	)
 	return err
 }

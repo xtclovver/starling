@@ -189,6 +189,17 @@ func (s *Server) DeletePost(ctx context.Context, req *pb.DeletePostRequest) (*pb
 	return &pb.DeletePostResponse{}, nil
 }
 
+func (s *Server) UpdateAuthorBanned(ctx context.Context, req *pb.UpdateAuthorBannedRequest) (*pb.UpdateAuthorBannedResponse, error) {
+	start := time.Now()
+	defer func() { s.log.Info("UpdateAuthorBanned", "duration", time.Since(start)) }()
+
+	if err := s.postRepo.UpdateAuthorBanned(ctx, req.GetUserId(), req.GetBanned()); err != nil {
+		s.log.Error("update author banned failed", "error", err)
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	return &pb.UpdateAuthorBannedResponse{}, nil
+}
+
 func (s *Server) GetFeed(ctx context.Context, req *pb.GetFeedRequest) (*pb.GetFeedResponse, error) {
 	start := time.Now()
 	defer func() { s.log.Info("GetFeed", "duration", time.Since(start)) }()
