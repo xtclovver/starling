@@ -1,5 +1,5 @@
 import client from './client';
-import type { ApiResponse, User, PaginationResponse } from '@/types';
+import type { ApiResponse, User, PaginationResponse, LoginHistoryEntry } from '@/types';
 
 interface ListUsersData {
   users: User[];
@@ -28,4 +28,9 @@ export async function adminDeletePost(postId: string) {
 
 export async function adminDeleteComment(commentId: string) {
   await client.delete(`/admin/comments/${commentId}`);
+}
+
+export async function getLoginHistory(userId: string): Promise<LoginHistoryEntry[]> {
+  const { data } = await client.get<ApiResponse<LoginHistoryEntry[]>>(`/admin/users/${userId}/login-history`);
+  return data.data;
 }

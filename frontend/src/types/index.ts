@@ -87,3 +87,10 @@ export interface Notification {
   created_at: string;
   actor?: User;
 }
+
+export interface LoginHistoryEntry {
+  id: string;
+  ip: string;
+  user_agent: string;
+  created_at: string;
+}
