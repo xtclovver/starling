@@ -7,14 +7,18 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
 
+	postpb "github.com/usedcvnt/microtwitter/gen/go/post/v1"
 	pb "github.com/usedcvnt/microtwitter/gen/go/user/v1"
 	"github.com/usedcvnt/microtwitter/user-svc/internal/auth"
 	"github.com/usedcvnt/microtwitter/user-svc/internal/config"
@@ -58,9 +62,26 @@ func main() {
 	userRepo := repository.NewUserRepository(pool)
 	followRepo := repository.NewFollowRepository(pool)
 	notifRepo := repository.NewNotificationRepository(pool)
+	loginHistoryRepo := repository.NewLoginHistoryRepository(pool)
+
+	postConn, err := grpc.NewClient("dns:///"+cfg.PostSvcAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
+		grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			Time:                30 * time.Second,
+			Timeout:             10 * time.Second,
+			PermitWithoutStream: true,
+		}),
+	)
+	if err != nil {
+		log.Error("failed to connect to post-svc", "error", err)
+		os.Exit(1)
+	}
+	defer postConn.Close()
+	postClient := postpb.NewPostServiceClient(postConn)
 
 	srv := grpc.NewServer()
-	userServer := grpcserver.NewServer(userRepo, followRepo, notifRepo, jwtManager, log)
+	userServer := grpcserver.NewServer(userRepo, followRepo, notifRepo, loginHistoryRepo, postClient, jwtManager, log)
 	pb.RegisterUserServiceServer(srv, userServer)
 
 	healthSrv := health.NewServer()

@@ -12,6 +12,7 @@ type Config struct {
 	JWTSecret      string
 	JWTAccessTTL   time.Duration
 	JWTRefreshTTL  time.Duration
+	PostSvcAddr    string
 }
 
 func Load() *Config {
@@ -22,6 +23,7 @@ func Load() *Config {
 		JWTSecret:     getEnv("JWT_SECRET", "change-me-in-production"),
 		JWTAccessTTL:  parseDuration(getEnv("JWT_ACCESS_TTL", "15m")),
 		JWTRefreshTTL: parseDuration(getEnv("JWT_REFRESH_TTL", "168h")),
+		PostSvcAddr:   getEnv("POST_SVC_ADDR", "localhost:50052"),
 	}
 }
 
