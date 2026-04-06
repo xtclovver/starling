@@ -23,9 +23,9 @@ export default function Sidebar() {
   const unreadCount = useNotificationStore((st) => st.unreadCount);
 
   const handleLogout = async () => {
+    try { await apiLogout(); } catch { /* ignore */ }
     logout();
     navigate('/');
-    apiLogout().catch(() => {});
   };
 
   return (
