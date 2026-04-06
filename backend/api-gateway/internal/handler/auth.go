@@ -58,13 +58,18 @@ func computeUAHash(r *http.Request) string {
 }
 
 func clientMetadataCtx(r *http.Request) context.Context {
-	ip := r.Header.Get("X-Forwarded-For")
-	if ip == "" {
-		ip, _, _ = net.SplitHostPort(r.RemoteAddr)
-	}
+	ip := realClientIP(r)
 	ua := r.Header.Get("User-Agent")
 	md := metadata.Pairs("x-client-ip", ip, "x-client-ua", ua)
 	return metadata.NewOutgoingContext(r.Context(), md)
+}
+
+// realClientIP extracts the client IP from RemoteAddr only.
+// X-Forwarded-For is intentionally ignored: it is user-controlled and
+// cannot be trusted without a verified list of trusted proxy CIDRs.
+func realClientIP(r *http.Request) string {
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	return ip
 }
 
 func extractBearerToken(r *http.Request) string {
