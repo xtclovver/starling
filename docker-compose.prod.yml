@@ -97,6 +97,7 @@ services:
       REDIS_URL: ${REDIS_URL}
       GRPC_PORT: "50051"
       JWT_SECRET: ${JWT_SECRET}
+      POST_SVC_ADDR: post-svc:50052
     networks:
       - backend
 
