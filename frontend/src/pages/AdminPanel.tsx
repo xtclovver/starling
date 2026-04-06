@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Shield, Ban } from 'lucide-react';
-import { listUsers, setAdmin, banUser } from '@/api/admin';
+import { ArrowLeft, Shield, Ban, ChevronDown, ChevronUp } from 'lucide-react';
+import { listUsers, setAdmin, banUser, getLoginHistory } from '@/api/admin';
 import { useAuthStore } from '@/store/auth';
 import Avatar from '@/components/Avatar';
-import type { User } from '@/types';
+import type { User, LoginHistoryEntry } from '@/types';
 import l from '@/styles/layout.module.css';
 import s from '@/styles/admin.module.css';
 
@@ -18,6 +18,9 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [expandedUser, setExpandedUser] = useState<string | null>(null);
+  const [loginHistory, setLoginHistory] = useState<Record<string, LoginHistoryEntry[]>>({});
+  const [historyLoading, setHistoryLoading] = useState<string | null>(null);
 
   const fetchUsers = useCallback(async (c?: string) => {
     const data = await listUsers(c);
@@ -71,6 +74,23 @@ export default function AdminPanel() {
     }
   };
 
+  const handleToggleExpand = async (userId: string) => {
+    if (expandedUser === userId) {
+      setExpandedUser(null);
+      return;
+    }
+    setExpandedUser(userId);
+    if (!loginHistory[userId]) {
+      setHistoryLoading(userId);
+      try {
+        const entries = await getLoginHistory(userId);
+        setLoginHistory((prev) => ({ ...prev, [userId]: entries }));
+      } catch { /* ignore */ } finally {
+        setHistoryLoading(null);
+      }
+    }
+  };
+
   const isSelf = (userId: string) => currentUser?.id === userId;
 
   return (
@@ -87,39 +107,77 @@ export default function AdminPanel() {
       ) : (
         <div className={s.userList}>
           {users.map((user) => (
-            <div key={user.id} className={s.userRow}>
-              <Avatar url={user.avatar_url} name={user.display_name || user.username} size="md" />
-              <div className={s.userInfo}>
-                <div className={s.userName}>
-                  {user.display_name || user.username}
-                  <span className={s.userEmail}>@{user.username}</span>
+            <div key={user.id}>
+              <div
+                className={s.userRow}
+                style={{ cursor: 'pointer' }}
+                onClick={() => handleToggleExpand(user.id)}
+              >
+                <Avatar url={user.avatar_url} name={user.display_name || user.username} size="md" />
+                <div className={s.userInfo}>
+                  <div className={s.userName}>
+                    {user.display_name || user.username}
+                    <span className={s.userEmail}>@{user.username}</span>
+                  </div>
+                  <div className={s.userMeta}>{user.email}</div>
                 </div>
-                <div className={s.userMeta}>{user.email}</div>
+                <div className={s.badges}>
+                  {user.is_admin && <span className={`${s.badge} ${s.badgeAdmin}`}><Shield size={10} /> Admin</span>}
+                  {user.is_banned && <span className={`${s.badge} ${s.badgeBanned}`}><Ban size={10} /> Banned</span>}
+                </div>
+                <div className={s.actions} onClick={(e) => e.stopPropagation()}>
+                  {!isSelf(user.id) && (
+                    <>
+                      <button
+                        className={`${s.actionBtn} ${user.is_admin ? s.actionBtnDanger : ''}`}
+                        disabled={actionLoading === user.id}
+                        onClick={() => handleSetAdmin(user.id, !user.is_admin)}
+                      >
+                        {user.is_admin ? 'Снять админа' : 'Сделать админом'}
+                      </button>
+                      <button
+                        className={`${s.actionBtn} ${!user.is_banned ? s.actionBtnDanger : ''}`}
+                        disabled={actionLoading === user.id}
+                        onClick={() => handleBan(user.id, !user.is_banned)}
+                      >
+                        {user.is_banned ? 'Разбанить' : 'Забанить'}
+                      </button>
+                    </>
+                  )}
+                  <span className={s.expandIcon}>
+                    {expandedUser === user.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </span>
+                </div>
               </div>
-              <div className={s.badges}>
-                {user.is_admin && <span className={`${s.badge} ${s.badgeAdmin}`}><Shield size={10} /> Admin</span>}
-                {user.is_banned && <span className={`${s.badge} ${s.badgeBanned}`}><Ban size={10} /> Banned</span>}
-              </div>
-              <div className={s.actions}>
-                {!isSelf(user.id) && (
-                  <>
-                    <button
-                      className={`${s.actionBtn} ${user.is_admin ? s.actionBtnDanger : ''}`}
-                      disabled={actionLoading === user.id}
-                      onClick={() => handleSetAdmin(user.id, !user.is_admin)}
-                    >
-                      {user.is_admin ? 'Снять админа' : 'Сделать админом'}
-                    </button>
-                    <button
-                      className={`${s.actionBtn} ${!user.is_banned ? s.actionBtnDanger : ''}`}
-                      disabled={actionLoading === user.id}
-                      onClick={() => handleBan(user.id, !user.is_banned)}
-                    >
-                      {user.is_banned ? 'Разбанить' : 'Забанить'}
-                    </button>
-                  </>
-                )}
-              </div>
+              {expandedUser === user.id && (
+                <div className={s.loginHistory}>
+                  <div className={s.loginHistoryTitle}>История входов</div>
+                  {historyLoading === user.id ? (
+                    <div className={s.loginHistoryEmpty}>Загрузка...</div>
+                  ) : !loginHistory[user.id] || loginHistory[user.id].length === 0 ? (
+                    <div className={s.loginHistoryEmpty}>Нет данных</div>
+                  ) : (
+                    <table className={s.loginHistoryTable}>
+                      <thead>
+                        <tr>
+                          <th>IP</th>
+                          <th>User-Agent</th>
+                          <th>Время</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {loginHistory[user.id].map((entry) => (
+                          <tr key={entry.id}>
+                            <td>{entry.ip || '—'}</td>
+                            <td className={s.loginHistoryUa}>{entry.user_agent || '—'}</td>
+                            <td>{new Date(entry.created_at).toLocaleString('ru-RU')}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>

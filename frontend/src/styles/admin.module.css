@@ -148,3 +148,61 @@
   align-items: center;
   gap: 3px;
 }
+
+/* ── Login History ── */
+.expandIcon {
+  display: flex;
+  align-items: center;
+  color: var(--text-tertiary);
+  margin-left: 4px;
+}
+
+.loginHistory {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px 16px;
+}
+
+.loginHistoryTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.loginHistoryEmpty {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  padding: 8px 0;
+}
+
+.loginHistoryTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.loginHistoryTable th {
+  text-align: left;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  padding: 4px 8px 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.loginHistoryTable td {
+  padding: 6px 8px 6px 0;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.loginHistoryUa {
+  color: var(--text-secondary);
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
