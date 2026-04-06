@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Heart, MessageCircle, Trash2, Bookmark, Repeat2, Pencil, X, ImagePlus, Check, Eye } from 'lucide-react';
 import { likePost, unlikePost, deletePost, bookmarkPost, unbookmarkPost, repostPost, unrepostPost, updatePost } from '@/api/posts';
 import { uploadMedia } from '@/api/media';
+import { adminDeletePost } from '@/api/admin';
 import { useAuthStore } from '@/store/auth';
 import { useFeedStore } from '@/store/feed';
 import { useUIStore } from '@/store/ui';
@@ -49,6 +50,8 @@ export default function PostCard({ post, onDelete, onUnbookmark, onOpen }: { pos
   const editFileRef = useRef<HTMLInputElement>(null);
   const totalEditMedia = editMediaItems.length + editNewFiles.length;
   const [localOverrides, setLocalOverrides] = useState<Partial<Post>>({});
+  const [adminDeleteLoading, setAdminDeleteLoading] = useState(false);
+  const [showAdminDeleteConfirm, setShowAdminDeleteConfirm] = useState(false);
   const displayPost = { ...post, ...localOverrides };
 
   useEffect(() => {
@@ -118,6 +121,20 @@ export default function PostCard({ post, onDelete, onUnbookmark, onOpen }: { pos
     } catch { /* ignore */ } finally {
       setDeleteLoading(false);
       setShowDeleteConfirm(false);
+    }
+  };
+
+  const handleAdminDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (adminDeleteLoading) return;
+    setAdminDeleteLoading(true);
+    try {
+      await adminDeletePost(post.id);
+      useFeedStore.getState().removePost(post.id);
+      onDelete?.();
+    } catch { /* ignore */ } finally {
+      setAdminDeleteLoading(false);
+      setShowAdminDeleteConfirm(false);
     }
   };
 
@@ -215,6 +232,28 @@ export default function PostCard({ post, onDelete, onUnbookmark, onOpen }: { pos
                         <button onClick={() => setShowDeleteConfirm(false)} className={s.deletePopupCancel}>Отмена</button>
                         <button onClick={handleDelete} disabled={deleteLoading} className={s.deletePopupConfirm}>
                           {deleteLoading ? '...' : 'Удалить'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            {!isOwner && user?.is_admin && !editing && (
+              <div className={s.ownerActions}>
+                <div className={s.deleteWrap}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowAdminDeleteConfirm((v) => !v); }}
+                    className={s.ownerBtn}
+                    title="Удалить пост (admin)"
+                  ><Trash2 size={14} /></button>
+                  {showAdminDeleteConfirm && (
+                    <div className={s.deletePopup} onClick={(e) => e.stopPropagation()}>
+                      <p className={s.deletePopupText}>Удалить чужой пост?</p>
+                      <div className={s.deletePopupActions}>
+                        <button onClick={() => setShowAdminDeleteConfirm(false)} className={s.deletePopupCancel}>Отмена</button>
+                        <button onClick={handleAdminDelete} disabled={adminDeleteLoading} className={s.deletePopupConfirm}>
+                          {adminDeleteLoading ? '...' : 'Удалить'}
                         </button>
                       </div>
                     </div>
