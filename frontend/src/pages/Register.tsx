@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Feather } from 'lucide-react';
 import { register } from '@/api/auth';
 import { useAuthStore } from '@/store/auth';
+import { translateBackendError } from '@/lib/errors';
 import OnboardingWizard from '@/components/OnboardingWizard';
 import s from '@/styles/auth.module.css';
 
@@ -32,7 +33,7 @@ export default function Register() {
       setShowOnboarding(true);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
-      setError(msg || 'Не удалось зарегистрироваться');
+      setError(translateBackendError(msg) || 'Не удалось зарегистрироваться');
     } finally { setLoading(false); }
   };
 

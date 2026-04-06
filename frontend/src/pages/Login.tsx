@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Feather } from 'lucide-react';
 import { login } from '@/api/auth';
 import { useAuthStore } from '@/store/auth';
+import { translateBackendError } from '@/lib/errors';
 import s from '@/styles/auth.module.css';
 
 export default function Login() {
@@ -27,7 +28,7 @@ export default function Login() {
       navigate(from, { replace: true });
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
-      setError(msg || 'Неверный email или пароль');
+      setError(translateBackendError(msg) || 'Неверный email или пароль');
     } finally { setLoading(false); }
   };
 

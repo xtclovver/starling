@@ -210,7 +210,7 @@ export default function PostCard({ post, onDelete, onUnbookmark, onOpen }: { pos
         <div className={s.postBody}>
           <div className={s.postMeta}>
             <Link to={`/profile/${post.user_id}`} onClick={(e) => e.stopPropagation()} className={s.postAuthor}>
-              {post.author?.display_name || post.author?.username || 'Unknown'}
+              {post.author?.display_name || post.author?.username || 'Неизвестный'}
             </Link>
             {post.author?.username && <span className={s.postHandle}>@{post.author.username}</span>}
             <span className={s.postDot}>&middot;</span>

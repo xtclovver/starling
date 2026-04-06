@@ -141,7 +141,7 @@ export default function CommentItem({ comment, postId, onNewReply, onDelete }: P
         <div className={s.commentContent}>
           <div className={s.commentMeta}>
             <Link to={`/profile/${comment.user_id}`} className={s.commentAuthor}>
-              {comment.author?.display_name || comment.author?.username || 'Unknown'}
+              {comment.author?.display_name || comment.author?.username || 'Неизвестный'}
             </Link>
             {comment.author?.username && <span className={s.commentHandle}>@{comment.author.username}</span>}
             <span className={s.commentDot}>&middot;</span>

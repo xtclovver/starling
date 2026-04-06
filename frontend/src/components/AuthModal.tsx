@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Feather, X } from 'lucide-react';
 import { login, register } from '@/api/auth';
+import { translateBackendError } from '@/lib/errors';
 import { useAuthStore } from '@/store/auth';
 import { useUIStore } from '@/store/ui';
 import { useFeedStore } from '@/store/feed';
@@ -42,7 +43,7 @@ export default function AuthModal() {
       closeAuthModal();
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
-      setError(msg || 'Неверный email или пароль');
+      setError(translateBackendError(msg) || 'Неверный email или пароль');
     } finally { setLoading(false); }
   };
 
@@ -60,7 +61,7 @@ export default function AuthModal() {
       setShowOnboarding(true);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
-      setError(msg || 'Не удалось зарегистрироваться');
+      setError(translateBackendError(msg) || 'Не удалось зарегистрироваться');
     } finally { setLoading(false); }
   };
 

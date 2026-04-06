@@ -122,8 +122,8 @@ export default function AdminPanel() {
                   <div className={s.userMeta}>{user.email}</div>
                 </div>
                 <div className={s.badges}>
-                  {user.is_admin && <span className={`${s.badge} ${s.badgeAdmin}`}><Shield size={10} /> Admin</span>}
-                  {user.is_banned && <span className={`${s.badge} ${s.badgeBanned}`}><Ban size={10} /> Banned</span>}
+                  {user.is_admin && <span className={`${s.badge} ${s.badgeAdmin}`}><Shield size={10} /> Админ</span>}
+                  {user.is_banned && <span className={`${s.badge} ${s.badgeBanned}`}><Ban size={10} /> Заблокирован</span>}
                 </div>
                 <div className={s.actions} onClick={(e) => e.stopPropagation()}>
                   {!isSelf(user.id) && (

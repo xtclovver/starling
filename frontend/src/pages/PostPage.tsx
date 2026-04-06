@@ -112,7 +112,7 @@ export default function PostPage() {
           </Link>
           <div className={s.postDetailAuthorInfo}>
             <Link to={`/profile/${post.user_id}`} className={s.postDetailName}>
-              {post.author?.display_name || post.author?.username || 'Unknown'}
+              {post.author?.display_name || post.author?.username || 'Неизвестный'}
             </Link>
             {post.author?.username && <p className={s.postDetailHandle}>@{post.author.username}</p>}
           </div>
