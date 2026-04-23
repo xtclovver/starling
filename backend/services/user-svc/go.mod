@@ -5,7 +5,7 @@ go 1.25.0
 require (
 	github.com/alicebob/miniredis/v2 v2.37.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
-	github.com/jackc/pgx/v5 v5.7.5
+	github.com/jackc/pgx/v5 v5.9.2
 	github.com/redis/go-redis/v9 v9.7.3
 	github.com/usedcvnt/microtwitter/gen/go v0.0.0
 	golang.org/x/crypto v0.48.0
